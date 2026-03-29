@@ -76,3 +76,26 @@ class StudentNotOnDeviceError(AppException):
         )
         self.student_id = student_id
         self.device_id = device_id
+
+
+class TeacherNotFoundError(AppException):
+    """Raised when teacher is not found."""
+
+    def __init__(self, teacher_id: int):
+        super().__init__(
+            message=f"Teacher {teacher_id} not found",
+            code="TEACHER_NOT_FOUND",
+        )
+        self.teacher_id = teacher_id
+
+
+class TeacherNotOnDeviceError(AppException):
+    """Raised when teacher is not synced to the device (enrollment requires sync first)."""
+
+    def __init__(self, teacher_id: int, device_id: int):
+        super().__init__(
+            message=f"Teacher {teacher_id} is not synced to device {device_id}. Please sync the teacher to the device first.",
+            code="TEACHER_NOT_ON_DEVICE"
+        )
+        self.teacher_id = teacher_id
+        self.device_id = device_id

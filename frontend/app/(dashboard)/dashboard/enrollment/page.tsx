@@ -5,38 +5,45 @@ import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { fadeInUp } from '@/lib/animations/framer-motion';
 import { EnrollmentWizard } from '@/components/features/enrollment/EnrollmentWizard';
-import { startEnrollment, EnrollmentApiError } from '@/lib/api/enrollment';
+import { startEnrollment, startTeacherEnrollment, EnrollmentApiError } from '@/lib/api/enrollment';
+import { GraduationCap, UserCircle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function EnrollmentPage() {
+  const [activeTab, setActiveTab] = useState<'student' | 'teacher'>('student');
 
   const handleStartEnrollment = async (data: {
-    studentId: number;
+    studentId?: number;
+    teacherId?: number;
     deviceId: number;
     fingerId: number;
   }) => {
+    const isTeacher = activeTab === 'teacher' && data.teacherId != null;
     try {
-      // Call enrollment API
-      const response = await startEnrollment({
-        student_id: data.studentId,
-        device_id: data.deviceId,
-        finger_id: data.fingerId,
-      });
-      
-      // Show success message
-      toast.success('Enrollment Started', {
-        description: `Enrollment session started. The device is now waiting for the student to place their finger.`,
+      const response = isTeacher
+        ? await startTeacherEnrollment({
+          teacher_id: data.teacherId!,
+          device_id: data.deviceId,
+          finger_id: data.fingerId,
+        })
+        : await startEnrollment({
+          student_id: data.studentId!,
+          device_id: data.deviceId,
+          finger_id: data.fingerId,
+        });
+
+      toast.success(isTeacher ? 'Teacher Enrollment Started' : 'Enrollment Started', {
+        description: isTeacher
+          ? 'The device is now waiting for the teacher to place their finger for check-in/check-out.'
+          : 'The device is now waiting for the student to place their finger.',
         duration: 5000,
       });
-      
-      // Return session info to wizard component
+
       return response;
-      
     } catch (error) {
       console.error('Enrollment error:', error);
-      
-      // Handle different error types
+
       if (error instanceof EnrollmentApiError) {
-        // Show specific error message based on status code
         if (error.statusCode === 503) {
           toast.error('Device Offline', {
             description: 'The selected device is currently offline or unreachable. Please try again later or select a different device.',
@@ -44,12 +51,17 @@ export default function EnrollmentPage() {
           });
         } else if (error.statusCode === 404) {
           toast.error('Not Found', {
-            description: 'Student or device not found. Please check your selections and try again.',
+            description: isTeacher ? 'Device not found.' : 'Student or device not found. Please check your selections and try again.',
             duration: 5000,
           });
-        } else if (error.code === 'STUDENT_NOT_ON_DEVICE' || error.statusCode === 400) {
+        } else if (error.code === 'STUDENT_NOT_ON_DEVICE' || (error.statusCode === 400 && !isTeacher)) {
           toast.error('Student Not Synced', {
             description: error.message || 'Student is not synced to this device. Please sync the student first in the device selection step.',
+            duration: 6000,
+          });
+        } else if (error.code === 'TEACHER_NOT_ON_DEVICE' || (error.statusCode === 400 && isTeacher)) {
+          toast.error('Teacher Not Synced', {
+            description: error.message || 'Teacher is not synced to this device. Please sync the teacher first in the device selection step.',
             duration: 6000,
           });
         } else if (error.statusCode === 409) {
@@ -58,21 +70,18 @@ export default function EnrollmentPage() {
             duration: 5000,
           });
         } else {
-          // Generic error message
           toast.error('Enrollment Failed', {
             description: error.message || 'Failed to start enrollment. Please try again.',
             duration: 5000,
           });
         }
       } else {
-        // Unexpected error
         toast.error('Enrollment Failed', {
           description: error instanceof Error ? error.message : 'An unexpected error occurred during enrollment',
           duration: 5000,
         });
       }
-      
-      // Re-throw error so wizard can handle it
+
       throw error;
     }
   };
@@ -85,22 +94,55 @@ export default function EnrollmentPage() {
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-400/20 rounded-full blur-3xl animate-pulse delay-1000" />
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 py-8">
+      <div className="relative z-10 w-full px-4 py-8 sm:px-6 lg:px-10">
         <motion.div
           initial="hidden"
           animate="visible"
           variants={fadeInUp}
         >
-          <div className="mb-8 text-center">
-            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-2">
+          <div className="mb-6 text-center">
+            <h1 className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-1">
               Fingerprint Enrollment
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 text-lg">
-              Follow the steps below to enroll a student's fingerprint for biometric attendance
+            <p className="text-gray-500 dark:text-gray-400 text-sm max-w-md mx-auto">
+              Register biometric data for students or teachers on connected scanners
             </p>
           </div>
-          
-          <EnrollmentWizard onStartEnrollment={handleStartEnrollment} />
+
+          <div className="w-full max-w-sm mx-auto grid grid-cols-2 gap-2 mb-8 p-1 rounded-xl bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50">
+            <button
+              type="button"
+              onClick={() => setActiveTab('student')}
+              className={cn(
+                'flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-bold text-xs transition-all',
+                activeTab === 'student'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50'
+              )}
+            >
+              <GraduationCap className="size-3.5" />
+              Student
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('teacher')}
+              className={cn(
+                'flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-bold text-xs transition-all',
+                activeTab === 'teacher'
+                  ? 'bg-indigo-600 text-white shadow-md'
+                  : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50'
+              )}
+            >
+              <UserCircle className="size-3.5" />
+              Teacher
+            </button>
+          </div>
+          {activeTab === 'student' && (
+            <EnrollmentWizard mode="student" onStartEnrollment={handleStartEnrollment} />
+          )}
+          {activeTab === 'teacher' && (
+            <EnrollmentWizard mode="teacher" onStartEnrollment={handleStartEnrollment} />
+          )}
         </motion.div>
       </div>
     </div>

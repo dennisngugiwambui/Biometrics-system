@@ -2,9 +2,9 @@
 
 Rules:
   1. No previous record for the student on the same calendar day → IN
-  2. Last record was IN  and time gap > duplicate window → OUT
-  3. Last record was OUT and time gap > duplicate window → IN
-  4. Time gap < duplicate window (regardless of direction) → DUPLICATE (skip)
+  2. Last record was IN  and time gap >= anti-bounce → OUT
+  3. Last record was OUT and time gap >= anti-bounce → IN
+  4. Time gap < anti-bounce window → DUPLICATE (accidental double-scan)
   5. Student unknown (student_id is None) → UNKNOWN
 """
 
@@ -39,7 +39,7 @@ class EntryExitService:
     def __init__(self, db: AsyncSession):
         self.db = db
         self.tz = pytz.timezone(settings.ATTENDANCE_TIMEZONE)
-        self.duplicate_window = timedelta(minutes=settings.ATTENDANCE_DUPLICATE_WINDOW_MINUTES)
+        self.anti_bounce = timedelta(seconds=settings.ATTENDANCE_ANTI_BOUNCE_SECONDS)
 
     # ------------------------------------------------------------------
     # Pure-logic determination (no DB query) — used by batch ingestion
@@ -67,7 +67,7 @@ class EntryExitService:
         prev_event_type, prev_occurred_at = previous
         time_gap = occurred_at - prev_occurred_at
 
-        if time_gap < self.duplicate_window:
+        if time_gap < self.anti_bounce:
             return Determination.DUPLICATE
 
         if prev_event_type == EventType.IN:
@@ -134,6 +134,58 @@ class EntryExitService:
                 subq,
                 and_(
                     ar.student_id == subq.c.student_id,
+                    ar.occurred_at == subq.c.max_ts,
+                ),
+            )
+            .where(
+                and_(
+                    ar.school_id == school_id,
+                    ar.is_deleted == False,  # noqa: E712
+                )
+            )
+        )
+        result = await self.db.execute(query)
+        rows = result.all()
+
+        return {row[0]: (row[1], row[2]) for row in rows}
+
+    async def get_last_records_for_teachers(
+        self,
+        school_id: int,
+        teacher_ids: list[int],
+        reference_time: datetime,
+    ) -> dict[int, tuple[str, datetime]]:
+        if not teacher_ids:
+            return {}
+
+        local_dt = reference_time.astimezone(self.tz)
+        day_start_local = local_dt.replace(hour=0, minute=0, second=0, microsecond=0)
+        day_start_utc = day_start_local.astimezone(pytz.utc)
+
+        subq = (
+            select(
+                AttendanceRecord.teacher_id,
+                sa_func.max(AttendanceRecord.occurred_at).label("max_ts"),
+            )
+            .where(
+                and_(
+                    AttendanceRecord.school_id == school_id,
+                    AttendanceRecord.teacher_id.in_(teacher_ids),
+                    AttendanceRecord.is_deleted == False,  # noqa: E712
+                    AttendanceRecord.occurred_at >= day_start_utc,
+                )
+            )
+            .group_by(AttendanceRecord.teacher_id)
+            .subquery()
+        )
+
+        ar = aliased(AttendanceRecord)
+        query = (
+            select(ar.teacher_id, ar.event_type, ar.occurred_at)
+            .join(
+                subq,
+                and_(
+                    ar.teacher_id == subq.c.teacher_id,
                     ar.occurred_at == subq.c.max_ts,
                 ),
             )

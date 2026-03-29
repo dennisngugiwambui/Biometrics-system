@@ -1,8 +1,10 @@
 """Repository for School data access."""
 
-from sqlalchemy.ext.asyncio import AsyncSession
+import copy
+from typing import Any, Optional
+
 from sqlalchemy import select
-from typing import Optional
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from school_service.models.school import School
 from shared.schemas.school import SchoolCreate
@@ -22,6 +24,7 @@ class SchoolRepository:
             address=school_data.address,
             phone=school_data.phone,
             email=school_data.email,
+            school_type=getattr(school_data, "school_type", "mixed"),
         )
         self.db.add(school)
         await self.db.commit()
@@ -41,6 +44,7 @@ class SchoolRepository:
             address=school_data.address,
             phone=school_data.phone,
             email=school_data.email,
+            school_type=getattr(school_data, "school_type", "mixed"),
         )
         self.db.add(school)
         # Flush to get the ID without committing
@@ -78,13 +82,31 @@ class SchoolRepository:
             return None
 
         # Optional fields that can be set to None
-        optional_fields = {'address', 'phone', 'email'}
-        
+        optional_fields = {
+            'address', 'po_box', 'phone', 'email', 'branding', 'notification_settings',
+            'geofence_lat', 'geofence_lng', 'geofence_radius_m',
+        }
+        # JSONB fields: assign a deep copy so SQLAlchemy detects the change and persists
+        jsonb_fields = {'branding', 'notification_settings'}
+
         for key, value in school_data.items():
             # Allow None values for optional fields (to clear them)
             # For other fields, skip None values (they weren't meant to be updated)
             if value is not None or key in optional_fields:
-                setattr(school, key, value)
+                if key == "notification_settings" and isinstance(value, dict):
+                    # Merge with existing so api_key/whatsapp_api_key are not wiped when client sends null
+                    existing = (getattr(school, key) or {})
+                    if not isinstance(existing, dict):
+                        existing = {}
+                    merged = copy.deepcopy(existing)
+                    for k, v in value.items():
+                        if v is not None:
+                            merged[k] = copy.deepcopy(v) if isinstance(v, dict) else v
+                    setattr(school, key, merged)
+                elif key in jsonb_fields and isinstance(value, dict):
+                    setattr(school, key, copy.deepcopy(value))
+                else:
+                    setattr(school, key, value)
 
         await self.db.commit()
         await self.db.refresh(school)

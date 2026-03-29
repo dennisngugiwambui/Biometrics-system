@@ -28,9 +28,13 @@ class AttendanceRecord(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     school_id = Column(Integer, ForeignKey("schools.id"), nullable=False, index=True)
-    device_id = Column(Integer, ForeignKey("devices.id"), nullable=False, index=True)
+    device_id = Column(Integer, ForeignKey("devices.id"), nullable=True, index=True) # Nullable for mobile_app
     student_id = Column(Integer, ForeignKey("students.id"), nullable=True, index=True)
-    device_user_id = Column(String(50), nullable=False, index=True)  # uid from device
+    # Captured at ingest time so reports stay accurate after cohort promotion.
+    class_id_snapshot = Column(Integer, ForeignKey("classes.id"), nullable=True, index=True)
+    stream_id_snapshot = Column(Integer, ForeignKey("streams.id"), nullable=True, index=True)
+    teacher_id = Column(Integer, ForeignKey("teachers.id"), nullable=True, index=True)
+    device_user_id = Column(String(50), nullable=False, index=True)  # uid from device or phone identifier
     occurred_at = Column(DateTime(timezone=True), nullable=False, index=True)
     event_type = Column(
         String(10),
@@ -38,6 +42,13 @@ class AttendanceRecord(Base):
         server_default=text("'UNKNOWN'"),
         index=True,
         comment="IN, OUT, or UNKNOWN",
+    )
+    source = Column(
+        String(20),
+        nullable=False,
+        server_default=text("'k40_device'"),
+        index=True,
+        comment="k40_device or mobile_app",
     )
     raw_payload = Column(JSONB, nullable=True)
 
@@ -50,6 +61,7 @@ class AttendanceRecord(Base):
     school = relationship("School", lazy="selectin")
     device = relationship("Device", lazy="selectin")
     student = relationship("Student", lazy="selectin")
+    teacher = relationship("Teacher", lazy="selectin")
 
     __table_args__ = (
         {"comment": "Attendance records captured from biometric devices"},

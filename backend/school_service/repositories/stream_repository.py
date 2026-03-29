@@ -26,6 +26,14 @@ class StreamRepository:
         await self.db.refresh(stream)
         return stream
 
+    async def add_without_commit(self, class_id: int, name: str) -> Stream:
+        """Add a new stream and flush (no commit). Used during bulk import."""
+        stream = Stream(class_id=class_id, name=name.strip())
+        self.db.add(stream)
+        await self.db.flush()
+        await self.db.refresh(stream)
+        return stream
+
     async def get_by_id(
         self, stream_id: int, school_id: Optional[int] = None
     ) -> Optional[Stream]:

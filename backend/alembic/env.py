@@ -18,7 +18,9 @@ from school_service.models.school import School  # noqa: F401
 from school_service.models.user import User  # noqa: F401
 from school_service.models.student import Student  # noqa: F401
 from school_service.models.academic_class import AcademicClass  # noqa: F401
-from school_service.models.stream import Stream  # noqa: F401
+from school_service.models.teacher import Teacher  # noqa: F401
+from school_service.models.notification import Notification  # noqa: F401
+from school_service.models.alumni_record import AlumniRecord  # noqa: F401
 from device_service.models.device import Device  # noqa: F401
 from device_service.models.device_group import DeviceGroup  # noqa: F401
 from device_service.models.enrollment import EnrollmentSession  # noqa: F401

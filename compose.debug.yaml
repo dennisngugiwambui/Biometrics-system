@@ -1,0 +1,6 @@
+services:
+  schoolbiometricsystem:
+    image: schoolbiometricsystem
+    build:
+      context: .
+      dockerfile: ./Dockerfile

@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 
 from core.config import settings
-from api.routes import proxy
+from api.routes import proxy, support, notifications, reports, websocket_proxy, system
 
 # Configure logging
 logging.basicConfig(
@@ -31,17 +31,29 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# CORS middleware
+# CORS: allow_origins from config (set ALLOWED_ORIGINS in production to your frontend URL).
+# Regex allows localhost / private IPs in development when not in ALLOWED_ORIGINS.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3})(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
+# Include notifications routes first (so /notifications/test-sms is handled here, not proxied)
+app.include_router(notifications.router)
+app.include_router(reports.router)
 # Include proxy routes
 app.include_router(proxy.router)
+# WebSocket proxy: /ws/* -> Device Service
+app.include_router(websocket_proxy.router)
+
+# Include support routes (direct endpoint, not proxied)
+app.include_router(support.router)
+app.include_router(system.router)
 
 
 @app.get("/")

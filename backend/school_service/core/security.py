@@ -1,5 +1,6 @@
 """Security utilities for authentication and password hashing."""
 
+import bcrypt
 from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
@@ -7,44 +8,56 @@ from passlib.context import CryptContext
 from school_service.core.config import settings
 
 # Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Configure bcrypt to truncate passwords longer than 72 bytes automatically
+pwd_context = CryptContext(
+    schemes=["bcrypt"],
+    deprecated="auto",
+    bcrypt__ident="2b",  # Use bcrypt version 2b
+)
 
 
 def hash_password(password: str) -> str:
     """
     Hash a plain text password using bcrypt.
     
-    Note: bcrypt has a 72-byte limit. This function validates and handles this limitation.
+    Note: bcrypt has a 72-byte limit. This function ensures passwords are truncated
+    to 72 bytes if necessary before hashing.
     
     Args:
-        password: Plain text password to hash (must be <= 72 bytes)
+        password: Plain text password to hash
     
     Returns:
         Hashed password string
     
     Raises:
-        ValueError: If password exceeds 72 bytes or other validation fails
+        ValueError: If password hashing fails for any reason
     """
-    # Check byte length (bcrypt has a 72-byte limit)
+    if not password:
+        raise ValueError("Password cannot be empty")
+    
+    # Ensure password is a string and strip any whitespace
+    password = str(password).strip()
+    
+    # Convert to bytes for bcrypt
     password_bytes = password.encode('utf-8')
+    
+    # Bcrypt has a 72-byte limit - truncate if necessary
     if len(password_bytes) > 72:
-        raise ValueError("Password cannot be longer than 72 bytes. Please use a shorter password.")
+        # Truncate to 72 bytes
+        password_bytes = password_bytes[:72]
     
     try:
-        return pwd_context.hash(password)
-    except ValueError as e:
-        # Catch bcrypt-specific errors and convert to user-friendly messages
-        error_msg = str(e)
-        if "cannot be longer than 72 bytes" in error_msg.lower():
-            raise ValueError("Password cannot be longer than 72 bytes. Please use a shorter password.") from e
-        # Re-raise other ValueError exceptions as-is
-        raise
+        # Use bcrypt directly - it handles the 72-byte limit automatically
+        salt = bcrypt.gensalt()
+        hashed = bcrypt.hashpw(password_bytes, salt)
+        return hashed.decode('utf-8')
     except Exception as e:
-        # Catch any other unexpected errors from bcrypt/passlib
+        # Catch any errors from bcrypt and provide user-friendly messages
         error_msg = str(e)
-        if "72 bytes" in error_msg or "truncate" in error_msg.lower():
-            raise ValueError("Password cannot be longer than 72 bytes. Please use a shorter password.") from e
-        # For other errors, wrap in a generic message
+        # If it's a length error, provide a clear message
+        if "72 bytes" in error_msg.lower() or "truncate" in error_msg.lower():
+            raise ValueError("Password is too long. Maximum length is 72 characters.") from e
+        # For other errors, provide a generic message
         raise ValueError(f"Error hashing password: {error_msg}") from e
 
 
@@ -59,7 +72,16 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     Returns:
         True if password matches, False otherwise
     """
-    return pwd_context.verify(plain_password, hashed_password)
+    # Use bcrypt directly for verification (consistent with hash_password)
+    # Bcrypt automatically handles password truncation during verification
+    try:
+        return bcrypt.checkpw(
+            plain_password.encode('utf-8'),
+            hashed_password.encode('utf-8')
+        )
+    except Exception:
+        # Fallback to passlib for backward compatibility with old hashes
+        return pwd_context.verify(plain_password, hashed_password)
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
@@ -124,6 +146,8 @@ def decode_access_token(token: str) -> Optional[dict]:
     Returns:
         Decoded token payload as dictionary, or None if token is invalid/expired
     """
+    import logging
+    logger = logging.getLogger(__name__)
     try:
         payload = jwt.decode(
             token,
@@ -132,9 +156,20 @@ def decode_access_token(token: str) -> Optional[dict]:
         )
         # Ensure this is an access token if typ is present
         if payload.get("typ") not in (None, "access"):
+            logger.warning(f"Invalid token type: {payload.get('typ')}")
             return None
         return payload
-    except JWTError:
+    except jwt.ExpiredSignatureError:
+        logger.warning(f"Token expired: {token[:10]}...")
+        return None
+    except jwt.JWTClaimsError:
+        logger.warning(f"Invalid claims: {token[:10]}...")
+        return None
+    except jwt.JWTError as e:
+        logger.warning(f"JWT decode error: {str(e)} for token: {token[:10]}...")
+        return None
+    except Exception as e:
+        logger.error(f"Unexpected error decoding token: {str(e)}")
         return None
 
 
@@ -155,15 +190,14 @@ def decode_refresh_token(token: str) -> Optional[dict]:
 
 def validate_password_strength(password: str) -> tuple[bool, str]:
     """
-    Validate password strength.
+    Validate password length only.
     
     Requirements:
-    - Minimum 8 characters
-    - Maximum 72 bytes (bcrypt limitation)
-    - At least one uppercase letter
-    - At least one lowercase letter
-    - At least one digit
-    - At least one special character (!@#$%^&*)
+    - Minimum 4 characters
+    - Maximum 72 characters (bcrypt has 72-byte limit, but for ASCII passwords, char length = byte length)
+    
+    Note: Byte length check is handled in hash_password() where bcrypt will enforce the 72-byte limit.
+    For most passwords (ASCII characters), character length equals byte length.
     
     Args:
         password: Password to validate
@@ -171,26 +205,11 @@ def validate_password_strength(password: str) -> tuple[bool, str]:
     Returns:
         Tuple of (is_valid: bool, error_message: str)
     """
-    if len(password) < 8:
-        return False, "Password must be at least 8 characters long"
+    if len(password) < 4:
+        return False, "Password must be at least 4 characters long"
     
-    # Check byte length (bcrypt has a 72-byte limit)
-    password_bytes = password.encode('utf-8')
-    if len(password_bytes) > 72:
-        return False, "Password cannot be longer than 72 bytes. Please use a shorter password."
-    
-    if not any(c.isupper() for c in password):
-        return False, "Password must contain at least one uppercase letter"
-    
-    if not any(c.islower() for c in password):
-        return False, "Password must contain at least one lowercase letter"
-    
-    if not any(c.isdigit() for c in password):
-        return False, "Password must contain at least one digit"
-    
-    special_chars = "!@#$%^&*()_+-=[]{}|;:,.<>?"
-    if not any(c in special_chars for c in password):
-        return False, "Password must contain at least one special character (!@#$%^&*)"
+    if len(password) > 72:
+        return False, "Password cannot be longer than 72 characters. Please use a shorter password."
     
     return True, ""
 

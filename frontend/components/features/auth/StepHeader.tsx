@@ -6,6 +6,7 @@
 
 "use client"
 
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { CardTitle, CardDescription } from "@/components/ui/card"
 import { LucideIcon } from "lucide-react"
@@ -36,6 +37,13 @@ export function StepHeader({
   iconBgColor = "bg-blue-100",
   iconColor = "text-blue-600",
 }: StepHeaderProps) {
+  // Render icon client-side only to avoid hydration mismatches from browser extensions
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
   return (
     <AnimatePresence mode="wait">
       <motion.div
@@ -46,7 +54,11 @@ export function StepHeader({
         className="text-center"
       >
         <div className={`w-16 h-16 rounded-full ${iconBgColor} flex items-center justify-center mx-auto mb-4`}>
-          <Icon className={`w-8 h-8 ${iconColor}`} />
+          {isMounted ? (
+            <Icon className={`w-8 h-8 ${iconColor}`} />
+          ) : (
+            <div className={`w-8 h-8 ${iconColor}`} aria-hidden="true" />
+          )}
         </div>
         <CardTitle className="text-2xl text-gray-900">{title}</CardTitle>
         <CardDescription className="text-base mt-2">{description}</CardDescription>

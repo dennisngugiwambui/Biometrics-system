@@ -10,11 +10,12 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Card } from "@/components/ui/card"
-import { Loader2, Wifi, WifiOff, AlertCircle } from "lucide-react"
+import { Loader2, Wifi, AlertCircle } from "lucide-react"
 import { fadeInUp } from "@/lib/animations/framer-motion"
 import { deviceFormSchema, deviceUpdateSchema, type DeviceFormData, type DeviceUpdateFormData } from "@/lib/validations/device"
-import { testDeviceConnection, testDeviceConnectionByAddress, type DeviceConnectionTestResponse } from "@/lib/api/devices"
+import { testDeviceConnection, testDeviceConnectionByAddress } from "@/lib/api/devices"
 import { DeviceGroupSelector } from "./DeviceGroupSelector"
+import { DeviceNetworkSetupCard } from "./DeviceNetworkSetupCard"
 
 export interface DeviceFormProps {
   deviceId?: number
@@ -38,6 +39,7 @@ export function DeviceForm({
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [isTestingConnection, setIsTestingConnection] = useState(false)
   const [testResult, setTestResult] = useState<string | null>(null)
+  const [testTroubleshootingTips, setTestTroubleshootingTips] = useState<string[] | null>(null)
 
   const isUpdate = !!deviceId
   const schema = isUpdate ? deviceUpdateSchema : deviceFormSchema
@@ -82,6 +84,7 @@ export function DeviceForm({
 
     setIsTestingConnection(true)
     setTestResult(null)
+    setTestTroubleshootingTips(null)
 
     try {
       // If device exists, test using device ID
@@ -93,6 +96,7 @@ export function DeviceForm({
           )
         } else {
           setTestResult(`❌ Connection failed: ${result.message}`)
+          setTestTroubleshootingTips(result.troubleshooting_tips ?? null)
         }
       } else {
         // For new devices, test connection by IP address and port
@@ -109,6 +113,7 @@ export function DeviceForm({
           )
         } else {
           setTestResult(`❌ Connection failed: ${result.message}`)
+          setTestTroubleshootingTips(result.troubleshooting_tips ?? null)
         }
       }
     } catch (error) {
@@ -196,10 +201,13 @@ export function DeviceForm({
                 <Label htmlFor="ip_address" className="text-blue-700 dark:text-blue-400">
                   IP Address *
                 </Label>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Enter the <span className="font-medium text-gray-700 dark:text-gray-300">K40&apos;s</span> IP — not your PC&apos;s IP from ipconfig.
+                </p>
                 <Input
                   id="ip_address"
                   {...register("ip_address")}
-                  placeholder="192.168.1.100"
+                  placeholder="192.168.1.200"
                   className="mt-1 border-blue-300 focus:border-blue-500 focus:ring-blue-500 font-mono"
                 />
                 {errors.ip_address && (
@@ -227,6 +235,8 @@ export function DeviceForm({
                 )}
               </div>
             </div>
+
+            <DeviceNetworkSetupCard token={token} setValue={setValue} />
 
             {/* Communication Password */}
             <div>
@@ -275,6 +285,13 @@ export function DeviceForm({
                 <p className={`mt-2 text-sm ${testResult.includes("✅") ? "text-green-600 dark:text-green-400" : testResult.includes("💡") ? "text-blue-600 dark:text-blue-400" : "text-red-600 dark:text-red-400"}`}>
                   {testResult}
                 </p>
+              )}
+              {testTroubleshootingTips && testTroubleshootingTips.length > 0 && (
+                <ul className="mt-2 list-disc pl-5 text-sm text-blue-700 dark:text-blue-400 space-y-1">
+                  {testTroubleshootingTips.map((tip) => (
+                    <li key={tip}>{tip}</li>
+                  ))}
+                </ul>
               )}
             </div>
 

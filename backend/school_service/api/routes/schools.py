@@ -1,6 +1,11 @@
 """API routes for School management."""
 
+import re
+from urllib.parse import unquote
+
+import httpx
 from fastapi import APIRouter, HTTPException, status, Depends
+from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from school_service.core.database import get_db
@@ -142,11 +147,7 @@ async def register_school(
     except ValueError as e:
         # Handle validation errors (duplicate code, duplicate email, weak password, etc.)
         error_msg = str(e)
-        
-        # Check if it's a bcrypt password length error
-        if "72 bytes" in error_msg.lower() or "truncate" in error_msg.lower():
-            error_msg = "Password cannot be longer than 72 bytes. Please use a shorter password."
-        
+        # Pass through the error message as-is (validation already provides user-friendly messages)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=error_msg,
@@ -155,14 +156,6 @@ async def register_school(
         # Log the actual error for debugging (in production, use proper logging)
         import traceback
         error_msg = str(e)
-        
-        # Check if it's a bcrypt password length error
-        if "72 bytes" in error_msg.lower() or "truncate" in error_msg.lower():
-            error_msg = "Password cannot be longer than 72 bytes. Please use a shorter password."
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=error_msg,
-            )
         
         error_detail = error_msg if settings.DEBUG else "An error occurred while registering the school"
         raise HTTPException(
@@ -370,4 +363,177 @@ async def update_my_school(
         **school_response.model_dump(),
         user=user_dict
     )
+
+
+# ---------------------------------------------------------------------------
+# Google Maps URL parsing (for geofence setup)
+# ---------------------------------------------------------------------------
+
+class MapsUrlRequest(BaseModel):
+    """Request body for resolving a Google Maps URL to coordinates."""
+
+    url: str = Field(..., min_length=1, max_length=2048, description="Google Maps URL (short or full)")
+
+
+class MapsUrlResponse(BaseModel):
+    """Response with coordinates and optional address from a Google Maps URL."""
+
+    lat: float = Field(..., description="Latitude")
+    lng: float = Field(..., description="Longitude")
+    formatted_address: str | None = Field(None, description="Place name or address if parseable from URL")
+
+
+def _dms_to_decimal(degrees: float, minutes: float, seconds: float, direction: str) -> float:
+    """Convert degrees/minutes/seconds and N/S/E/W to decimal."""
+    decimal = degrees + minutes / 60.0 + seconds / 3600.0
+    if direction in ("S", "W"):
+        decimal = -decimal
+    return decimal
+
+
+def _parse_lat_lng_from_maps_url(url: str) -> tuple[float, float, str | None]:
+    """
+    Parse latitude, longitude and optional place name from a Google Maps URL.
+    Handles @lat,lng, center=lat,lng, !3dLAT!4dLNG, and DMS in path (e.g. 0°16'01.7"S_36°22'50.6"E).
+    """
+    formatted_address: str | None = None
+    decoded = unquote(url)
+
+    # Place name from path: /place/Name+Here/ or /place/Name+Here/@...
+    place_match = re.search(r"/place/([^/]+?)(?:/|$|\?)", decoded)
+    if place_match:
+        raw = place_match.group(1)
+        formatted_address = raw.replace("+", " ").replace("_", " ").strip() or None
+
+    # @lat,lng or @lat,lng,zoom (e.g. /@-1.286389,36.817223,17z)
+    at_match = re.search(r"@(-?[\d.]+),(-?[\d.]+)", decoded)
+    if at_match:
+        lat = float(at_match.group(1))
+        lng = float(at_match.group(2))
+        return lat, lng, formatted_address
+
+    # center=lat,lng (query param)
+    center_match = re.search(r"center=(-?[\d.]+),(-?[\d.]+)", decoded)
+    if center_match:
+        lat = float(center_match.group(1))
+        lng = float(center_match.group(2))
+        return lat, lng, formatted_address
+
+    # Encoded data !3dLAT!4dLNG (in path or fragment)
+    old_match = re.search(r"!3d(-?[\d.]+)!4d(-?[\d.]+)", decoded)
+    if old_match:
+        lat = float(old_match.group(1))
+        lng = float(old_match.group(2))
+        return lat, lng, formatted_address
+
+    # DMS in path: e.g. 0°16'01.7"S_36°22'50.6"E (URL-decoded; " can be \" or \u201d or \u0022)
+    dms_parts = re.findall(
+        r"(\d+(?:\.\d+)?)[°\u00b0](\d+)[\'\u2019]?([\d.]+)[\"\u201d\u0022]([NSEW])",
+        decoded,
+        re.IGNORECASE,
+    )
+    if len(dms_parts) >= 2:
+        lats = [p for p in dms_parts if p[3].upper() in ("N", "S")]
+        lngs = [p for p in dms_parts if p[3].upper() in ("E", "W")]
+        if lats and lngs:
+            lat = _dms_to_decimal(
+                float(lats[0][0]), float(lats[0][1]), float(lats[0][2]), lats[0][3].upper()
+            )
+            lng = _dms_to_decimal(
+                float(lngs[0][0]), float(lngs[0][1]), float(lngs[0][2]), lngs[0][3].upper()
+            )
+            return lat, lng, formatted_address
+
+    # Alternative DMS: 0°16'01.7"S (strict)
+    dms_alt = re.findall(
+        r"(\d+)[°\u00b0](\d+)[\'\u2019]([\d.]+)[\"\u201d\u0022]([NSEW])",
+        decoded,
+        re.IGNORECASE,
+    )
+    if len(dms_alt) >= 2:
+        lats = [p for p in dms_alt if p[3].upper() in ("N", "S")]
+        lngs = [p for p in dms_alt if p[3].upper() in ("E", "W")]
+        if lats and lngs:
+            lat = _dms_to_decimal(
+                float(lats[0][0]), float(lats[0][1]), float(lats[0][2]), lats[0][3].upper()
+            )
+            lng = _dms_to_decimal(
+                float(lngs[0][0]), float(lngs[0][1]), float(lngs[0][2]), lngs[0][3].upper()
+            )
+            return lat, lng, formatted_address
+
+    raise ValueError("Could not find latitude and longitude in URL")
+
+
+def _parse_lat_lng_from_text(text: str) -> tuple[float, float] | None:
+    """Try to extract lat,lng from page body (e.g. Google Maps HTML has !3dLAT!4dLNG or @lat,lng)."""
+    if not text:
+        return None
+    # !3d-0.267132!4d36.380713 (common in Google Maps embedded data)
+    m = re.search(r"!3d(-?[\d.]+)!4d(-?[\d.]+)", text)
+    if m:
+        return float(m.group(1)), float(m.group(2))
+    # @-0.267132,36.380713
+    m = re.search(r"@(-?[\d.]+),(-?[\d.]+)", text)
+    if m:
+        return float(m.group(1)), float(m.group(2))
+    # "latitude":-0.267132,"longitude":36.380713 or similar
+    m = re.search(r'"lat(?:itude)?"\s*:\s*(-?[\d.]+).*?"lng?(?:itude)?"\s*:\s*(-?[\d.]+)', text, re.DOTALL)
+    if m:
+        return float(m.group(1)), float(m.group(2))
+    return None
+
+
+@router.post(
+    "/parse-maps-url",
+    response_model=MapsUrlResponse,
+    summary="Resolve Google Maps URL to coordinates",
+    description="""
+    Resolve a Google Maps link (e.g. https://maps.app.goo.gl/... or a full maps URL)
+    to latitude and longitude. Follows redirects for short links.
+    Used to set school geofence from a map link.
+    """,
+    responses={
+        200: {"description": "Coordinates and optional address"},
+        400: {"description": "Invalid URL or could not parse coordinates"},
+    },
+)
+async def parse_maps_url(
+    body: MapsUrlRequest,
+    current_user: UserResponse = Depends(get_current_user),
+):
+    """Resolve a Google Maps URL to lat/lng (and optional place name). Requires auth."""
+    url = (body.url or "").strip()
+    if not url or not url.startswith(("http://", "https://")):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="A valid HTTP(S) URL is required",
+        )
+
+    try:
+        async with httpx.AsyncClient(follow_redirects=True, timeout=15.0) as client:
+            resp = await client.get(url)
+            final_url = str(resp.url)
+            response_text = resp.text
+    except httpx.RequestError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Could not resolve URL: {e!s}",
+        )
+
+    formatted_address = None
+    try:
+        lat, lng, formatted_address = _parse_lat_lng_from_maps_url(final_url)
+    except ValueError:
+        # Short links often redirect to a URL without fragment; coords may be only in page body
+        pair = _parse_lat_lng_from_text(response_text)
+        if pair:
+            lat, lng = pair
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Could not find latitude and longitude in URL or page. Try pasting the full URL from your browser address bar after opening the link.",
+            )
+
+    return MapsUrlResponse(lat=lat, lng=lng, formatted_address=formatted_address)
 

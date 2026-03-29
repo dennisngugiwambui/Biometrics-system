@@ -8,6 +8,7 @@
 import { useEffect, useState, useCallback, useRef } from "react"
 import { useAuthStore } from "@/lib/store/authStore"
 import { type DeviceStatus } from "@/lib/api/devices"
+import { getWsBaseUrl } from "@/lib/env"
 
 export interface DeviceStatusUpdate {
   type: "device_status_update" | "device_info_update" | "connected" | "pong"
@@ -170,14 +171,9 @@ export function useDeviceStatusWebSocket(
       return
     }
 
-    // Get WebSocket URL
-    const wsUrl = process.env.NEXT_PUBLIC_WS_URL
-      ? `${process.env.NEXT_PUBLIC_WS_URL}/ws/device-status?token=${encodeURIComponent(token)}`
-      : (() => {
-          const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8002"
-          const wsBaseUrl = baseUrl.replace(/^http/, "ws")
-          return `${wsBaseUrl}/ws/device-status?token=${encodeURIComponent(token)}`
-        })()
+    // WebSocket URL: same host as API (gateway) when hosted; env drives per-deployment
+    const wsBase = getWsBaseUrl()
+    const wsUrl = `${wsBase}/ws/device-status?token=${encodeURIComponent(token)}`
 
     // Clear any pending reconnect
     if (reconnectTimeoutRef.current) {
@@ -210,7 +206,18 @@ export function useDeviceStatusWebSocket(
       websocket.onmessage = handleMessage
 
       websocket.onerror = (event) => {
-        console.error("WebSocket error:", event)
+        // WebSocket error events don't always have detailed error information
+        // Only log if we have meaningful error data
+        const errorMessage = (event as any).message || (event as any).error?.message
+        if (errorMessage) {
+          console.error("WebSocket error:", errorMessage)
+        } else {
+          // Silently handle connection errors - onclose will handle reconnection
+          // Only log in development mode
+          if (process.env.NODE_ENV === 'development') {
+            console.warn("WebSocket connection error (will attempt to reconnect)")
+          }
+        }
         setIsConnecting(false)
         setError("Connection error")
         onErrorRef.current?.(event)

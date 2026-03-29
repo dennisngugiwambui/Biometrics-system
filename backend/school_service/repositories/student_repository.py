@@ -1,7 +1,7 @@
 """Repository for Student data access."""
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, or_
+from sqlalchemy import select, func, or_, update
 from sqlalchemy.orm import selectinload
 from typing import Optional, List, Tuple
 
@@ -15,8 +15,10 @@ class StudentRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def create(self, student_data: StudentCreate) -> Student:
-        """Create a new student."""
+    async def create(
+        self, student_data: StudentCreate, *, commit: bool = True, flush: bool = True
+    ) -> Student:
+        """Create a new student. When commit=False and flush=False, only adds to session (for batch bulk import)."""
         student = Student(
             school_id=student_data.school_id,
             admission_number=student_data.admission_number,
@@ -30,8 +32,11 @@ class StudentRepository:
             parent_email=student_data.parent_email,
         )
         self.db.add(student)
-        await self.db.commit()
-        await self.db.refresh(student)
+        if commit:
+            await self.db.commit()
+            await self.db.refresh(student)
+        elif flush:
+            await self.db.flush()
         return student
 
     async def get_by_id(
@@ -94,6 +99,7 @@ class StudentRepository:
         class_id: Optional[int] = None,
         stream_id: Optional[int] = None,
         search: Optional[str] = None,
+        include_graduated: bool = False,
     ) -> Tuple[List[Student], int]:
         """
         List students with pagination and filtering.
@@ -109,11 +115,13 @@ class StudentRepository:
         Returns:
             Tuple of (list of students, total count)
         """
-        # Base query
+        # Base query (graduates excluded from default roster views)
         base_query = select(Student).where(
             Student.school_id == school_id,
-            Student.is_deleted == False
+            Student.is_deleted == False,
         )
+        if not include_graduated:
+            base_query = base_query.where(Student.enrollment_status == "active")
         
         # Apply filters
         if class_id is not None:
@@ -218,4 +226,48 @@ class StudentRepository:
         student.is_deleted = True
         await self.db.commit()
         return True
+
+    async def list_active_student_ids(self, school_id: int) -> List[int]:
+        """All non-deleted, active enrollment students for a school."""
+        result = await self.db.execute(
+            select(Student.id).where(
+                Student.school_id == school_id,
+                Student.is_deleted == False,  # noqa: E712
+                Student.enrollment_status == "active",
+            )
+        )
+        return [row[0] for row in result.all()]
+
+    async def list_active_for_class(self, school_id: int, class_id: int) -> List[Student]:
+        """Active (non-graduated) students in a class, with class/stream loaded."""
+        result = await self.db.execute(
+            select(Student)
+            .where(
+                Student.school_id == school_id,
+                Student.class_id == class_id,
+                Student.is_deleted == False,
+                Student.enrollment_status == "active",
+            )
+            .options(selectinload(Student.stream), selectinload(Student.class_))
+            .order_by(Student.admission_number.asc())
+        )
+        return list(result.scalars().all())
+
+    async def mark_graduated_batch(
+        self, student_ids: List[int], school_id: int, graduated_at
+    ) -> int:
+        """Set enrollment_status=graduated for the given IDs."""
+        if not student_ids:
+            return 0
+        stmt = (
+            update(Student)
+            .where(
+                Student.id.in_(student_ids),
+                Student.school_id == school_id,
+                Student.is_deleted == False,
+            )
+            .values(enrollment_status="graduated", graduated_at=graduated_at)
+        )
+        result = await self.db.execute(stmt)
+        return int(result.rowcount or 0)
 

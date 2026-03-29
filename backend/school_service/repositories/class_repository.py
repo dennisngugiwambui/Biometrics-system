@@ -26,6 +26,14 @@ class ClassRepository:
         await self.db.refresh(academic_class)
         return academic_class
 
+    async def add_without_commit(self, school_id: int, name: str) -> AcademicClass:
+        """Add a new class and flush (no commit). Used during bulk import."""
+        academic_class = AcademicClass(school_id=school_id, name=name.strip())
+        self.db.add(academic_class)
+        await self.db.flush()
+        await self.db.refresh(academic_class)
+        return academic_class
+
     async def get_by_id(
         self, class_id: int, school_id: Optional[int] = None
     ) -> Optional[AcademicClass]:

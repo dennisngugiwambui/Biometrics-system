@@ -96,8 +96,6 @@ class DeviceCapacityService:
                 max_users = capacity_info["users_cap"]
                 if max_users and max_users > 0:
                     device.max_users = max_users
-                    await self.db.commit()
-                    await self.db.refresh(device)
                     logger.info(
                         f"Updated device {device_id} max_users to {max_users} "
                         f"from real device (users_cap)"
@@ -107,6 +105,21 @@ class DeviceCapacityService:
                         f"Device {device_id} returned invalid users_cap: {max_users}. "
                         f"Capacity info: {capacity_info}"
                     )
+                # Current user count on device (list view uses this; detail page reads live info)
+                if "users" in capacity_info and capacity_info["users"] is not None:
+                    try:
+                        device.enrolled_users = max(0, int(capacity_info["users"]))
+                    except (TypeError, ValueError):
+                        logger.warning(
+                            "Device %s returned non-numeric users count: %r",
+                            device_id,
+                            capacity_info.get("users"),
+                        )
+                    await self.db.commit()
+                    await self.db.refresh(device)
+                elif max_users and max_users > 0:
+                    await self.db.commit()
+                    await self.db.refresh(device)
             elif capacity_info:
                 logger.warning(
                     f"Device {device_id} capacity info missing 'users_cap' field. "

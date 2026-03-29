@@ -13,7 +13,7 @@
 
 import axios from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8002';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 /**
  * Device status enumeration.
@@ -118,6 +118,25 @@ export interface DeviceConnectionTestResponse {
   message: string;
   device_info?: Record<string, unknown> | null;
   response_time_ms?: number | null;
+  troubleshooting_tips?: string[] | null;
+}
+
+/** Suggested values for ZKTeco Ethernet (from device service host). */
+export interface DeviceSubnetSetupHint {
+  your_pc_or_server_ip: string;
+  subnet_mask: string;
+  suggested_gateway: string;
+  suggested_k40_ip: string;
+  dns_suggestion: string;
+}
+
+export interface DeviceNetworkSetupHintsResponse {
+  registered_device_ips: string[];
+  tcp_port: number;
+  menu_path: string;
+  subnets: DeviceSubnetSetupHint[];
+  warnings: string[];
+  instructions: string[];
 }
 
 /**
@@ -756,6 +775,58 @@ export async function refreshDeviceCapacity(
   }
 }
 
+/**
+ * Suggested K40 / LAN settings based on the machine running the device service.
+ */
+export async function fetchNetworkSetupHints(
+  token: string
+): Promise<DeviceNetworkSetupHintsResponse> {
+  try {
+    const response = await axios.get<DeviceNetworkSetupHintsResponse>(
+      `${API_BASE_URL}/api/v1/devices/network-setup-hints`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        validateStatus: (status) => status < 500,
+      }
+    );
+
+    if (response.status >= 400) {
+      const errorData = response.data as unknown as ApiError | undefined;
+      const statusCode = response.status;
+      if (statusCode === 401) {
+        throw new DeviceApiError(
+          'Authentication required. Please log in and try again.',
+          statusCode
+        );
+      }
+      const message =
+        typeof errorData?.detail === 'string'
+          ? errorData.detail
+          : `Failed to load network hints (${statusCode})`;
+      throw new DeviceApiError(message, statusCode);
+    }
+
+    return {
+      ...response.data,
+      registered_device_ips: response.data.registered_device_ips ?? [],
+    };
+  } catch (error) {
+    if (error instanceof DeviceApiError) {
+      throw error;
+    }
+    if (axios.isAxiosError(error)) {
+      throw new DeviceApiError(
+        error.message || 'Failed to load network hints',
+        error.response?.status || 500
+      );
+    }
+    throw new DeviceApiError('An unexpected error occurred', 500);
+  }
+}
+
 export async function testDeviceConnectionByAddress(
   token: string,
   testData: DeviceConnectionTestByAddressRequest
@@ -1016,4 +1087,80 @@ export async function refreshDeviceInfo(
     }
     throw new DeviceApiError('An unexpected error occurred', 500);
   }
+}
+
+/** Type exactly this string in the request body to confirm destructive actions. */
+export const DEVICE_CONFIRM_CLEAR_ATTENDANCE = 'CLEAR_ATTENDANCE';
+export const DEVICE_CONFIRM_CLEAR_ALL_DATA = 'DELETE_ALL_DEVICE_DATA';
+export const DEVICE_CONFIRM_RESTART = 'RESTART_DEVICE';
+export const DEVICE_CONFIRM_DELETE_USER = 'DELETE_USER_DEVICE';
+
+export interface DeviceMaintenanceOk {
+  ok: boolean;
+  message: string;
+}
+
+async function postDeviceMaintenance(
+  token: string,
+  deviceId: number,
+  subpath: string,
+  body: Record<string, unknown>
+): Promise<DeviceMaintenanceOk> {
+  const response = await axios.post<DeviceMaintenanceOk>(
+    `${API_BASE_URL}/api/v1/devices/${deviceId}/maintenance/${subpath}`,
+    body,
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      validateStatus: (status) => status < 500,
+    }
+  );
+  if (response.status >= 400) {
+    const detail = (response.data as { detail?: string })?.detail;
+    throw new DeviceApiError(
+      typeof detail === 'string' ? detail : `Request failed (${response.status})`,
+      response.status
+    );
+  }
+  return response.data;
+}
+
+export async function clearDeviceAttendanceLogs(
+  token: string,
+  deviceId: number,
+  confirmText: string = DEVICE_CONFIRM_CLEAR_ATTENDANCE
+): Promise<DeviceMaintenanceOk> {
+  return postDeviceMaintenance(token, deviceId, 'clear-attendance', { confirm_text: confirmText });
+}
+
+export async function clearAllDeviceData(
+  token: string,
+  deviceId: number,
+  confirmText: string = DEVICE_CONFIRM_CLEAR_ALL_DATA
+): Promise<DeviceMaintenanceOk> {
+  return postDeviceMaintenance(token, deviceId, 'clear-all-data', { confirm_text: confirmText });
+}
+
+export async function restartDeviceRemote(
+  token: string,
+  deviceId: number,
+  confirmText: string = DEVICE_CONFIRM_RESTART
+): Promise<DeviceMaintenanceOk> {
+  return postDeviceMaintenance(token, deviceId, 'restart', { confirm_text: confirmText });
+}
+
+export async function deleteUserFromDevice(
+  token: string,
+  deviceId: number,
+  uid: number,
+  userId: string,
+  confirmText: string = DEVICE_CONFIRM_DELETE_USER
+): Promise<DeviceMaintenanceOk> {
+  return postDeviceMaintenance(token, deviceId, 'delete-user', {
+    confirm_text: confirmText,
+    uid,
+    user_id: userId,
+  });
 }

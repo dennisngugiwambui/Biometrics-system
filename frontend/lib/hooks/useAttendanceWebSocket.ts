@@ -8,6 +8,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useAuthStore } from "@/lib/store/authStore";
 import type { AttendanceEvent } from "@/lib/api/attendance";
+import { getWsBaseUrl } from "@/lib/env";
 
 export interface AttendanceWsMessage {
   type: "attendance_events" | "connected" | "pong";
@@ -88,13 +89,8 @@ export function useAttendanceWebSocket(
 
     cleanup();
 
-    const wsUrl = process.env.NEXT_PUBLIC_WS_URL
-      ? `${process.env.NEXT_PUBLIC_WS_URL}/ws/attendance?token=${encodeURIComponent(token)}`
-      : (() => {
-          const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8002";
-          const wsBaseUrl = baseUrl.replace(/^http/, "ws");
-          return `${wsBaseUrl}/ws/attendance?token=${encodeURIComponent(token)}`;
-        })();
+    const wsBase = getWsBaseUrl();
+    const wsUrl = `${wsBase}/ws/attendance?token=${encodeURIComponent(token)}`;
 
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;

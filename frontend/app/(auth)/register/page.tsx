@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
@@ -46,6 +46,13 @@ export default function RegistrationPage() {
     password: "",
     confirmPassword: "",
   })
+
+  // Render icons client-side only to avoid hydration mismatches from browser extensions
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   // Prevent double submission
   const isSubmittingRef = useRef(false)
@@ -199,9 +206,28 @@ export default function RegistrationPage() {
         // Map backend field errors to frontend fields
         if (err.fieldErrors && Object.keys(err.fieldErrors).length > 0) {
           Object.entries(err.fieldErrors).forEach(([field, message]) => {
-            // Map backend field names to frontend field names
+            // Check if field is an admin field (starts with "admin." or contains "password")
+            const isAdminField = field.startsWith("admin.") || 
+                                 field === "password" || 
+                                 message.toLowerCase().includes("password") ||
+                                 message.toLowerCase().includes("admin")
             
-            if (!(message.toLowerCase().includes("admin")) && (field === "name" || field === "code" || field === "address" || field === "phone" || field === "email")) {
+            if (isAdminField) {
+              // Map admin fields
+              const adminField = field.replace("admin.", "").replace("admin_", "")
+              const fieldMap: Record<string, keyof AdminAccountFormData> = {
+                first_name: "firstName",
+                last_name: "lastName",
+                email: "email",
+                password: "password",
+              }
+              const frontendField = fieldMap[adminField] || fieldMap[field]
+              if (frontendField) {
+                newAdminErrors[frontendField] = message
+                setCurrentStep(2) // Switch to step 2 for admin errors
+              }
+            } else if (field === "name" || field === "code" || field === "address" || field === "phone" || field === "email") {
+              // Map school fields
               const fieldMap: Record<string, keyof SchoolRegistrationFormData> = {
                 name: "schoolName",
                 code: "schoolCode",
@@ -212,31 +238,28 @@ export default function RegistrationPage() {
               const frontendField = fieldMap[field]
               if (frontendField) {
                 newSchoolErrors[frontendField] = message
-              }
-              setCurrentStep(1)
-            } else if (message.toLowerCase().includes("admin")) {
-              const adminField = field.replace("admin.", "")
-              const fieldMap: Record<string, keyof AdminAccountFormData> = {
-                first_name: "firstName",
-                last_name: "lastName",
-                email: "email",
-                password: "password",
-              }
-              const frontendField = fieldMap[adminField]
-              if (frontendField) {
-                newAdminErrors[frontendField] = message
+                setCurrentStep(1) // Switch to step 1 for school errors
               }
             }
           })
         }
 
-        // For 409 (duplicate code or email), set appropriate field errors
+        // For 409 (duplicate code, email, or validation errors), set appropriate field errors
         if (err.statusCode === 409) {
           const errorMsg = err.message.toLowerCase()
-          if (errorMsg.includes("code")) {
+          // Check for password-related errors first
+          if (errorMsg.includes("password")) {
+            newAdminErrors.password = err.message
+            setCurrentStep(2) // Switch to step 2 to show password error
+          } else if (errorMsg.includes("code")) {
             newSchoolErrors.schoolCode = err.message
+            setCurrentStep(1) // Switch to step 1 to show code error
           } else if (errorMsg.includes("email")) {
             newAdminErrors.email = err.message
+            setCurrentStep(2) // Switch to step 2 to show email error
+          } else if (errorMsg.includes("admin")) {
+            // Admin-related errors (but not password/email specifically)
+            setCurrentStep(2)
           }
         }
 
@@ -267,7 +290,7 @@ export default function RegistrationPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-2xl">
         <Card className="border-none shadow-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
           <CardHeader className="space-y-6 pb-8">
@@ -329,7 +352,7 @@ export default function RegistrationPage() {
                     isLoading={isLoading}
                   />
                   <div className="flex justify-end pt-4">
-                    <Button onClick={handleNext} className="bg-blue-600 hover:bg-blue-700 text-white px-8" size="lg">
+                    <Button onClick={handleNext} className="bg-blue-600 hover:bg-blue-700 text-white px-8 w-full sm:w-auto" size="lg">
                       Next: Admin Account
                     </Button>
                   </div>
@@ -353,15 +376,19 @@ export default function RegistrationPage() {
                     isLoading={isLoading}
                     showPasswordStrength={true}
                   />
-                  <div className="flex items-center justify-between pt-4 gap-4">
-                    <Button onClick={handleBack} variant="outline" size="lg" className="px-6 bg-transparent">
-                      <ArrowLeft className="w-4 h-4 mr-2" />
+                  <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between pt-4 gap-4">
+                    <Button onClick={handleBack} variant="outline" size="lg" className="px-6 bg-transparent w-full sm:w-auto">
+                      {isMounted ? (
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                      ) : (
+                        <span className="w-4 h-4 mr-2" aria-hidden="true" />
+                      )}
                       Back
                     </Button>
                     <Button
                       onClick={(e) => {e.preventDefault(); handleSubmit()}}
                       disabled={isLoading}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-8"
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 w-full sm:w-auto"
                       size="lg"
                     >
                       {isLoading ? (
@@ -405,7 +432,11 @@ export default function RegistrationPage() {
                     variant="ghost"
                     className="w-full text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800"
                   >
-                    <Home className="w-4 h-4 mr-2" />
+                    {isMounted ? (
+                      <Home className="w-4 h-4 mr-2" />
+                    ) : (
+                      <span className="w-4 h-4 mr-2" aria-hidden="true" />
+                    )}
                     Back to home
                   </Button>
                 </Link>

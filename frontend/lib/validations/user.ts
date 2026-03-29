@@ -7,34 +7,18 @@
 import { z } from 'zod';
 
 /**
- * Password strength requirements:
- * - Minimum 8 characters
- * - Maximum 72 bytes (bcrypt limitation)
- * - At least one uppercase letter
- * - At least one lowercase letter
- * - At least one digit
- * - At least one special character (!@#$%^&*)
+ * Password requirements:
+ * - Minimum 4 characters
+ * - Maximum 72 characters (bcrypt limitation)
+ * 
+ * Note: No strength requirements - any password with 4+ characters is accepted.
+ * For ASCII passwords, character length = byte length.
+ * The backend will handle the actual byte length check during hashing.
  */
 const passwordSchema = z
   .string()
-  .min(8, 'Password must be at least 8 characters')
-  .max(72, 'Password cannot be longer than 72 bytes')
-  .refine(
-    (val) => {
-      // Check byte length (bcrypt has a 72-byte limit)
-      // For most ASCII characters, 1 char = 1 byte, but we need to check actual byte length
-      const encoder = new TextEncoder();
-      const bytes = encoder.encode(val);
-      return bytes.length <= 72;
-    },
-    {
-      message: 'Password cannot be longer than 72 bytes. Please use a shorter password.',
-    }
-  )
-  .regex(/[A-Z]/, 'Password must contain an uppercase letter')
-  .regex(/[a-z]/, 'Password must contain a lowercase letter')
-  .regex(/[0-9]/, 'Password must contain a number')
-  .regex(/[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/, 'Password must contain a special character (!@#$%^&*)');
+  .min(4, 'Password must be at least 4 characters')
+  .max(72, 'Password cannot be longer than 72 characters');
 
 /**
  * Admin account creation form validation schema.

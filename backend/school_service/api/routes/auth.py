@@ -257,6 +257,9 @@ async def get_current_user(
     # Decode token
     payload = decode_access_token(token)
     if payload is None:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f"Token validation failed for token: {token[:10]}...")
         raise credentials_exception
     
     # Get user ID from token
@@ -269,6 +272,9 @@ async def get_current_user(
     user = await user_service.get_user_by_id(int(user_id))
     
     if user is None:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f"User not found for ID: {user_id}")
         raise credentials_exception
     
     if not user.is_active:
@@ -371,11 +377,7 @@ async def register(
     except ValueError as e:
         # Handle validation errors (email already exists, weak password, etc.)
         error_msg = str(e)
-        
-        # Check if it's a bcrypt password length error and provide a user-friendly message
-        if "72 bytes" in error_msg.lower() or "truncate" in error_msg.lower():
-            error_msg = "Password cannot be longer than 72 bytes. Please use a shorter password."
-        
+        # Pass through the error message as-is (validation already provides user-friendly messages)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=error_msg,
@@ -384,14 +386,6 @@ async def register(
         # Log the actual error for debugging (in production, use proper logging)
         import traceback
         error_msg = str(e)
-        
-        # Check if it's a bcrypt password length error
-        if "72 bytes" in error_msg.lower() or "truncate" in error_msg.lower():
-            error_msg = "Password cannot be longer than 72 bytes. Please use a shorter password."
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=error_msg,
-            )
         
         error_detail = error_msg if settings.DEBUG else "An error occurred while registering the user"
         raise HTTPException(

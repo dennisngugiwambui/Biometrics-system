@@ -13,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 
 from notification_service.core.config import settings
+from notification_service.api.routes.sms import router as sms_router
 
 app = FastAPI(
     title="School Biometric System - Notification Service",
@@ -36,6 +37,9 @@ app.add_middleware(
 async def root():
     """Redirect to API documentation."""
     return RedirectResponse(url="/docs")
+
+
+app.include_router(sms_router)
 
 
 @app.get("/health")

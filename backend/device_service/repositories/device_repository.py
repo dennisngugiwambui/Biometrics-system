@@ -264,6 +264,16 @@ class DeviceRepository:
         await self.db.commit()
         return True
 
+    async def list_ip_addresses_for_school(self, school_id: int) -> set[str]:
+        """IPv4 addresses already assigned to devices in this school (non-deleted)."""
+        result = await self.db.execute(
+            select(Device.ip_address).where(
+                Device.school_id == school_id,
+                Device.is_deleted == False,  # noqa: E712
+            )
+        )
+        return {row[0] for row in result.all() if row[0]}
+
     async def get_all_active_devices(self) -> List[Device]:
         """
         Get all active (non-deleted) devices.

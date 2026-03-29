@@ -21,40 +21,56 @@ import {
 import { cn } from "@/lib/utils"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { StudentSelector } from "./StudentSelector"
+import { TeacherSelector } from "./TeacherSelector"
 import { DeviceSelector } from "./DeviceSelector"
 import { FingerSelector } from "./FingerSelector"
 import { EnrollmentCapture } from "./EnrollmentCapture"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
-import { getSyncStatus, syncStudentToDevice, SyncApiError } from "@/lib/api/sync"
+import { getSyncStatus, syncStudentToDevice, getTeacherSyncStatus, syncTeacherToDevice, SyncApiError } from "@/lib/api/sync"
 import type { StudentResponse } from "@/lib/api/students"
+import type { TeacherResponse } from "@/lib/api/teachers"
 import type { DeviceResponse } from "@/lib/api/devices"
 import { DeviceStatusBadge } from "@/components/features/devices/DeviceStatusBadge"
 import { getFingerInfo, FINGERS } from "@/lib/utils/fingers"
 
-const STEPS = [
+const STEPS_STUDENT = [
   { id: 1, name: "Select Student", icon: User, description: "Choose a student to enroll" },
   { id: 2, name: "Choose Device", icon: Server, description: "Select biometric scanner" },
   { id: 3, name: "Select Finger", icon: Fingerprint, description: "Pick finger to enroll" },
   { id: 4, name: "Capture", icon: Play, description: "Complete enrollment" },
 ]
 
+const STEPS_TEACHER = [
+  { id: 1, name: "Select Teacher", icon: User, description: "Choose a teacher to enroll" },
+  { id: 2, name: "Choose Device", icon: Server, description: "Select biometric scanner" },
+  { id: 3, name: "Select Finger", icon: Fingerprint, description: "Pick finger to enroll" },
+  { id: 4, name: "Capture", icon: Play, description: "Complete enrollment" },
+]
+
 interface EnrollmentWizardProps {
+  mode?: "student" | "teacher"
   onStartEnrollment?: (data: {
-    studentId: number
+    studentId?: number
+    teacherId?: number
     deviceId: number
     fingerId: number
   }) => Promise<{ session_id: string; status: string; started_at: string } | undefined>
 }
 
-export function EnrollmentWizard({ onStartEnrollment }: EnrollmentWizardProps = {}) {
+export function EnrollmentWizard({ mode = "student", onStartEnrollment }: EnrollmentWizardProps = {}) {
   const [currentStep, setCurrentStep] = useState(1)
   const [selectedStudent, setSelectedStudent] = useState<StudentResponse | null>(null)
+  const [selectedTeacher, setSelectedTeacher] = useState<TeacherResponse | null>(null)
   const [selectedDevice, setSelectedDevice] = useState<DeviceResponse | null>(null)
   const [selectedFinger, setSelectedFinger] = useState<number | null>(null)
   const [isCapturing, setIsCapturing] = useState(false)
   const [enrollmentSession, setEnrollmentSession] = useState<{ session_id: string; status: string; started_at: string } | null>(null)
   const [isStartingEnrollment, setIsStartingEnrollment] = useState(false)
+
+  const STEPS = mode === "teacher" ? STEPS_TEACHER : STEPS_STUDENT
+  const isTeacherMode = mode === "teacher"
+  const selectedPersonId = isTeacherMode ? selectedTeacher?.id : selectedStudent?.id
 
   // Sync status for step 2: null = not checked, { synced } = checked
   const [syncStatus, setSyncStatus] = useState<{ synced: boolean } | null>(null)
@@ -63,6 +79,32 @@ export function EnrollmentWizard({ onStartEnrollment }: EnrollmentWizardProps = 
   const [syncError, setSyncError] = useState<string | null>(null)
 
   useEffect(() => {
+    if (isTeacherMode) {
+      if (!selectedTeacher || !selectedDevice || selectedDevice.status !== "online") {
+        setSyncStatus(null)
+        setSyncError(null)
+        return
+      }
+      let cancelled = false
+      setIsCheckingSync(true)
+      setSyncError(null)
+      getTeacherSyncStatus(selectedDevice.id, selectedTeacher.id)
+        .then((res) => {
+          if (!cancelled) setSyncStatus({ synced: res.synced })
+        })
+        .catch((err) => {
+          if (!cancelled) {
+            setSyncStatus(null)
+            setSyncError(err instanceof SyncApiError ? err.message : "Failed to check sync status")
+          }
+        })
+        .finally(() => {
+          if (!cancelled) setIsCheckingSync(false)
+        })
+      return () => {
+        cancelled = true
+      }
+    }
     if (!selectedStudent || !selectedDevice || selectedDevice.status !== "online") {
       setSyncStatus(null)
       setSyncError(null)
@@ -87,7 +129,7 @@ export function EnrollmentWizard({ onStartEnrollment }: EnrollmentWizardProps = 
     return () => {
       cancelled = true
     }
-  }, [selectedStudent?.id, selectedDevice?.id])
+  }, [isTeacherMode, selectedStudent?.id, selectedTeacher?.id, selectedDevice?.id])
 
   const handleSyncStudent = async () => {
     if (!selectedStudent || !selectedDevice) return
@@ -105,10 +147,26 @@ export function EnrollmentWizard({ onStartEnrollment }: EnrollmentWizardProps = 
     }
   }
 
+  const handleSyncTeacher = async () => {
+    if (!selectedTeacher || !selectedDevice) return
+    setIsSyncing(true)
+    setSyncError(null)
+    try {
+      await syncTeacherToDevice(selectedTeacher.id, selectedDevice.id)
+      setSyncStatus({ synced: true })
+      setSyncError(null)
+    } catch (err) {
+      const msg = err instanceof SyncApiError ? err.message : "Sync failed"
+      setSyncError(msg)
+    } finally {
+      setIsSyncing(false)
+    }
+  }
+
   const canProceed = () => {
     switch (currentStep) {
       case 1:
-        return selectedStudent !== null
+        return isTeacherMode ? selectedTeacher !== null : selectedStudent !== null
       case 2:
         return (
           selectedDevice !== null &&
@@ -125,24 +183,21 @@ export function EnrollmentWizard({ onStartEnrollment }: EnrollmentWizardProps = 
   const handleNext = async () => {
     if (canProceed() && currentStep < 4) {
       if (currentStep === 3) {
-        // Start enrollment API call when moving to capture step
-        if (onStartEnrollment && selectedStudent && selectedDevice && selectedFinger !== null) {
+        const personId = isTeacherMode ? selectedTeacher?.id : selectedStudent?.id
+        if (onStartEnrollment && personId != null && selectedDevice && selectedFinger !== null) {
           setIsStartingEnrollment(true)
           try {
-            const response = await onStartEnrollment({
-              studentId: selectedStudent.id,
-              deviceId: selectedDevice.id,
-              fingerId: selectedFinger,
-            })
+            const payload = isTeacherMode
+              ? { teacherId: selectedTeacher!.id, deviceId: selectedDevice.id, fingerId: selectedFinger }
+              : { studentId: selectedStudent!.id, deviceId: selectedDevice.id, fingerId: selectedFinger }
+            const response = await onStartEnrollment(payload)
             if (response) {
               setEnrollmentSession(response)
               setIsCapturing(true)
               setCurrentStep(currentStep + 1)
             }
           } catch (error) {
-            // Error handling is done in parent component
-            // Don't advance to next step on error
-            console.error('Failed to start enrollment:', error)
+            console.error("Failed to start enrollment:", error)
           } finally {
             setIsStartingEnrollment(false)
           }
@@ -165,9 +220,9 @@ export function EnrollmentWizard({ onStartEnrollment }: EnrollmentWizardProps = 
   }
 
   const handleEnrollmentComplete = () => {
-    // Reset wizard after enrollment completion
     setCurrentStep(1)
     setSelectedStudent(null)
+    setSelectedTeacher(null)
     setSelectedDevice(null)
     setSelectedFinger(null)
     setIsCapturing(false)
@@ -195,6 +250,13 @@ export function EnrollmentWizard({ onStartEnrollment }: EnrollmentWizardProps = 
     setCurrentStep(1)
   }
 
+  const clearTeacher = () => {
+    setSelectedTeacher(null)
+    setSelectedDevice(null)
+    setSelectedFinger(null)
+    setCurrentStep(1)
+  }
+
   const clearDevice = () => {
     setSelectedDevice(null)
     setSelectedFinger(null)
@@ -209,7 +271,7 @@ export function EnrollmentWizard({ onStartEnrollment }: EnrollmentWizardProps = 
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
+    <div className="w-full">
       {/* Step Indicator */}
       <nav aria-label="Enrollment progress" className="mb-6">
         <ol className="flex items-center">
@@ -232,7 +294,7 @@ export function EnrollmentWizard({ onStartEnrollment }: EnrollmentWizardProps = 
                   </div>
                   <span
                     className={cn(
-                      "mt-2 text-xs sm:text-sm font-medium text-center hidden sm:block",
+                      "mt-1.5 text-[10px] sm:text-xs font-bold text-center hidden sm:block uppercase tracking-wider",
                       status === "active" && "text-blue-600 dark:text-blue-400",
                       status === "completed" && "text-gray-900 dark:text-gray-100",
                       status === "pending" && "text-gray-500 dark:text-gray-400",
@@ -263,7 +325,7 @@ export function EnrollmentWizard({ onStartEnrollment }: EnrollmentWizardProps = 
             <span className="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide mr-1">Selected:</span>
 
             {/* Student chip with popover */}
-            {selectedStudent && (
+            {selectedStudent && !isTeacherMode && (
               <Popover>
                 <PopoverTrigger asChild>
                   <div
@@ -326,6 +388,70 @@ export function EnrollmentWizard({ onStartEnrollment }: EnrollmentWizardProps = 
                       className="text-xs text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                     >
                       Change student
+                    </button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            )}
+
+            {/* Teacher chip with popover */}
+            {selectedTeacher && isTeacherMode && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <div
+                    className={cn(
+                      'inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all cursor-pointer group',
+                      'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 hover:border-indigo-500/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/20',
+                    )}
+                  >
+                    <div className="flex items-center justify-center size-5 rounded-full bg-indigo-600/20 text-indigo-600 text-xs font-bold">
+                      {selectedTeacher.first_name[0]}
+                    </div>
+                    <span className="max-w-[120px] truncate">
+                      {selectedTeacher.first_name} {selectedTeacher.last_name}
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        clearTeacher()
+                      }}
+                      className="hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-0.5 transition-colors"
+                      aria-label="Clear teacher selection"
+                    >
+                      <X className="size-3.5 text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-100" />
+                    </button>
+                  </div>
+                </PopoverTrigger>
+                <PopoverContent className="w-64 p-0" align="start">
+                  <div className="p-4 space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-center size-10 rounded-full bg-indigo-600/10 text-indigo-600 font-bold">
+                        {selectedTeacher.first_name[0]}
+                        {selectedTeacher.last_name[0]}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">
+                          {selectedTeacher.first_name} {selectedTeacher.last_name}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Teacher</p>
+                      </div>
+                    </div>
+                    <div className="space-y-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                      {selectedTeacher.employee_id && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <Hash className="size-4 text-gray-500 dark:text-gray-400" />
+                          <span className="text-gray-500 dark:text-gray-400">ID:</span>
+                          <span className="font-medium text-gray-900 dark:text-gray-100">{selectedTeacher.employee_id}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700">
+                    <button
+                      onClick={clearTeacher}
+                      className="text-xs text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                    >
+                      Change teacher
                     </button>
                   </div>
                 </PopoverContent>
@@ -474,19 +600,25 @@ export function EnrollmentWizard({ onStartEnrollment }: EnrollmentWizardProps = 
             </div>
           )}
 
-          {/* Step 1: Student Selection */}
-          {currentStep === 1 && <StudentSelector selectedStudent={selectedStudent} onSelect={setSelectedStudent} />}
+          {/* Step 1: Student or Teacher Selection */}
+          {currentStep === 1 && (
+            isTeacherMode ? (
+              <TeacherSelector selectedTeacher={selectedTeacher} onSelect={setSelectedTeacher} />
+            ) : (
+              <StudentSelector selectedStudent={selectedStudent} onSelect={setSelectedStudent} />
+            )
+          )}
 
           {/* Step 2: Device Selection */}
           {currentStep === 2 && (
             <div className="space-y-4">
               <DeviceSelector selectedDevice={selectedDevice} onSelect={setSelectedDevice} />
-              {selectedStudent && selectedDevice && selectedDevice.status === "online" && (
+              {((isTeacherMode && selectedTeacher) || (!isTeacherMode && selectedStudent)) && selectedDevice && selectedDevice.status === "online" && (
                 <>
                   {isCheckingSync && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
                       <Loader2 className="size-4 animate-spin" />
-                      Checking if student is synced...
+                      {isTeacherMode ? "Checking if teacher is synced..." : "Checking if student is synced..."}
                     </div>
                   )}
                   {!isCheckingSync && syncStatus && !syncStatus.synced && (
@@ -498,7 +630,9 @@ export function EnrollmentWizard({ onStartEnrollment }: EnrollmentWizardProps = 
                       <AlertDescription>
                         <div className="space-y-3">
                           <p className="font-medium text-yellow-800 dark:text-yellow-200">
-                            Student is not synced to this device. Would you like to sync now?
+                            {isTeacherMode
+                              ? "Teacher is not synced to this device. Would you like to sync now?"
+                              : "Student is not synced to this device. Would you like to sync now?"}
                           </p>
                           {syncError && (
                             <p className="text-sm text-red-600 dark:text-red-400">{syncError}</p>
@@ -506,7 +640,7 @@ export function EnrollmentWizard({ onStartEnrollment }: EnrollmentWizardProps = 
                           <div className="flex gap-3 mt-2">
                             <Button
                               size="sm"
-                              onClick={handleSyncStudent}
+                              onClick={isTeacherMode ? handleSyncTeacher : handleSyncStudent}
                               disabled={isSyncing}
                               className="bg-blue-600 hover:bg-blue-700"
                             >
@@ -515,6 +649,8 @@ export function EnrollmentWizard({ onStartEnrollment }: EnrollmentWizardProps = 
                                   <Loader2 className="mr-2 size-4 animate-spin" />
                                   Syncing...
                                 </>
+                              ) : isTeacherMode ? (
+                                "Sync Teacher"
                               ) : (
                                 "Sync Student"
                               )}
@@ -542,15 +678,16 @@ export function EnrollmentWizard({ onStartEnrollment }: EnrollmentWizardProps = 
             <FingerSelector
               selectedFinger={selectedFinger}
               onSelect={setSelectedFinger}
-              student={selectedStudent}
+              student={isTeacherMode ? undefined : selectedStudent}
               deviceId={selectedDevice?.id}
             />
           )}
 
           {/* Step 4: Capture */}
-          {currentStep === 4 && selectedStudent && selectedDevice && selectedFinger !== null && (
+          {currentStep === 4 && selectedDevice && selectedFinger !== null && (isTeacherMode ? selectedTeacher : selectedStudent) && (
             <EnrollmentCapture
-              student={selectedStudent}
+              student={isTeacherMode ? undefined : selectedStudent ?? undefined}
+              teacher={isTeacherMode ? selectedTeacher ?? undefined : undefined}
               device={selectedDevice}
               fingerId={selectedFinger}
               sessionId={enrollmentSession?.session_id}

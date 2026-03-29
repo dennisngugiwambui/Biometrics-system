@@ -1,0 +1,12 @@
+﻿app/(dashboard)/dashboard/teachers/[id]/edit/page.tsx(207,20): error TS2304: Cannot find name 'Save'.
+app/(dashboard)/dashboard/teachers/page.tsx(411,62): error TS2345: Argument of type '{ first_name: string; last_name: string; phone: string; email?: string | undefined; subject?: string | undefined; department?: string | undefined; }[]' is not assignable to parameter of type 'TeacherCreateData[]'.
+  Type '{ first_name: string; last_name: string; phone: string; email?: string | undefined; subject?: string | undefined; department?: string | undefined; }' is not assignable to type 'TeacherCreateData'.
+    Types of property 'subject' are incompatible.
+      Type 'string | undefined' is not assignable to type 'string[] | null | undefined'.
+        Type 'string' is not assignable to type 'string[]'.
+components/features/students/StudentWizard.tsx(415,20): error TS2304: Cannot find name 'Badge'.
+components/features/students/StudentWizard.tsx(417,21): error TS2304: Cannot find name 'Badge'.
+components/features/teachers/TeacherFormModal.tsx(28,5): error TS2322: Type 'string' is not assignable to type 'string[]'.
+components/features/teachers/TeacherFormModal.tsx(39,9): error TS2322: Type 'string | string[]' is not assignable to type 'string[] | null | undefined'.
+  Type 'string' is not assignable to type 'string[]'.
+components/features/teachers/TeacherFormModal.tsx(48,9): error TS2322: Type 'string' is not assignable to type 'string[]'.

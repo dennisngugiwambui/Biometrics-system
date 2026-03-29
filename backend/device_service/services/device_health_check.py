@@ -56,19 +56,40 @@ class DeviceHealthCheckService:
         
         logger.info("Device health check service stopped")
     
+    def _is_db_connection_error(self, e: Exception) -> bool:
+        """True if the exception is due to database (e.g. PostgreSQL) being unreachable."""
+        msg = str(e).lower()
+        return (
+            isinstance(e, (OSError, ConnectionError))
+            or "5432" in msg
+            or "connect call failed" in msg
+            or "connection refused" in msg
+        )
+
     async def _run_health_checks(self):
         """Main health check loop."""
+        db_unavailable_logged = False
         while self.running:
             try:
                 await self.check_all_devices()
+                db_unavailable_logged = False
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Error in health check cycle: {e}", exc_info=True)
+                if self._is_db_connection_error(e):
+                    if not db_unavailable_logged:
+                        logger.warning(
+                            "Database unavailable (is PostgreSQL running?). "
+                            "Device health checks will retry every 30s until connected."
+                        )
+                        db_unavailable_logged = True
+                else:
+                    logger.error("Error in health check cycle: %s", e, exc_info=True)
             
             if self.running:
                 try:
-                    await asyncio.sleep(self.check_interval)
+                    delay = 30 if db_unavailable_logged else self.check_interval
+                    await asyncio.sleep(delay)
                 except asyncio.CancelledError:
                     break
     
@@ -101,7 +122,9 @@ class DeviceHealthCheckService:
                     f"{offline_count} offline, {error_count} errors"
                 )
             except Exception as e:
-                logger.error(f"Error checking all devices: {e}", exc_info=True)
+                if not self._is_db_connection_error(e):
+                    logger.error("Error checking all devices: %s", e, exc_info=True)
+                raise
     
     async def check_device(self, device: Device, db: AsyncSession) -> bool:
         """

@@ -11,7 +11,7 @@ import { fadeInUp, staggerContainer, staggerItem } from "@/lib/animations/framer
 import { StudentTable } from "./StudentTable"
 import { StudentCardGrid } from "./StudentCardGrid"
 import { StudentListFilters } from "./StudentListFilters"
-import { StudentListPagination } from "./StudentListPagination"
+import { PremiumPagination } from "@/components/shared/PremiumPagination"
 import type { StudentResponse } from "@/lib/api/students"
 
 export interface StudentListProps {
@@ -67,11 +67,11 @@ export function StudentList({
         className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
       >
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+          <h1 className="text-3xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 sm:text-4xl">
             Students
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Manage and view all students in your school
+          <p className="mt-2 text-sm text-muted-foreground font-medium">
+            Central repository for student enrollment and biometric status.
           </p>
         </div>
         <Button
@@ -236,13 +236,14 @@ export function StudentList({
             />
           </div>
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <StudentListPagination
+          {/* Pagination — show whenever there are records (including single-page) */}
+          {total > 0 && totalPages >= 1 && (
+            <PremiumPagination
               page={page}
-              totalPages={totalPages}
+              totalPages={Math.max(1, totalPages)}
               total={total}
               onPageChange={onPageChange}
+              label="Students"
             />
           )}
         </motion.div>

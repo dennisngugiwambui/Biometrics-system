@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="NONE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="964d577c-c2a6-4d77-9c2b-9de170ec5b18" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/backend/alembic/versions/a1b2c3d4e5f6_add_teacher_id_to_enrollment_sessions.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/alembic/versions/e8f9a0b1c2d3_add_school_branding.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/api_gateway/api/routes/support.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/school_service/api/file_parser.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/school_service/api/routes/teachers.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/school_service/models/teacher.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/school_service/schemas/teacher.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/school_service/services/class_stream_normalize.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/school_service/services/teacher_service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/DEPLOYMENT.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/app/(dashboard)/dashboard/help/page.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/app/(dashboard)/dashboard/notifications/page.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/app/(dashboard)/dashboard/teachers/page.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/components/features/dashboard/CalendarModal.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/components/features/enrollment/TeacherSelector.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/lib/api/support.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/lib/api/teachers.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/samples/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/generate_sample_imports.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/test_enrollment_direct.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/runConfigurations/test_enrollment_direct.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/school-biometric-system.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/school-biometric-system.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ARCHITECTURE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/CURSOR_DOCS_PROMPT.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/QUICKSTART.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/alembic/env.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/alembic/env.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/api_gateway/api/dependencies.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/api_gateway/api/dependencies.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/api_gateway/api/routes/proxy.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/api_gateway/api/routes/proxy.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/api_gateway/core/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/api_gateway/core/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/api_gateway/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/api_gateway/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/api_gateway/services/proxy_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/api_gateway/services/proxy_service.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/attendance_service/api/dependencies.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/attendance_service/api/dependencies.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/attendance_service/api/routes/attendance.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/attendance_service/api/routes/attendance.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/attendance_service/core/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/attendance_service/core/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/attendance_service/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/attendance_service/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/attendance_service/models/attendance_record.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/attendance_service/models/attendance_record.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/attendance_service/repositories/attendance_query_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/attendance_service/repositories/attendance_query_repository.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/attendance_service/services/attendance_query_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/attendance_service/services/attendance_query_service.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/device_service/api/routes/enrollment.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/device_service/api/routes/enrollment.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/device_service/api/routes/sync.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/device_service/api/routes/sync.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/device_service/core/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/device_service/core/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/device_service/core/encryption.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/device_service/core/encryption.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/device_service/exceptions.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/device_service/exceptions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/device_service/models/enrollment.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/device_service/models/enrollment.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/device_service/repositories/enrollment_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/device_service/repositories/enrollment_repository.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/device_service/services/attendance_ingestion_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/device_service/services/attendance_ingestion_service.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/device_service/services/attendance_poll_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/device_service/services/attendance_poll_service.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/device_service/services/device_health_check.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/device_service/services/device_health_check.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/device_service/services/device_info_sync.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/device_service/services/device_info_sync.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/device_service/services/enrollment_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/device_service/services/enrollment_service.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/device_service/services/entry_exit_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/device_service/services/entry_exit_service.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/device_service/services/sync_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/device_service/services/sync_service.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/device_service/zk/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/device_service/zk/base.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/notification_service/core/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/notification_service/core/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/notification_service/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/notification_service/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/notification_service/services/sms_gateway.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/notification_service/services/sms_gateway.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/school_service/api/routes/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/school_service/api/routes/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/school_service/api/routes/auth.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/school_service/api/routes/auth.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/school_service/api/routes/schools.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/school_service/api/routes/schools.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/school_service/api/routes/students.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/school_service/api/routes/students.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/school_service/core/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/school_service/core/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/school_service/core/security.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/school_service/core/security.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/school_service/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/school_service/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/school_service/models/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/school_service/models/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/school_service/models/school.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/school_service/models/school.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/school_service/models/student.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/school_service/models/student.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/school_service/repositories/class_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/school_service/repositories/class_repository.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/school_service/repositories/school_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/school_service/repositories/school_repository.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/school_service/repositories/stream_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/school_service/repositories/stream_repository.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/school_service/repositories/student_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/school_service/repositories/student_repository.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/school_service/services/student_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/school_service/services/student_service.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/shared/schemas/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/shared/schemas/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/shared/schemas/attendance.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/shared/schemas/attendance.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/shared/schemas/enrollment.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/shared/schemas/enrollment.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/shared/schemas/school.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/shared/schemas/school.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/shared/schemas/student.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/shared/schemas/student.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/shared/schemas/user.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/shared/schemas/user.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/(auth)/login/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/(auth)/login/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/(auth)/register/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/(auth)/register/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/(dashboard)/dashboard/attendance/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/(dashboard)/dashboard/attendance/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/(dashboard)/dashboard/enrollment/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/(dashboard)/dashboard/enrollment/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/(dashboard)/dashboard/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/(dashboard)/dashboard/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/(dashboard)/dashboard/settings/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/(dashboard)/dashboard/settings/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/(dashboard)/dashboard/students/[id]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/(dashboard)/dashboard/students/[id]/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/(dashboard)/dashboard/students/new/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/(dashboard)/dashboard/students/new/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/(dashboard)/dashboard/students/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/(dashboard)/dashboard/students/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/(dashboard)/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/(dashboard)/layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/globals.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/globals.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/app/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/features/auth/StepHeader.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/components/features/auth/StepHeader.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/features/dashboard/DashboardHeader.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/components/features/dashboard/DashboardHeader.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/features/dashboard/DashboardSidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/components/features/dashboard/DashboardSidebar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/features/dashboard/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/components/features/dashboard/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/features/enrollment/EnrollmentCapture.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/components/features/enrollment/EnrollmentCapture.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/features/enrollment/EnrollmentWizard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/components/features/enrollment/EnrollmentWizard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/features/students/StepIndicator.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/components/features/students/StepIndicator.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/features/students/StudentCardGrid.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/components/features/students/StudentCardGrid.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/features/students/StudentTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/components/features/students/StudentTable.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/features/students/StudentWizard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/components/features/students/StudentWizard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/ui/alert.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/components/ui/alert.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/components/ui/sidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/components/ui/sidebar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/api/attendance.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/api/attendance.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/api/auth.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/api/auth.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/api/axios-instance.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/api/axios-instance.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/api/classes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/api/classes.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/api/device_groups.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/api/device_groups.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/api/devices.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/api/devices.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/api/enrollment.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/api/enrollment.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/api/schools.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/api/schools.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/api/streams.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/api/streams.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/api/students.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/api/students.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/api/sync.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/api/sync.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/hooks/useAttendanceWebSocket.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/hooks/useAttendanceWebSocket.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/hooks/useDeviceStatusWebSocket.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/hooks/useDeviceStatusWebSocket.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/hooks/useEnrollmentProgress.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/hooks/useEnrollmentProgress.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/validations/school.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/validations/school.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/lib/validations/user.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/lib/validations/user.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/next.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/next.config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 1
+}</component>
+  <component name="ProjectId" id="3Akx5AB8lBaWLbCM6GWpZPsG8Dw" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.test_enrollment_direct.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "dart.analysis.tool.window.visible": "false",
+    "git-widget-placeholder": "main",
+    "ignore.virus.scanning.warn.message": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/Denno/Desktop/POS",
+    "settings.editor.selected.configurable": "dart.settings",
+    "show.migrate.to.gradle.popup": "false"
+  }
+}]]></component>
+  <component name="RunManager" selected="Python.test_enrollment_direct" />
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="964d577c-c2a6-4d77-9c2b-9de170ec5b18" name="Changes" comment="" />
+      <created>1773150183347</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1773150183347</updated>
+    </task>
+    <servers />
+  </component>
+</project>

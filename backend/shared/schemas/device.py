@@ -132,6 +132,54 @@ class DeviceConnectionTestByAddress(BaseModel):
             raise ValueError("Invalid IP address format")
 
 
+class DeviceSubnetSetupHint(BaseModel):
+    """Suggested values for one LAN (derived from a host interface)."""
+
+    your_pc_or_server_ip: str = Field(
+        ...,
+        description="IPv4 seen on the machine running the device service (not the K40)",
+    )
+    subnet_mask: str = Field(default="255.255.255.0", description="Usually 255.255.255.0 on home routers")
+    suggested_gateway: str = Field(..., description="Often the router, e.g. 192.168.1.1")
+    suggested_k40_ip: str = Field(
+        ...,
+        description="Use this IP on the K40 itself; register the same IP when adding the device",
+    )
+    dns_suggestion: str = Field(
+        ...,
+        description="Primary DNS — using the gateway is fine for local-only setups",
+    )
+
+
+class DeviceNetworkSetupHintsResponse(BaseModel):
+    """Help text and suggested IPs for ZKTeco Ethernet setup."""
+
+    registered_device_ips: list[str] = Field(
+        default_factory=list,
+        description="IPs already used by devices in this school (excluded from suggestions)",
+    )
+    tcp_port: int = Field(default=4370, description="ZKTeco default TCP port")
+    menu_path: str = Field(
+        default="Communication → Ethernet",
+        description="Typical path on ZKTeco terminals (may vary by firmware)",
+    )
+    subnets: list[DeviceSubnetSetupHint] = Field(
+        default_factory=list,
+        description="One row per private IPv4 interface detected on this server",
+    )
+    warnings: list[str] = Field(default_factory=list)
+    instructions: list[str] = Field(
+        default_factory=lambda: [
+            "The K40 must have its own IP address — never the same as your PC or the server.",
+            "In the dashboard, enter the K40's IP (the one you set on the device), not your PC's IP.",
+            "Subnet mask and gateway on the K40 must match your router's LAN (same as your PC's Wi‑Fi settings).",
+            "TCP port must be 4370 unless you changed it on the device.",
+            "The PC running the browser can differ from the server: the server must be able to open TCP 4370 to the K40.",
+            "Suggested device IPs skip addresses already used by other devices in this school.",
+        ],
+    )
+
+
 class DeviceConnectionTestResponse(BaseModel):
     """Schema for connection test response."""
 
@@ -139,6 +187,10 @@ class DeviceConnectionTestResponse(BaseModel):
     message: str
     device_info: Optional[dict] = None  # Device information if connection successful
     response_time_ms: Optional[int] = None
+    troubleshooting_tips: Optional[list[str]] = Field(
+        default=None,
+        description="Optional hints when the test fails (e.g. IP conflict with server)",
+    )
 
 
 class DeviceInfoResponse(BaseModel):

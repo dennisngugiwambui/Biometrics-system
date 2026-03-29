@@ -7,6 +7,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react"
 import { useAuthStore } from "@/lib/store/authStore"
+import { getWsBaseUrl } from "@/lib/env"
 
 export type EnrollmentProgressStatus = "ready" | "placing" | "capturing" | "processing" | "complete" | "error"
 
@@ -199,14 +200,9 @@ export function useEnrollmentProgress(
       return
     }
 
-    // Get WebSocket URL
-    const wsUrl = process.env.NEXT_PUBLIC_WS_URL
-      ? `${process.env.NEXT_PUBLIC_WS_URL}/ws/enrollment?token=${encodeURIComponent(token)}&session_id=${encodeURIComponent(sessionId)}`
-      : (() => {
-          const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8002"
-          const wsBaseUrl = baseUrl.replace(/^http/, "ws")
-          return `${wsBaseUrl}/ws/enrollment?token=${encodeURIComponent(token)}&session_id=${encodeURIComponent(sessionId)}`
-        })()
+    // WebSocket URL: same host as API when hosted; env drives per-deployment
+    const wsBase = getWsBaseUrl()
+    const wsUrl = `${wsBase}/ws/enrollment?token=${encodeURIComponent(token)}&session_id=${encodeURIComponent(sessionId)}`
 
     // Clear any pending reconnect
     if (reconnectTimeoutRef.current) {

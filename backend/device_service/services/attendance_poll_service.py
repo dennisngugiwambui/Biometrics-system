@@ -55,19 +55,40 @@ class AttendancePollService:
 
         logger.info("Attendance poll service stopped")
 
+    def _is_db_connection_error(self, e: Exception) -> bool:
+        """True if the exception is due to database (e.g. PostgreSQL) being unreachable."""
+        msg = str(e).lower()
+        return (
+            isinstance(e, (OSError, ConnectionError))
+            or "5432" in msg
+            or "connect call failed" in msg
+            or "connection refused" in msg
+        )
+
     async def _run_poll_loop(self):
         """Main polling loop."""
+        db_unavailable_logged = False
         while self.running:
             try:
                 await self._poll_all_devices()
+                db_unavailable_logged = False
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Error in attendance poll cycle: {e}", exc_info=True)
+                if self._is_db_connection_error(e):
+                    if not db_unavailable_logged:
+                        logger.warning(
+                            "Database unavailable (is PostgreSQL running?). "
+                            "Attendance poll will retry every 30s until connected."
+                        )
+                        db_unavailable_logged = True
+                else:
+                    logger.error("Error in attendance poll cycle: %s", e, exc_info=True)
 
             if self.running:
                 try:
-                    await asyncio.sleep(self.poll_interval)
+                    delay = 30 if db_unavailable_logged else self.poll_interval
+                    await asyncio.sleep(delay)
                 except asyncio.CancelledError:
                     break
 
@@ -104,7 +125,9 @@ class AttendancePollService:
                     f"{error_count} device error(s)"
                 )
             except Exception as e:
-                logger.error(f"Error polling all devices: {e}", exc_info=True)
+                if not self._is_db_connection_error(e):
+                    logger.error("Error polling all devices: %s", e, exc_info=True)
+                raise
 
     async def _poll_device(self, device: Device, semaphore: asyncio.Semaphore) -> int:
         """

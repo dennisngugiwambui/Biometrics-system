@@ -115,11 +115,203 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+@layer utilities {
+  /* -------------------------------------------------------------------------
+   * Glass-Bevel Design System
+   * ------------------------------------------------------------------------- */
+
+  .glass-panel {
+    @apply backdrop-blur-md bg-white/70 dark:bg-gray-900/70 border border-white/20 dark:border-white/10;
+  }
+
+  /* Premium Depth Shadows */
+  .shadow-premium {
+    box-shadow:
+      0 10px 15px -3px rgba(0, 0, 0, 0.05),
+      0 4px 6px -2px rgba(0, 0, 0, 0.02),
+      0 0 0 1px rgba(0, 0, 0, 0.01);
+  }
+
+  .shadow-glow {
+    box-shadow: 0 0 20px -5px var(--primary);
+  }
+
+  /* Bevel & Inner Depth */
+  .bevel-sm {
+    box-shadow:
+      inset 0 1px 1px 0 rgba(255, 255, 255, 0.15),
+      0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+
+  .bevel-card {
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+      0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  /* Interactive Fanciness */
+  .hover-lift {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .hover-lift:hover {
+    @apply -translate-y-1 shadow-lg;
+  }
+
+  .hover-glow:hover {
+    box-shadow: 0 0 15px -3px var(--primary);
+  }
+
+  /* -------------------------------------------------------------------------
+   * Message Box & Dialog Sizing (Responsive)
+   * ------------------------------------------------------------------------- */
+
+  /* Prevent dialogs/alerts from being too narrow or too wide */
+  .responsive-container {
+    @apply w-full mx-auto;
+    max-width: min(92vw, 540px);
+  }
+
+  .page-shell {
+    padding-left: clamp(0.9rem, 3.5vw, 2rem);
+    padding-right: clamp(0.9rem, 3.5vw, 2rem);
+    padding-top: clamp(0.9rem, 3.5vw, 1.5rem);
+    padding-bottom: clamp(1.1rem, 4vw, 2rem);
+  }
+
+  .message-box {
+    @apply rounded-xl border bg-card text-card-foreground;
+    padding: clamp(0.75rem, 3vw, 1rem);
+    box-shadow:
+      inset 0 1px 1px 0 rgba(255, 255, 255, 0.15),
+      0 10px 15px -3px rgba(0, 0, 0, 0.05),
+      0 4px 6px -2px rgba(0, 0, 0, 0.02),
+      0 1px 2px 0 rgba(0, 0, 0, 0.05),
+      0 0 0 1px rgba(0, 0, 0, 0.01);
+  }
+
+  .toaster {
+    --width: min(92vw, 420px);
+  }
+
+  @media (min-width: 768px) {
+    .responsive-container {
+      max-width: 600px;
+    }
+  }
+
+  /* Custom Scrollbar for a premium look */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/20 rounded-full hover:bg-muted-foreground/30 transition-colors;
+  }
+}
+
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
   }
+
+  /* -----------------------------------------------------------------------
+   * Mobile-first responsive improvements
+   * ----------------------------------------------------------------------- */
+
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    overflow-x: hidden;
+  }
+
+  body {
+    overflow-x: hidden;
+    position: relative;
+    min-height: 100vh;
+  }
+
+  /* Better tap highlights for mobile */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* -------------------------------------------------------------------------
+ * Dashboard layout helpers
+ * ------------------------------------------------------------------------- */
+
+[data-sidebar="inset"] {
+  min-width: 0;
+  flex: 1 1 0%;
+}
+
+/* Sidebar overlay backdrop on mobile */
+[data-sidebar="overlay"] {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* -------------------------------------------------------------------------
+ * Framework overrides
+ * ------------------------------------------------------------------------- */
+
+nextjs-portal {
+  display: none !important;
+}
+
+div[data-nextjs-dev-overlay],
+div[data-nextjs-dev-overlay-root],
+div[data-nextjs-toast],
+div[data-nextjs-dialog-overlay],
+div[data-nextjs-build-indicator] {
+  display: none !important;
+}
+
+#__next-build-watcher {
+  display: none !important;
+}
+
+/* -------------------------------------------------------------------------
+ * Responsive adjustments for specific devices
+ * ------------------------------------------------------------------------- */
+
+/* iPhone 6/7/8/SE, iPhone 11 Pro - Very narrow screens */
+@media (max-width: 375px) {
+  :root {
+    --radius: 0.5rem;
+    /* Smaller radius for smaller screens */
+  }
+}
+
+/* -------------------------------------------------------------------------
+ * Color picker native input appearance reset
+ * ------------------------------------------------------------------------- */
+
+input[type="color"] {
+  -webkit-appearance: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 4px;
 }

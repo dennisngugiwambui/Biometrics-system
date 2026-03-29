@@ -11,4 +11,4 @@ export { SchoolInfoCard, type SchoolInfoCardProps } from "./SchoolInfoCard"
 export { RecentActivityCard, type RecentActivityCardProps } from "./RecentActivityCard"
 export { DashboardSidebar, type DashboardSidebarProps, type NavigationItem } from "./DashboardSidebar"
 export { DashboardHeader, type DashboardHeaderProps } from "./DashboardHeader"
-
+export { MobileConnectionCard } from "./MobileConnectionCard"

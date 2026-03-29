@@ -13,7 +13,7 @@ import type {
   SchoolRegistrationWithAdminFormData,
 } from '@/lib/validations/school';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 /**
  * Admin user info in registration response.
@@ -31,16 +31,61 @@ export interface AdminUserInfo {
   updated_at: string | null;
 }
 
+/** Branding payload stored per school (same on any device/IP when logged in). */
+export interface SchoolBrandingApi {
+  logoDataUrl?: string | null;
+  loginBgDataUrl?: string | null;
+  colors?: string[];
+}
+
 /**
  * Response type from the API after successful registration.
  */
+/** Per-school SMS/WhatsApp provider and message templates. */
+export interface NotificationSettingsApi {
+  provider?: string | null;
+  /** How to send parent notifications: sms, whatsapp, or both. */
+  parent_delivery?: "sms" | "whatsapp" | "both" | null;
+  /** @deprecated Prefer parent_delivery. */
+  channel?: "sms" | "whatsapp" | null;
+  api_key?: string | null;
+  sender_id?: string | null;
+  username?: string | null;
+  whatsapp_phone_number_id?: string | null;
+  whatsapp_api_key?: string | null;
+  /** Use Africa's Talking sandbox (true) or production (false). Default true. */
+  sandbox?: boolean | null;
+  templates?: {
+    student_checkin?: string;
+    student_checkout?: string;
+    teacher_weekly_reminder?: string;
+  } | null;
+}
+
+/** Default message templates (parents: Dear parent...; teacher: Dear {{teacher_name}}...). */
+export const DEFAULT_NOTIFICATION_TEMPLATES = {
+  student_checkin:
+    "Dear parent, {{student_name}} has checked in at {{time}} on {{date}}. - {{school_name}}",
+  student_checkout:
+    "Dear parent, {{student_name}} has checked out at {{time}} on {{date}}. - {{school_name}}",
+  teacher_weekly_reminder:
+    "Dear {{teacher_name}}, Your attendance summary for the week: {{present_days}}/{{total_days}} days ({{percentage}}%). - {{school_name}}",
+} as const;
+
 export interface SchoolResponse {
   id: number;
   name: string;
   code: string; // Uppercase
   address: string | null;
+  po_box: string | null;
   phone: string | null;
   email: string | null;
+  school_type?: "day" | "boarding" | "mixed";
+  branding?: SchoolBrandingApi | null;
+  notification_settings?: NotificationSettingsApi | null;
+  geofence_lat?: number | null;
+  geofence_lng?: number | null;
+  geofence_radius_m?: number | null;
   is_deleted: boolean;
   created_at: string; // ISO datetime
   updated_at: string | null;
@@ -65,8 +110,15 @@ export interface ApiError {
 export interface SchoolUpdateData {
   name?: string;
   address?: string | null;
+  po_box?: string | null;
   phone?: string | null;
   email?: string | null;
+  school_type?: "day" | "boarding" | "mixed";
+  branding?: SchoolBrandingApi | null;
+  notification_settings?: NotificationSettingsApi | null;
+  geofence_lat?: number | null;
+  geofence_lng?: number | null;
+  geofence_radius_m?: number | null;
 }
 
 /**
@@ -106,12 +158,12 @@ export async function registerSchool(
     // Prepare request payload (exclude confirmPassword from admin)
     const { admin, ...schoolData } = data;
     const { confirmPassword, ...adminData } = admin;
-    
+
     const payload = {
       ...schoolData,
       admin: adminData,
     };
-    
+
     const response = await axios.post<SchoolResponse>(
       `${API_BASE_URL}/api/v1/schools/register`,
       payload,
@@ -122,29 +174,29 @@ export async function registerSchool(
         validateStatus: (status) => status < 500, // Don't throw on 4xx errors
       }
     );
-    
+
     // Check for error responses (4xx status codes)
     if (response.status >= 400) {
       const errorData = response.data as unknown as ApiError | undefined;
       const statusCode = response.status;
-      
+
       // Handle 422 - Validation errors (most common)
       if (statusCode === 422 && errorData?.detail) {
         const fieldErrors: Record<string, string> = {};
-        
+
         if (Array.isArray(errorData.detail)) {
           // FastAPI validation errors format: [{loc: ['body', 'field'], msg: 'error', type: 'type'}]
           errorData.detail.forEach((err) => {
             // Get the last element of loc array (field name)
             // Skip 'body' prefix if present
             const locArray = err.loc || [];
-            const fieldIndex = locArray.findIndex((item, idx) => 
+            const fieldIndex = locArray.findIndex((item, idx) =>
               idx > 0 && (typeof item === 'string' && item !== 'body')
             );
-            const field = fieldIndex >= 0 
+            const field = fieldIndex >= 0
               ? String(locArray[fieldIndex])
               : String(locArray[locArray.length - 1]);
-            
+
             if (field && field !== 'body') {
               // Map backend field names to frontend field names if needed
               const mappedField = mapBackendFieldToFrontend(field);
@@ -155,14 +207,14 @@ export async function registerSchool(
           // Single string error message
           throw new SchoolRegistrationError(errorData.detail, statusCode);
         }
-        
+
         const message = Object.keys(fieldErrors).length > 0
           ? 'Please correct the validation errors below'
           : 'Validation failed. Please check your input.';
-        
+
         throw new SchoolRegistrationError(message, statusCode, fieldErrors);
       }
-      
+
       // Handle 400 - Bad request
       if (statusCode === 400) {
         const message = typeof errorData?.detail === 'string'
@@ -170,15 +222,31 @@ export async function registerSchool(
           : 'Invalid request. Please check your input and try again.';
         throw new SchoolRegistrationError(message, statusCode);
       }
-      
-      // Handle 409 - Duplicate code (conflict)
+
+      // Handle 409 - Duplicate code, email, or validation errors (conflict)
       if (statusCode === 409) {
         const message = typeof errorData?.detail === 'string'
           ? errorData.detail
           : 'School code already exists. Please use a different code.';
-        throw new SchoolRegistrationError(message, statusCode, { code: message });
+
+        // Check if it's a password error
+        const errorMsg = message.toLowerCase();
+        const fieldErrors: Record<string, string> = {};
+
+        if (errorMsg.includes('password')) {
+          fieldErrors['admin.password'] = message;
+        } else if (errorMsg.includes('code')) {
+          fieldErrors['code'] = message;
+        } else if (errorMsg.includes('email')) {
+          fieldErrors['admin.email'] = message;
+        } else {
+          // Default to code error for backward compatibility
+          fieldErrors['code'] = message;
+        }
+
+        throw new SchoolRegistrationError(message, statusCode, fieldErrors);
       }
-      
+
       // Handle 401/403 - Authentication/Authorization
       if (statusCode === 401 || statusCode === 403) {
         const message = statusCode === 401
@@ -186,14 +254,14 @@ export async function registerSchool(
           : 'You do not have permission to perform this action.';
         throw new SchoolRegistrationError(message, statusCode);
       }
-      
+
       // Handle other 4xx errors
       const message = typeof errorData?.detail === 'string'
         ? errorData.detail
         : `Request failed with status ${statusCode}. Please try again.`;
       throw new SchoolRegistrationError(message, statusCode);
     }
-    
+
     return response.data;
   } catch (error) {
     console.log('error', error);
@@ -201,7 +269,7 @@ export async function registerSchool(
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status || 500;
       const errorData = error.response?.data as ApiError | undefined;
-      
+
 
       if (!error.response) {
         // Connection timeout
@@ -211,7 +279,7 @@ export async function registerSchool(
             0
           );
         }
-        
+
         // Network error (server unreachable, CORS, etc.)
         if (error.code === 'ERR_NETWORK') {
           throw new SchoolRegistrationError(
@@ -222,7 +290,7 @@ export async function registerSchool(
             0
           );
         }
-        
+
         // CORS error
         if (error.code === 'ERR_CORS') {
           throw new SchoolRegistrationError(
@@ -230,7 +298,7 @@ export async function registerSchool(
             0
           );
         }
-        
+
         // Generic network error
         throw new SchoolRegistrationError(
           'Network error. Please check your connection and try again.',
@@ -245,7 +313,7 @@ export async function registerSchool(
           : 'Server error. Our team has been notified. Please try again later.';
         throw new SchoolRegistrationError(message, statusCode);
       }
-      
+
       // Handle 502 - Bad Gateway
       if (statusCode === 502) {
         throw new SchoolRegistrationError(
@@ -253,7 +321,7 @@ export async function registerSchool(
           statusCode
         );
       }
-      
+
       // Handle 503 - Service Unavailable
       if (statusCode === 503) {
         throw new SchoolRegistrationError(
@@ -261,7 +329,7 @@ export async function registerSchool(
           statusCode
         );
       }
-      
+
       // Handle 504 - Gateway Timeout
       if (statusCode === 504) {
         throw new SchoolRegistrationError(
@@ -269,30 +337,30 @@ export async function registerSchool(
           statusCode
         );
       }
-      
+
       // Handle network errors (no response received)
-     
-      
+
+
       // Generic axios error with response
-      const message = error.response?.data?.detail 
+      const message = error.response?.data?.detail
         ? String(error.response.data.detail)
         : error.message || 'An unexpected error occurred';
       throw new SchoolRegistrationError(message, statusCode);
     }
-    
+
     // Handle SchoolRegistrationError (re-throw as-is)
     if (error instanceof SchoolRegistrationError) {
       throw error;
     }
-    
+
     // Handle unknown errors
-    const errorMessage = error instanceof Error 
-      ? error.message 
+    const errorMessage = error instanceof Error
+      ? error.message
       : 'An unexpected error occurred. Please try again.';
-    
+
     // Log unexpected errors for debugging
     console.error('Unexpected error during school registration:', error);
-    
+
     throw new SchoolRegistrationError(errorMessage, 500);
   }
 }
@@ -417,6 +485,47 @@ export async function getMySchool(token?: string): Promise<SchoolResponse> {
     console.error('Unexpected error while fetching school data:', error);
     throw new SchoolRegistrationError(errorMessage, 500);
   }
+}
+
+/** Response from parsing a Google Maps URL (short or full) to coordinates. */
+export interface MapsUrlParseResult {
+  lat: number;
+  lng: number;
+  formatted_address: string | null;
+}
+
+/**
+ * Resolve a Google Maps URL to latitude/longitude (and optional place name).
+ * Supports short links (e.g. https://maps.app.goo.gl/...) and full URLs.
+ *
+ * @param token - JWT authentication token
+ * @param url - Google Maps URL to resolve
+ */
+export async function parseMapsUrl(
+  token: string,
+  url: string
+): Promise<MapsUrlParseResult> {
+  const response = await axios.post<MapsUrlParseResult>(
+    `${API_BASE_URL}/api/v1/schools/parse-maps-url`,
+    { url: url.trim() },
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      validateStatus: (status) => status < 500,
+    }
+  );
+
+  if (response.status >= 400) {
+    const detail =
+      typeof response.data === 'object' && response.data !== null && 'detail' in response.data
+        ? String((response.data as { detail: string }).detail)
+        : 'Could not resolve map URL';
+    throw new SchoolRegistrationError(detail, response.status);
+  }
+
+  return response.data;
 }
 
 /**
@@ -555,7 +664,7 @@ function mapBackendFieldToFrontend(backendField: string): string {
     // Add mappings if backend uses different field names
     // Example: 'school_name' -> 'name'
   };
-  
+
   return fieldMap[backendField] || backendField;
 }
 

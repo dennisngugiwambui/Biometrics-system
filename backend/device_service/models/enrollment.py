@@ -18,13 +18,14 @@ class EnrollmentStatus(str, enum.Enum):
 
 
 class EnrollmentSession(Base):
-    """Model for tracking enrollment sessions."""
+    """Model for tracking enrollment sessions (student or teacher)."""
 
     __tablename__ = "enrollment_sessions"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     session_id = Column(String(100), unique=True, nullable=False, index=True)
-    student_id = Column(Integer, ForeignKey("students.id"), nullable=False, index=True)
+    student_id = Column(Integer, ForeignKey("students.id"), nullable=True, index=True)
+    teacher_id = Column(Integer, ForeignKey("teachers.id"), nullable=True, index=True)
     device_id = Column(Integer, ForeignKey("devices.id"), nullable=False, index=True)
     finger_id = Column(Integer, nullable=False)  # 0-9
     school_id = Column(Integer, ForeignKey("schools.id"), nullable=False, index=True)
@@ -47,6 +48,7 @@ class EnrollmentSession(Base):
 
     # Relationships
     student = relationship("Student", back_populates="enrollment_sessions", lazy="selectin")
+    teacher = relationship("Teacher", back_populates="enrollment_sessions", lazy="selectin")
     device = relationship("Device", back_populates="enrollment_sessions", lazy="selectin")
     school = relationship("School", lazy="selectin")
 

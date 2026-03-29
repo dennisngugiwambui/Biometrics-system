@@ -1,18 +1,31 @@
 """HTTP Proxy Service for API Gateway routing."""
 
 import logging
+import time
 from typing import Optional
 
 import httpx
 from fastapi import Request, Response, HTTPException, status
+from fastapi.responses import StreamingResponse
 
 logger = logging.getLogger(__name__)
+
+# Paths that some backend services define with a trailing slash.
+# Normalizing avoids an extra 307 redirect round-trip.
+_TRAILING_SLASH_PATHS = frozenset(
+    {
+        "/api/v1/devices",
+        "/api/v1/device-groups",
+        "/api/v1/attendance",
+        "/api/v1/notifications",
+    }
+)
 
 
 class ProxyService:
     """Service for proxying requests to backend microservices."""
 
-    def __init__(self, base_url: str, timeout: float = 30.0):
+    def __init__(self, base_url: str, timeout: float = 120.0):
         """
         Initialize proxy service.
 
@@ -22,7 +35,22 @@ class ProxyService:
         """
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
-        self.client = httpx.AsyncClient(timeout=timeout)
+        self.client = httpx.AsyncClient(timeout=timeout, follow_redirects=True)
+
+    # Timeout for bulk import (10 min) - large files take time to parse and insert
+    BULK_IMPORT_TIMEOUT = 600.0
+
+    def _get_timeout_for_request(self, method: str, path: str) -> float:
+        if method.upper() != "POST":
+            return self.timeout
+        path_norm = path.rstrip("/").lower()
+        if "/import/file" in path_norm or "/import/json" in path_norm:
+            return self.BULK_IMPORT_TIMEOUT
+        return self.timeout
+
+    def _is_streaming_path(self, path: str) -> bool:
+        """Import file endpoints return NDJSON stream - proxy must stream the response."""
+        return "/import/file" in path.lower()
 
     async def proxy_request(
         self,
@@ -42,7 +70,11 @@ class ProxyService:
             FastAPI Response object
         """
         method = method or request.method
+        # Normalize collection routes to include trailing slash when needed.
+        if path.rstrip("/") in _TRAILING_SLASH_PATHS and not path.endswith("/"):
+            path = path + "/"
         target_url = f"{self.base_url}{path}"
+        request_timeout = self._get_timeout_for_request(method, path)
 
         # Get request body if present
         body = None
@@ -54,26 +86,40 @@ class ProxyService:
 
         # Prepare headers (exclude host and connection)
         headers = dict(request.headers)
+        
+        # Log headers (excluding sensitive tokens for security, just check presence)
+        has_auth = "authorization" in [h.lower() for h in headers.keys()]
+        logger.info(f"Proxying {method} {target_url} - Auth present: {has_auth}")
+        if not has_auth:
+            logger.warning(f"No Authorization header found for {method} {target_url}")
+
         headers.pop("host", None)
         headers.pop("connection", None)
         headers.pop("content-length", None)  # Let httpx set this
 
         try:
-            # Make request to target service
+            started_at = time.perf_counter()
+            if self._is_streaming_path(path):
+                # Stream response for import/file - NDJSON progress updates
+                return await self._proxy_stream(
+                    method, target_url, headers, body, request.query_params, request_timeout, started_at
+                )
+            # Buffered request for non-streaming endpoints
             response = await self.client.request(
                 method=method,
                 url=target_url,
                 headers=headers,
                 content=body,
                 params=dict(request.query_params),
+                timeout=request_timeout,
             )
-
-            # Prepare response headers (exclude connection)
+            elapsed_s = time.perf_counter() - started_at
+            logger.info(
+                f"Proxied {method} {target_url} -> {response.status_code} in {elapsed_s:.2f}s (timeout={request_timeout}s)"
+            )
             response_headers = dict(response.headers)
             response_headers.pop("connection", None)
-            response_headers.pop("content-encoding", None)  # Let FastAPI handle encoding
-
-            # Return FastAPI Response
+            response_headers.pop("content-encoding", None)
             return Response(
                 content=response.content,
                 status_code=response.status_code,
@@ -82,16 +128,24 @@ class ProxyService:
             )
 
         except httpx.TimeoutException:
-            logger.error(f"Timeout connecting to {target_url}")
+            logger.error(f"Timeout connecting to {target_url} (timeout: {request_timeout}s)")
+            port = self.base_url.split(":")[-1] if ":" in self.base_url else "unknown"
+            is_bulk = "/import" in path.lower()
+            detail = (
+                f"Request took longer than {request_timeout:.0f}s. "
+                + (f"For bulk import, try a smaller file or split the data. " if is_bulk else "")
+                + f"Ensure the service on port {port} is running."
+            )
             raise HTTPException(
                 status_code=status.HTTP_504_GATEWAY_TIMEOUT,
-                detail=f"Service timeout: {self.base_url}",
+                detail=detail,
             )
-        except httpx.ConnectError:
-            logger.error(f"Connection error to {target_url}")
+        except httpx.ConnectError as e:
+            logger.error(f"Connection error to {target_url}: {e}")
+            port = self.base_url.split(':')[-1] if ':' in self.base_url else 'unknown'
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail=f"Service unavailable: {self.base_url}",
+                detail=f"Service unavailable: {self.base_url}. The service is not running or not reachable. Please ensure the service is started on port {port}.",
             )
         except Exception as e:
             logger.error(f"Proxy error: {e}")
@@ -99,6 +153,45 @@ class ProxyService:
                 status_code=status.HTTP_502_BAD_GATEWAY,
                 detail=f"Gateway error: {str(e)}",
             )
+
+    async def _proxy_stream(
+        self,
+        method: str,
+        target_url: str,
+        headers: dict,
+        body: Optional[bytes],
+        query_params: dict,
+        request_timeout: float,
+        started_at: float,
+    ) -> StreamingResponse:
+        """Proxy request and stream response body for NDJSON import endpoints."""
+        stream_ctx = self.client.stream(
+            method,
+            target_url,
+            headers=headers,
+            content=body,
+            params=query_params,
+            timeout=request_timeout,
+        )
+        resp = await stream_ctx.__aenter__()
+        logger.info(
+            f"Streaming {method} {target_url} -> {resp.status_code} (timeout={request_timeout}s)"
+        )
+
+        async def iter_chunks():
+            try:
+                async for chunk in resp.aiter_bytes():
+                    yield chunk
+                elapsed = time.perf_counter() - started_at
+                logger.info(f"Proxied stream {target_url} completed in {elapsed:.2f}s")
+            finally:
+                await stream_ctx.__aexit__(None, None, None)
+
+        return StreamingResponse(
+            iter_chunks(),
+            status_code=resp.status_code,
+            media_type="application/x-ndjson",
+        )
 
     async def close(self):
         """Close HTTP client."""

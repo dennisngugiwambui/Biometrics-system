@@ -5,6 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 import math
 
+from pydantic import BaseModel, Field
+
 from device_service.core.database import get_db
 from device_service.services.device_service import DeviceService
 from device_service.services.device_capacity import DeviceCapacityService
@@ -17,14 +19,58 @@ from shared.schemas.device import (
     DeviceConnectionTest,
     DeviceConnectionTestResponse,
     DeviceConnectionTestByAddress,
+    DeviceNetworkSetupHintsResponse,
+    DeviceSubnetSetupHint,
     DeviceSerialResponse,
     DeviceInfoResponse,
     DeviceTimeResponse,
 )
 from shared.schemas.user import UserResponse
 from device_service.models.device import DeviceStatus
+from device_service.services.device_maintenance_service import DeviceMaintenanceService
+from device_service.exceptions import DeviceOfflineError, DeviceNotFoundError as DeviceNotFoundErr
 
 router = APIRouter(prefix="/api/v1/devices", tags=["devices"])
+
+CONFIRM_CLEAR_ATTENDANCE = "CLEAR_ATTENDANCE"
+CONFIRM_CLEAR_ALL_DATA = "DELETE_ALL_DEVICE_DATA"
+CONFIRM_RESTART = "RESTART_DEVICE"
+CONFIRM_DELETE_USER = "DELETE_USER_DEVICE"
+CONFIRM_DELETE_ALL_USERS = "DELETE_ALL_DEVICE_USERS"
+CONFIRM_DELETE_ALL_FINGERPRINTS = "DELETE_ALL_DEVICE_FINGERPRINTS"
+
+
+class MaintenanceOkResponse(BaseModel):
+    ok: bool = True
+    message: str
+
+
+class ClearAttendanceBody(BaseModel):
+    confirm_text: str = Field(..., min_length=1, description=f'Type exactly: {CONFIRM_CLEAR_ATTENDANCE}')
+
+
+class ClearAllDataBody(BaseModel):
+    confirm_text: str = Field(..., min_length=1, description=f'Type exactly: {CONFIRM_CLEAR_ALL_DATA}')
+
+
+class RestartDeviceBody(BaseModel):
+    confirm_text: str = Field(..., min_length=1, description=f'Type exactly: {CONFIRM_RESTART}')
+
+
+class DeleteDeviceUserBody(BaseModel):
+    confirm_text: str = Field(..., min_length=1, description=f'Type exactly: {CONFIRM_DELETE_USER}')
+    uid: int = Field(..., description="Device user UID (same as student_id or teacher internal uid)")
+    user_id: str = Field("", description="User ID string on device, e.g. student id or T123")
+
+
+class DeleteAllUsersBody(BaseModel):
+    confirm_text: str = Field(..., min_length=1, description=f'Type exactly: {CONFIRM_DELETE_ALL_USERS}')
+
+
+class DeleteAllFingerprintsBody(BaseModel):
+    confirm_text: str = Field(
+        ..., min_length=1, description=f'Type exactly: {CONFIRM_DELETE_ALL_FINGERPRINTS}'
+    )
 
 
 @router.post(
@@ -149,6 +195,43 @@ async def list_devices(
         page=page,
         page_size=page_size,
         pages=pages,
+    )
+
+
+@router.get(
+    "/network-setup-hints",
+    response_model=DeviceNetworkSetupHintsResponse,
+    summary="Suggested K40 / LAN network values",
+    description="""
+    Returns suggested Ethernet settings for ZKTeco terminals based on IPv4 addresses
+    visible on the **host running the device service** (not the browser).
+
+    Use this when adding a device: configure the K40 to match your LAN, then enter
+    the K40's IP in the device form.
+    """,
+)
+async def get_network_setup_hints(
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Hints for K40 Communication → Ethernet; must be registered before `/{device_id}`."""
+    from device_service.services.network_setup_hints import build_subnet_hints
+    from device_service.repositories.device_repository import DeviceRepository
+
+    if not current_user.school_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User must be associated with a school",
+        )
+
+    repo = DeviceRepository(db)
+    reserved = await repo.list_ip_addresses_for_school(current_user.school_id)
+    subnets_raw, warnings = build_subnet_hints(reserved_ipv4=reserved)
+    subnets = [DeviceSubnetSetupHint(**row) for row in subnets_raw]
+    return DeviceNetworkSetupHintsResponse(
+        registered_device_ips=sorted(reserved),
+        subnets=subnets,
+        warnings=warnings,
     )
 
 
@@ -358,16 +441,26 @@ async def test_device_connection(
             status=DeviceStatus.ONLINE,
             last_seen=datetime.utcnow()
         )
+        try:
+            cap = DeviceCapacityService(db)
+            await cap.refresh_device_capacity(device_id)
+        except Exception as cap_err:
+            logger.warning(
+                "test_device_connection: could not refresh capacity for device %s: %s",
+                device_id,
+                cap_err,
+            )
     else:
         await device_service.update_device_status(
             device_id=device_id,
             status=DeviceStatus.OFFLINE,
         )
-    
+
     return DeviceConnectionTestResponse(
         success=test_result["success"],
         message=test_result["message"],
         response_time_ms=test_result.get("response_time_ms", 0),
+        troubleshooting_tips=test_result.get("troubleshooting_tips"),
     )
 
 
@@ -418,6 +511,7 @@ async def test_connection_by_address(
         success=test_result["success"],
         message=test_result["message"],
         response_time_ms=test_result.get("response_time_ms", 0),
+        troubleshooting_tips=test_result.get("troubleshooting_tips"),
     )
 
 
@@ -914,4 +1008,117 @@ async def get_device_serial(
         device_id=device_id,
         updated=True,
     )
+
+
+@router.post(
+    "/{device_id}/maintenance/clear-attendance",
+    response_model=MaintenanceOkResponse,
+    summary="Clear attendance logs on device",
+    description="Removes stored attendance transactions on the K40/ZK device only (not the database).",
+)
+async def maintenance_clear_attendance(
+    device_id: int,
+    body: ClearAttendanceBody,
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    if body.confirm_text.strip() != CONFIRM_CLEAR_ATTENDANCE:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f'Confirmation must be exactly: {CONFIRM_CLEAR_ATTENDANCE}',
+        )
+    svc = DeviceMaintenanceService(db)
+    try:
+        await svc.clear_attendance_logs(device_id, current_user.school_id)
+        return MaintenanceOkResponse(message="Attendance logs cleared on device.")
+    except DeviceNotFoundErr as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
+    except DeviceOfflineError as e:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=e.message)
+
+
+@router.post(
+    "/{device_id}/maintenance/clear-all-data",
+    response_model=MaintenanceOkResponse,
+    summary="Factory reset device data (users + logs)",
+    description="Wipes users, fingerprints, and attendance on the device. Re-sync from the portal after.",
+)
+async def maintenance_clear_all_data(
+    device_id: int,
+    body: ClearAllDataBody,
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    if body.confirm_text.strip() != CONFIRM_CLEAR_ALL_DATA:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f'Confirmation must be exactly: {CONFIRM_CLEAR_ALL_DATA}',
+        )
+    svc = DeviceMaintenanceService(db)
+    try:
+        await svc.clear_all_device_data(device_id, current_user.school_id)
+        return MaintenanceOkResponse(
+            message="Device data cleared. Users and templates must be synced again from the dashboard."
+        )
+    except DeviceNotFoundErr as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
+    except DeviceOfflineError as e:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=e.message)
+
+
+@router.post(
+    "/{device_id}/maintenance/restart",
+    response_model=MaintenanceOkResponse,
+    summary="Restart device",
+)
+async def maintenance_restart(
+    device_id: int,
+    body: RestartDeviceBody,
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    if body.confirm_text.strip() != CONFIRM_RESTART:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f'Confirmation must be exactly: {CONFIRM_RESTART}',
+        )
+    svc = DeviceMaintenanceService(db)
+    try:
+        await svc.restart_device(device_id, current_user.school_id)
+        return MaintenanceOkResponse(message="Restart command sent. The device may take a minute to come back online.")
+    except DeviceNotFoundErr as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
+    except DeviceOfflineError as e:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=e.message)
+
+
+@router.post(
+    "/{device_id}/maintenance/delete-user",
+    response_model=MaintenanceOkResponse,
+    summary="Delete one user from device",
+)
+async def maintenance_delete_user(
+    device_id: int,
+    body: DeleteDeviceUserBody,
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    if body.confirm_text.strip() != CONFIRM_DELETE_USER:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f'Confirmation must be exactly: {CONFIRM_DELETE_USER}',
+        )
+    svc = DeviceMaintenanceService(db)
+    try:
+        await svc.delete_user_on_device(
+            device_id,
+            current_user.school_id,
+            uid=body.uid,
+            user_id=body.user_id,
+        )
+        return MaintenanceOkResponse(message="User removed from device.")
+    except DeviceNotFoundErr as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=e.message)
+    except DeviceOfflineError as e:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=e.message)
 

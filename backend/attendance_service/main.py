@@ -14,6 +14,7 @@ from fastapi.responses import RedirectResponse
 
 from attendance_service.core.config import settings
 from attendance_service.api.routes.attendance import router as attendance_router
+from attendance_service.api.routes.mobile_attendance import router as mobile_attendance_router
 
 app = FastAPI(
     title="School Biometric System - Attendance Service",
@@ -34,6 +35,7 @@ app.add_middleware(
 
 # Register routes
 app.include_router(attendance_router)
+app.include_router(mobile_attendance_router)
 
 
 @app.get("/")

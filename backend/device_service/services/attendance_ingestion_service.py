@@ -13,12 +13,16 @@ are broadcast but never stored in the database — from being re-broadcast on
 subsequent poll cycles when the device returns the same log dump.
 """
 
+import asyncio
 import logging
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Optional
 
+import httpx
 import pytz
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from device_service.core.config import settings
@@ -46,11 +50,37 @@ from device_service.repositories.device_repository import DeviceRepository
 from device_service.repositories.attendance_record_repository import AttendanceRecordRepository
 from device_service.services.device_info_service import DeviceInfoService
 from device_service.services.student_matching_service import StudentMatchingService
+from device_service.services.teacher_matching_service import TeacherMatchingService
 from device_service.services.entry_exit_service import EntryExitService, Determination
 from device_service.exceptions import DeviceNotFoundError, DeviceOfflineError
 from device_service.services.attendance_broadcaster import attendance_broadcaster
+from school_service.models.student import Student
 
 logger = logging.getLogger(__name__)
+
+
+async def _trigger_parent_notifications(school_id: int, events: list[dict]) -> None:
+    """Call gateway internal endpoint to send parent SMS/WhatsApp for attendance events. Best-effort."""
+    url = f"{settings.API_GATEWAY_URL.rstrip('/')}/api/v1/notifications/trigger-attendance-internal"
+    try:
+        async with httpx.AsyncClient(timeout=25.0) as client:
+            r = await client.post(
+                url,
+                json={"school_id": school_id, "events": events},
+                headers={"X-Internal-Key": settings.NOTIFICATION_INTERNAL_KEY},
+            )
+            if r.status_code == 200:
+                data = r.json()
+                logger.info(
+                    "Parent notifications: %s sent, %s failed (school %s)",
+                    data.get("sent", 0),
+                    data.get("failed", 0),
+                    school_id,
+                )
+            else:
+                logger.warning("Parent notifications trigger returned %s: %s", r.status_code, r.text[:200])
+    except Exception as e:
+        logger.warning("Failed to trigger parent notifications: %s", e)
 
 
 @dataclass
@@ -75,6 +105,7 @@ class AttendanceIngestionService:
         self.attendance_repo = AttendanceRecordRepository(db)
         self.device_info_service = DeviceInfoService(db)
         self.student_matcher = StudentMatchingService(db)
+        self.teacher_matcher = TeacherMatchingService(db)
         self.entry_exit = EntryExitService(db)
 
     async def ingest_for_device(
@@ -154,20 +185,39 @@ class AttendanceIngestionService:
                 return IngestionSummary(inserted=0, skipped=skipped, duplicates_filtered=0, total=total)
 
             # ----------------------------------------------------------
-            # 3. Resolve device_user_id → student_id
+            # 3. Resolve device_user_id → student_id / teacher_id
             # ----------------------------------------------------------
             device_user_ids = [rec.get("user_id") or "" for rec in new_logs]
             student_map = await self.student_matcher.resolve_batch(school_id, device_user_ids)
+            teacher_map = await self.teacher_matcher.resolve_batch(school_id, device_user_ids)
+
+            placement: dict[int, tuple[Optional[int], Optional[int]]] = {}
+            unique_sids = {int(sid) for sid in student_map.values() if sid is not None}
+            if unique_sids:
+                pr = await self.db.execute(
+                    select(Student.id, Student.class_id, Student.stream_id).where(
+                        Student.id.in_(unique_sids),
+                        Student.school_id == school_id,
+                    )
+                )
+                for row in pr.all():
+                    placement[int(row.id)] = (row.class_id, row.stream_id)
 
             # ----------------------------------------------------------
-            # 4. Get last-record-today for matched students (seed the cache)
+            # 4. Get last-record-today for matched users (seed the cache)
             # ----------------------------------------------------------
             matched_student_ids = list(set(student_map.values()))
-            last_records_cache: dict[int, tuple[str, ...]] = {}
+            matched_teacher_ids = list(set(teacher_map.values()))
+            last_student_cache: dict[int, tuple[str, ...]] = {}
+            last_teacher_cache: dict[int, tuple[str, ...]] = {}
+            reference_time = new_logs[0]["timestamp"]
             if matched_student_ids:
-                reference_time = new_logs[0]["timestamp"]
-                last_records_cache = await self.entry_exit.get_last_records_for_students(
+                last_student_cache = await self.entry_exit.get_last_records_for_students(
                     school_id, matched_student_ids, reference_time,
+                )
+            if matched_teacher_ids:
+                last_teacher_cache = await self.entry_exit.get_last_records_for_teachers(
+                    school_id, matched_teacher_ids, reference_time,
                 )
 
             # ----------------------------------------------------------
@@ -183,28 +233,40 @@ class AttendanceIngestionService:
                 uid = rec.get("user_id") or ""
                 ts = rec["timestamp"]
                 student_id = student_map.get(uid)
+                teacher_id = teacher_map.get(uid)
                 is_duplicate = False
 
-                if student_id is None:
-                    event_type = EventType.UNKNOWN
-                else:
-                    previous = last_records_cache.get(student_id)
+                # Determine which subject this scan belongs to.
+                # If both maps match (shouldn't happen), prefer teacher mapping.
+                if teacher_id is not None:
+                    previous = last_teacher_cache.get(teacher_id)
                     determination = self.entry_exit.determine_from_previous(previous, ts)
-
                     if determination == Determination.DUPLICATE:
                         event_type = "DUPLICATE"
                         is_duplicate = True
                         duplicates_filtered += 1
                     else:
-                        event_type = determination.value  # "IN" or "OUT"
-                        # Update cache so next record for same student sees this one
-                        last_records_cache[student_id] = (event_type, ts)
+                        event_type = determination.value
+                        last_teacher_cache[teacher_id] = (event_type, ts)
+                elif student_id is not None:
+                    previous = last_student_cache.get(student_id)
+                    determination = self.entry_exit.determine_from_previous(previous, ts)
+                    if determination == Determination.DUPLICATE:
+                        event_type = "DUPLICATE"
+                        is_duplicate = True
+                        duplicates_filtered += 1
+                    else:
+                        event_type = determination.value
+                        last_student_cache[student_id] = (event_type, ts)
+                else:
+                    event_type = EventType.UNKNOWN
 
                 # Always add to all_scans for live broadcast
                 all_scans.append({
                     "scan_id": str(uuid.uuid4()),
                     "device_user_id": uid,
                     "student_id": student_id,
+                    "teacher_id": teacher_id,
                     "timestamp": ts,
                     "event_type": event_type,
                     "device_id": device_id,
@@ -216,11 +278,18 @@ class AttendanceIngestionService:
                         "punch": rec.get("punch"),
                         "device_serial": rec.get("device_serial"),
                     }
+                    snap_c: Optional[int] = None
+                    snap_s: Optional[int] = None
+                    if student_id is not None and student_id in placement:
+                        snap_c, snap_s = placement[student_id]
                     to_insert.append(
                         AttendanceRecord(
                             school_id=school_id,
                             device_id=device_id,
                             student_id=student_id,
+                            teacher_id=teacher_id,
+                            class_id_snapshot=snap_c,
+                            stream_id_snapshot=snap_s,
                             device_user_id=uid,
                             occurred_at=ts,
                             event_type=event_type,
@@ -257,6 +326,28 @@ class AttendanceIngestionService:
                     await attendance_broadcaster.broadcast_events(school_id, enriched_events)
                 except Exception as ws_err:
                     logger.warning("Failed to broadcast attendance events: %s", ws_err)
+
+            # ----------------------------------------------------------
+            # 7b. Trigger parent notifications (SMS/WhatsApp) for inserted student check-in/out
+            #     Best-effort: do not fail ingestion if gateway or key is unavailable.
+            # ----------------------------------------------------------
+            if to_insert and settings.NOTIFICATION_INTERNAL_KEY and settings.API_GATEWAY_URL:
+                student_events = [
+                        {
+                            "school_id": school_id,
+                            "student_id": rec.student_id,
+                            "teacher_id": rec.teacher_id,
+                            "event_type": rec.event_type.value if hasattr(rec.event_type, "value") else str(rec.event_type),
+                            "occurred_at": rec.occurred_at.isoformat() if rec.occurred_at else "",
+                        }
+                        for rec in to_insert
+                        if rec.student_id is not None
+                        and rec.event_type in (EventType.IN, EventType.OUT)
+                    ]
+                if student_events:
+                    asyncio.create_task(
+                        _trigger_parent_notifications(school_id, student_events),
+                    )
 
             # ----------------------------------------------------------
             # 8. Update in-memory cache with ALL processed scan keys
@@ -304,11 +395,11 @@ class AttendanceIngestionService:
         from sqlalchemy import select
         from sqlalchemy.orm import selectinload
         from school_service.models.student import Student
+        from school_service.models.teacher import Teacher
 
-        # Collect unique student IDs
-        student_ids = list(
-            {s["student_id"] for s in scans if s.get("student_id") is not None}
-        )
+        # Collect unique IDs
+        student_ids = list({s["student_id"] for s in scans if s.get("student_id") is not None})
+        teacher_ids = list({s["teacher_id"] for s in scans if s.get("teacher_id") is not None})
 
         # Batch-load student details
         student_info: dict[int, dict] = {}
@@ -326,17 +417,33 @@ class AttendanceIngestionService:
                     "class_name": class_name,
                 }
 
+        teacher_info: dict[int, dict] = {}
+        if teacher_ids:
+            result = await self.db.execute(
+                select(Teacher).where(Teacher.id.in_(teacher_ids))
+            )
+            for t in result.scalars().all():
+                teacher_info[t.id] = {
+                    "teacher_name": f"{t.first_name} {t.last_name}",
+                    "employee_id": t.employee_id,
+                }
+
         device_name = device.name if device else "Unknown"
         events = []
         for scan in scans:
             sid = scan.get("student_id")
-            info = student_info.get(sid, {}) if sid else {}
+            tid = scan.get("teacher_id")
+            sinfo = student_info.get(sid, {}) if sid else {}
+            tinfo = teacher_info.get(tid, {}) if tid else {}
             events.append({
                 "id": scan["scan_id"],
                 "student_id": sid,
-                "student_name": info.get("student_name"),
-                "admission_number": info.get("admission_number"),
-                "class_name": info.get("class_name"),
+                "student_name": sinfo.get("student_name"),
+                "admission_number": sinfo.get("admission_number"),
+                "teacher_id": tid,
+                "teacher_name": tinfo.get("teacher_name"),
+                "employee_id": tinfo.get("employee_id"),
+                "class_name": sinfo.get("class_name"),
                 "device_id": scan["device_id"],
                 "device_name": device_name,
                 "event_type": scan["event_type"],

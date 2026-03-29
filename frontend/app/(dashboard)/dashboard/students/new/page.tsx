@@ -10,7 +10,7 @@ export default function NewStudentPage() {
       variants={pageTransition}
       initial="initial"
       animate="animate"
-      className="flex-1 space-y-6 p-4 sm:p-6 lg:p-8"
+      className="flex-1 page-shell space-y-6"
     >
       <StudentWizard mode="add" />
     </motion.main>

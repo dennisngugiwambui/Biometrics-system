@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { cn } from "@/lib/utils"
 import type { StudentResponse } from "@/lib/api/students"
+import type { TeacherResponse } from "@/lib/api/teachers"
 import type { DeviceResponse } from "@/lib/api/devices"
 import { DeviceStatusBadge } from "@/components/features/devices/DeviceStatusBadge"
 import { FINGERS } from "@/lib/utils/fingers"
@@ -13,7 +14,8 @@ import { useEnrollmentProgress } from "@/lib/hooks/useEnrollmentProgress"
 import { cancelEnrollment } from "@/lib/api/enrollment"
 
 interface EnrollmentCaptureProps {
-  student: StudentResponse
+  student?: StudentResponse | null
+  teacher?: TeacherResponse | null
   device: DeviceResponse
   fingerId: number
   sessionId?: string
@@ -34,6 +36,7 @@ const STATUS_MESSAGES: Record<CaptureStatus, string> = {
 
 export function EnrollmentCapture({
   student,
+  teacher,
   device,
   fingerId,
   sessionId,
@@ -41,6 +44,12 @@ export function EnrollmentCapture({
   onRetry,
   onCancel,
 }: EnrollmentCaptureProps) {
+  const personName =
+    teacher != null
+      ? `${teacher.first_name} ${teacher.last_name}`
+      : student != null
+        ? `${student.first_name} ${student.last_name}`
+        : "Person"
   const fingerInfo = FINGERS.find((f) => f.id === fingerId)
 
   // Connect to enrollment progress WebSocket
@@ -257,7 +266,7 @@ export function EnrollmentCapture({
           <div>
             <p className="text-gray-600 dark:text-gray-400">Student</p>
             <p className="font-medium truncate text-gray-900 dark:text-gray-100">
-              {student.first_name} {student.last_name}
+              {personName}
             </p>
           </div>
           <div>

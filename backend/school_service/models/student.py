@@ -1,8 +1,8 @@
 """Student database model."""
 
 import enum
-from sqlalchemy import Column, Integer, String, Date, Enum, ForeignKey, Boolean, DateTime, UniqueConstraint
-from sqlalchemy.sql import func, text
+from sqlalchemy import Column, Integer, String, Date, Enum, ForeignKey, Boolean, DateTime, UniqueConstraint, text
+from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from shared.database.base import Base
 
@@ -30,9 +30,21 @@ class Student(Base):
     class_id = Column(Integer, ForeignKey("classes.id"), nullable=True, index=True)
     stream_id = Column(Integer, ForeignKey("streams.id"), nullable=True, index=True)
 
+    # active = on roll; graduated = finished top year (kept for records; hidden from default lists)
+    enrollment_status = Column(
+        String(20),
+        server_default=text("'active'"),
+        nullable=False,
+        index=True,
+    )
+    graduated_at = Column(Date, nullable=True)
+
     # Parent contact information
     parent_phone = Column(String(20), nullable=True)
     parent_email = Column(String(255), nullable=True)
+
+    # Enrollment type
+    is_boarding = Column(Boolean, server_default=text("false"), nullable=False, index=True)
 
     # Metadata
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

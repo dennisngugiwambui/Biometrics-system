@@ -5,6 +5,7 @@ from typing import Optional, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from device_service.core.config import settings
+from device_service.services.network_setup_hints import collect_local_ipv4_addresses
 from device_service.zk.base import ZKDeviceConnection
 from device_service.models.device import Device
 from device_service.repositories.device_repository import DeviceRepository
@@ -118,6 +119,23 @@ class DeviceConnectionService:
         
         start_time = time.time()
         timeout = timeout or settings.DEFAULT_DEVICE_TIMEOUT
+
+        local_ips = collect_local_ipv4_addresses()
+        if ip_address in local_ips:
+            return {
+                "success": False,
+                "message": (
+                    "This IP is assigned to the server (or this PC). "
+                    "Use the K40's own IP — it must be different from your computer."
+                ),
+                "response_time_ms": int((time.time() - start_time) * 1000),
+                "troubleshooting_tips": [
+                    "On the K40: Communication → Ethernet → set an unused IP on the same subnet "
+                    "as your PC (e.g. if your PC is 192.168.1.175, try 192.168.1.200 on the K40).",
+                    "In this form, enter the K40's IP, not the IP from ipconfig on your PC.",
+                    "Open “Suggested K40 network settings” on the add-device page for values.",
+                ],
+            }
         
         try:
             conn = ZKDeviceConnection(
@@ -154,10 +172,27 @@ class DeviceConnectionService:
                     "device_info": device_info if device_info else None,
                 }
             else:
+                tcp_ok = await self.test_tcp_connection(ip_address, port, timeout)
+                if not tcp_ok:
+                    msg = (
+                        "No TCP connection to the device — check IP, cable, power, "
+                        "that the K40 uses port 4370, and Windows/firewall allows outbound access."
+                    )
+                else:
+                    msg = (
+                        "TCP connected but ZKTeco handshake failed — wrong device type, "
+                        "wrong communication password, or non-standard firmware/port."
+                    )
                 return {
                     "success": False,
-                    "message": "Connection failed - Could not establish ZKTeco protocol connection",
+                    "message": msg,
                     "response_time_ms": int((time.time() - start_time) * 1000),
+                    "troubleshooting_tips": [
+                        "Confirm the IP you entered is the K40’s IP (shown on the device network menu), "
+                        "not your PC’s IP from ipconfig.",
+                    ]
+                    if tcp_ok
+                    else None,
                 }
                 
         except Exception as e:

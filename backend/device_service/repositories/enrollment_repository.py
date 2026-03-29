@@ -33,6 +33,7 @@ class EnrollmentRepository:
         enrollment_session = EnrollmentSession(
             session_id=session_id,
             student_id=enrollment_data.student_id,
+            teacher_id=enrollment_data.teacher_id,
             device_id=enrollment_data.device_id,
             finger_id=enrollment_data.finger_id,
             school_id=enrollment_data.school_id,
@@ -66,6 +67,7 @@ class EnrollmentRepository:
         
         query = query.options(
             selectinload(EnrollmentSession.student),
+            selectinload(EnrollmentSession.teacher),
             selectinload(EnrollmentSession.device),
             selectinload(EnrollmentSession.school)
         )
@@ -96,6 +98,7 @@ class EnrollmentRepository:
         
         query = query.options(
             selectinload(EnrollmentSession.student),
+            selectinload(EnrollmentSession.teacher),
             selectinload(EnrollmentSession.device),
             selectinload(EnrollmentSession.school)
         )

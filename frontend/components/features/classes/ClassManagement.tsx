@@ -51,6 +51,7 @@ import {
 } from "@/lib/api/streams"
 import { ClassForm } from "./ClassForm"
 import { StreamForm } from "./StreamForm"
+import { CohortPromotionPanel } from "./CohortPromotionPanel"
 
 export function ClassManagement() {
   const { token } = useAuthStore()
@@ -224,6 +225,12 @@ export function ClassManagement() {
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
+
+      <CohortPromotionPanel
+        classes={classes}
+        selectedClassId={selectedClassId}
+        onRefresh={loadClasses}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Classes Section */}

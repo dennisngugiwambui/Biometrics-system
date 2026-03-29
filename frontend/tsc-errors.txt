@@ -1,0 +1,2 @@
+﻿components/features/dashboard/CalendarModal.tsx(142,11): error TS2353: Object literal may only specify known properties, and 'check_ins' does not exist in type 'AttendanceStats | ((prevState: AttendanceStats | null) => AttendanceStats | null)'.
+components/features/dashboard/CalendarModal.tsx(347,70): error TS2551: Property 'check_ins' does not exist on type 'AttendanceStats'. Did you mean 'checked_in'?

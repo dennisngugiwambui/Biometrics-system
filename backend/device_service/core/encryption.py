@@ -20,7 +20,8 @@ def _get_fernet_key() -> bytes:
     If TEMPLATE_ENCRYPTION_KEY is set, use it. Otherwise derive from SECRET_KEY.
     """
     if settings.TEMPLATE_ENCRYPTION_KEY:
-        return settings.TEMPLATE_ENCRYPTION_KEY.encode()
+        # TEMPLATE_ENCRYPTION_KEY is a base64-encoded string, decode it to bytes
+        return base64.urlsafe_b64decode(settings.TEMPLATE_ENCRYPTION_KEY)
     # Dev fallback: derive from SECRET_KEY
     from cryptography.hazmat.primitives import hashes
     from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC

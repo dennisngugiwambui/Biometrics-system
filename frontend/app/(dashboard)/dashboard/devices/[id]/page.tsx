@@ -3,8 +3,10 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { motion } from "framer-motion"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -33,6 +35,10 @@ import {
   MapPin,
   Hash,
   Info,
+  Eraser,
+  RotateCcw,
+  UserX,
+  Database,
 } from "lucide-react"
 import { fadeInUp, pageTransition } from "@/lib/animations/framer-motion"
 import { useAuthStore } from "@/lib/store/authStore"
@@ -43,6 +49,14 @@ import {
   getDeviceInfo,
   refreshDeviceInfo,
   getDeviceTime,
+  clearDeviceAttendanceLogs,
+  clearAllDeviceData,
+  restartDeviceRemote,
+  deleteUserFromDevice,
+  DEVICE_CONFIRM_CLEAR_ATTENDANCE,
+  DEVICE_CONFIRM_CLEAR_ALL_DATA,
+  DEVICE_CONFIRM_RESTART,
+  DEVICE_CONFIRM_DELETE_USER,
   type DeviceResponse,
   type DeviceInfoResponse,
   type DeviceTimeResponse,
@@ -72,6 +86,56 @@ export default function DeviceDetailPage() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const hasAutoFetchedRef = useRef<number | null>(null)
+
+  type MaintKind = "clear_attendance" | "clear_all" | "restart" | "delete_user" | null
+  const [maintKind, setMaintKind] = useState<MaintKind>(null)
+  const [maintConfirm, setMaintConfirm] = useState("")
+  const [maintBusy, setMaintBusy] = useState(false)
+  const [deleteUid, setDeleteUid] = useState("")
+  const [deleteUserIdStr, setDeleteUserIdStr] = useState("")
+
+  const openMaint = (k: Exclude<MaintKind, null>) => {
+    setMaintConfirm("")
+    setDeleteUid("")
+    setDeleteUserIdStr("")
+    setMaintKind(k)
+  }
+
+  const runMaintenance = async () => {
+    if (!token || !deviceId || !maintKind) return
+    setMaintBusy(true)
+    try {
+      if (maintKind === "clear_attendance") {
+        const r = await clearDeviceAttendanceLogs(token, deviceId, maintConfirm.trim())
+        toast.success(r.message || "Attendance cleared on device")
+      } else if (maintKind === "clear_all") {
+        const r = await clearAllDeviceData(token, deviceId, maintConfirm.trim())
+        toast.success(r.message || "Device data cleared")
+      } else if (maintKind === "restart") {
+        const r = await restartDeviceRemote(token, deviceId, maintConfirm.trim())
+        toast.success(r.message || "Restart sent")
+      } else {
+        const uid = parseInt(deleteUid, 10)
+        if (Number.isNaN(uid) || uid < 0) {
+          toast.error("Enter a valid numeric device UID")
+          setMaintBusy(false)
+          return
+        }
+        const r = await deleteUserFromDevice(token, deviceId, uid, deleteUserIdStr.trim(), maintConfirm.trim())
+        toast.success(r.message || "User removed from device")
+      }
+      setMaintKind(null)
+      setMaintConfirm("")
+    } catch (err) {
+      if (err instanceof DeviceApiError) {
+        toast.error(err.message)
+      } else {
+        toast.error("Maintenance action failed")
+      }
+    } finally {
+      setMaintBusy(false)
+    }
+  }
 
   // WebSocket for real-time device status updates
   const handleStatusUpdate = useCallback((update: DeviceStatusUpdate) => {
@@ -873,8 +937,191 @@ export default function DeviceDetailPage() {
               </Card>
             </motion.div>
           )}
+
+          {/* K40 / ZK maintenance — affects hardware only; portal DB unchanged except you re-sync after wipe */}
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={fadeInUp}
+            transition={{ delay: 0.35 }}
+            className="md:col-span-2"
+          >
+            <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-red-200/40 dark:border-red-900/40 shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-red-600 dark:text-red-400 flex items-center gap-2">
+                  <Database className="h-5 w-5" />
+                  Device maintenance (K40 / ZKTeco)
+                </CardTitle>
+                <CardDescription>
+                  These commands run on the physical device over the network. Clearing all data removes users and
+                  templates from the device — use <strong>Sync</strong> from the dashboard afterward. Type the exact
+                  confirmation phrase in each dialog.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Alert className="mb-4 border-yellow-500/50 bg-yellow-500/10">
+                  <AlertCircle className="h-4 w-4 text-yellow-600" />
+                  <AlertDescription className="text-sm text-gray-800 dark:text-gray-200">
+                    Ensure no enrollment is in progress. The device must be online.
+                  </AlertDescription>
+                </Alert>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="border-blue-600 text-blue-600"
+                    onClick={() => openMaint("clear_attendance")}
+                  >
+                    <Eraser className="mr-2 h-4 w-4" />
+                    Clear attendance logs
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
+                    onClick={() => openMaint("clear_all")}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Wipe device (users + logs)
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="border-indigo-600 text-indigo-600"
+                    onClick={() => openMaint("restart")}
+                  >
+                    <RotateCcw className="mr-2 h-4 w-4" />
+                    Restart device
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="border-purple-600 text-purple-600"
+                    onClick={() => openMaint("delete_user")}
+                  >
+                    <UserX className="mr-2 h-4 w-4" />
+                    Delete one user
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
       </div>
+
+      <Dialog
+        open={maintKind !== null}
+        onOpenChange={(o) => {
+          if (!o) {
+            setMaintKind(null)
+            setMaintConfirm("")
+          }
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {maintKind === "clear_attendance" && "Clear attendance on device"}
+              {maintKind === "clear_all" && "Wipe all device data"}
+              {maintKind === "restart" && "Restart device"}
+              {maintKind === "delete_user" && "Delete user from device"}
+            </DialogTitle>
+            <DialogDescription className="space-y-2">
+              {maintKind === "clear_attendance" && (
+                <>
+                  Removes attendance transactions stored on the device only. Server records are not deleted.
+                  <span className="block font-mono text-xs mt-2 text-foreground">
+                    Type: {DEVICE_CONFIRM_CLEAR_ATTENDANCE}
+                  </span>
+                </>
+              )}
+              {maintKind === "clear_all" && (
+                <>
+                  <strong className="text-red-600">Factory-style data wipe:</strong> users, fingerprints, and logs on
+                  the device. You must re-enroll or sync from the portal again.
+                  <span className="block font-mono text-xs mt-2 text-foreground">
+                    Type: {DEVICE_CONFIRM_CLEAR_ALL_DATA}
+                  </span>
+                </>
+              )}
+              {maintKind === "restart" && (
+                <>
+                  Sends a restart command. The device may be unreachable for a short time.
+                  <span className="block font-mono text-xs mt-2 text-foreground">
+                    Type: {DEVICE_CONFIRM_RESTART}
+                  </span>
+                </>
+              )}
+              {maintKind === "delete_user" && (
+                <>
+                  Remove a single user by device UID (numeric) and optional user ID string as shown on the terminal.
+                  <span className="block font-mono text-xs mt-2 text-foreground">
+                    Type: {DEVICE_CONFIRM_DELETE_USER}
+                  </span>
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          {maintKind === "delete_user" && (
+            <div className="grid gap-3 py-2">
+              <div>
+                <Label className="text-blue-700 dark:text-blue-400">Device UID (number)</Label>
+                <Input
+                  value={deleteUid}
+                  onChange={(e) => setDeleteUid(e.target.value)}
+                  placeholder="e.g. 42"
+                  className="border-blue-300 focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <Label className="text-gray-700 dark:text-gray-300">User ID on device (optional)</Label>
+                <Input
+                  value={deleteUserIdStr}
+                  onChange={(e) => setDeleteUserIdStr(e.target.value)}
+                  placeholder="e.g. admission or employee code"
+                  className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
+                />
+              </div>
+            </div>
+          )}
+          <div className="space-y-2">
+            <Label className="text-blue-700 dark:text-blue-400">Confirmation</Label>
+            <Input
+              value={maintConfirm}
+              onChange={(e) => setMaintConfirm(e.target.value)}
+              placeholder="Exact phrase above"
+              className="border-blue-300 focus:border-blue-500 focus:ring-blue-500"
+              autoComplete="off"
+            />
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setMaintKind(null)
+                setMaintConfirm("")
+              }}
+              disabled={maintBusy}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              className={
+                maintKind === "clear_all"
+                  ? "bg-red-600 hover:bg-red-700 text-white"
+                  : "bg-blue-600 hover:bg-blue-700 text-white"
+              }
+              disabled={maintBusy}
+              onClick={() => runMaintenance()}
+            >
+              {maintBusy ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

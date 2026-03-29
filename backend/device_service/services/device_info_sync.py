@@ -53,19 +53,40 @@ class DeviceInfoSyncService:
         
         logger.info("Device info sync service stopped")
     
+    def _is_db_connection_error(self, e: Exception) -> bool:
+        """True if the exception is due to database (e.g. PostgreSQL) being unreachable."""
+        msg = str(e).lower()
+        return (
+            isinstance(e, (OSError, ConnectionError))
+            or "5432" in msg
+            or "connect call failed" in msg
+            or "connection refused" in msg
+        )
+
     async def _run_sync_loop(self):
         """Main sync loop."""
+        db_unavailable_logged = False
         while self.running:
             try:
                 await self.sync_all_online_devices()
+                db_unavailable_logged = False
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Error in device info sync cycle: {e}", exc_info=True)
+                if self._is_db_connection_error(e):
+                    if not db_unavailable_logged:
+                        logger.warning(
+                            "Database unavailable (is PostgreSQL running?). "
+                            "Device info sync will retry every 30s until connected."
+                        )
+                        db_unavailable_logged = True
+                else:
+                    logger.error("Error in device info sync cycle: %s", e, exc_info=True)
             
             if self.running:
                 try:
-                    await asyncio.sleep(self.sync_interval)
+                    delay = 30 if db_unavailable_logged else self.sync_interval
+                    await asyncio.sleep(delay)
                 except asyncio.CancelledError:
                     break
     
@@ -99,7 +120,9 @@ class DeviceInfoSyncService:
                     f"{error_count} errors"
                 )
             except Exception as e:
-                logger.error(f"Error syncing all devices: {e}", exc_info=True)
+                if not self._is_db_connection_error(e):
+                    logger.error("Error syncing all devices: %s", e, exc_info=True)
+                raise
     
     async def sync_device_info(self, device: Device, db: AsyncSession) -> bool:
         """

@@ -1,0 +1,12 @@
+﻿app/(dashboard)/dashboard/page.tsx(262,22): error TS2322: Type '(v: number) => [string, ""]' is not assignable to type 'Formatter<number, ""> & ((value: number, name: "", item: Payload<number, "">, index: number, payload: Payload<number, "">[]) => ReactNode | [...])'.
+  Type '(v: number) => [string, ""]' is not assignable to type 'Formatter<number, "">'.
+    Types of parameters 'v' and 'value' are incompatible.
+      Type 'number | undefined' is not assignable to type 'number'.
+        Type 'undefined' is not assignable to type 'number'.
+app/(dashboard)/dashboard/students/page.tsx(18,3): error TS2305: Module '"@/lib/api/students"' has no exported member 'bulkImportStudentsFile'.
+app/(dashboard)/dashboard/students/page.tsx(19,3): error TS2305: Module '"@/lib/api/students"' has no exported member 'bulkImportStudentsJson'.
+app/(dashboard)/dashboard/teachers/page.tsx(467,38): error TS2322: Type '(v: number) => [string, "Attendance Rate"]' is not assignable to type 'Formatter<number, "Attendance Rate"> & ((value: number, name: "Attendance Rate", item: Payload<number, "Attendance Rate">, index: number, payload: Payload<number, "Attendance Rate">[]) => ReactNode | [...])'.
+  Type '(v: number) => [string, "Attendance Rate"]' is not assignable to type 'Formatter<number, "Attendance Rate">'.
+    Types of parameters 'v' and 'value' are incompatible.
+      Type 'number | undefined' is not assignable to type 'number'.
+        Type 'undefined' is not assignable to type 'number'.

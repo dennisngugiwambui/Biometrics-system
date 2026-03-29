@@ -8,6 +8,7 @@ from device_service.services.enrollment_service import EnrollmentService
 from device_service.api.dependencies import get_current_user
 from shared.schemas.enrollment import (
     EnrollmentStartRequest,
+    EnrollmentStartRequestTeacher,
     EnrollmentStartResponse,
     EnrollmentSessionResponse,
     EnrolledFingersResponse,
@@ -22,6 +23,7 @@ from device_service.exceptions import (
     EnrollmentError,
     EnrollmentInProgressError,
     StudentNotOnDeviceError,
+    TeacherNotOnDeviceError,
 )
 
 router = APIRouter(prefix="/api/v1/enrollment", tags=["enrollment"])
@@ -99,6 +101,7 @@ async def start_enrollment(
         return EnrollmentStartResponse(
             session_id=enrollment_session.session_id,
             student_id=enrollment_session.student_id,
+            teacher_id=getattr(enrollment_session, "teacher_id", None),
             device_id=enrollment_session.device_id,
             finger_id=enrollment_session.finger_id,
             status=enrollment_session.status,
@@ -111,6 +114,11 @@ async def start_enrollment(
             detail={"message": str(e), "code": e.code},
         )
     except StudentNotOnDeviceError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"message": str(e), "code": e.code},
+        )
+    except TeacherNotOnDeviceError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={"message": str(e), "code": e.code},
@@ -141,22 +149,89 @@ async def start_enrollment(
         )
 
 
+@router.post(
+    "/start/teacher",
+    response_model=EnrollmentStartResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Start teacher enrollment",
+    description="""
+    Start fingerprint enrollment for a teacher on a device (for check-in/check-out).
+    Teacher must be synced to the device first (e.g. via sync teachers API).
+    Real-time progress is sent via WebSocket (same as student enrollment).
+    """,
+    responses={
+        201: {"description": "Teacher enrollment started successfully"},
+        400: {"description": "Invalid request or teacher not synced to device (code: TEACHER_NOT_ON_DEVICE)"},
+        404: {"description": "Device not found"},
+        503: {"description": "Device is offline"},
+    },
+)
+async def start_teacher_enrollment(
+    request: EnrollmentStartRequestTeacher,
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Start fingerprint enrollment for a teacher."""
+    enrollment_service = EnrollmentService(db)
+    try:
+        enrollment_session = await enrollment_service.start_enrollment_teacher(
+            teacher_id=request.teacher_id,
+            device_id=request.device_id,
+            finger_id=request.finger_id,
+            school_id=current_user.school_id,
+        )
+        return EnrollmentStartResponse(
+            session_id=enrollment_session.session_id,
+            student_id=None,
+            teacher_id=enrollment_session.teacher_id,
+            device_id=enrollment_session.device_id,
+            finger_id=enrollment_session.finger_id,
+            status=enrollment_session.status,
+            started_at=enrollment_session.started_at,
+        )
+    except DeviceNotFoundError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"message": str(e), "code": e.code},
+        )
+    except TeacherNotOnDeviceError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"message": str(e), "code": e.code},
+        )
+    except DeviceOfflineError as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(e),
+        )
+    except EnrollmentError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
+
 def _enrollment_to_summary(session) -> EnrollmentRecordSummary:
     """Build EnrollmentRecordSummary from EnrollmentSession."""
+    student_name = None
+    if session.student:
+        student_name = f"{session.student.first_name} {session.student.last_name}"
+    teacher_name = None
+    if getattr(session, "teacher", None):
+        t = session.teacher
+        teacher_name = f"{t.first_name} {t.last_name}" if getattr(t, "first_name", None) else getattr(t, "name", None)
     return EnrollmentRecordSummary(
         id=session.id,
         session_id=session.session_id,
         student_id=session.student_id,
+        teacher_id=getattr(session, "teacher_id", None),
         device_id=session.device_id,
         finger_id=session.finger_id,
         quality_score=session.quality_score,
         completed_at=session.completed_at,
-        has_template=bool(session.template_data),
-        student_name=(
-            f"{session.student.first_name} {session.student.last_name}"
-            if session.student
-            else None
-        ),
+        has_template=bool(getattr(session, "template_data", None)),
+        student_name=student_name,
+        teacher_name=teacher_name,
         device_name=session.device.name if session.device else None,
     )
 
@@ -303,18 +378,17 @@ async def cancel_enrollment(
             id=enrollment_session.id,
             session_id=enrollment_session.session_id,
             student_id=enrollment_session.student_id,
+            teacher_id=getattr(enrollment_session, "teacher_id", None),
             device_id=enrollment_session.device_id,
             finger_id=enrollment_session.finger_id,
             school_id=enrollment_session.school_id,
             status=enrollment_session.status,
             error_message=enrollment_session.error_message,
-            template_data=enrollment_session.template_data,
             quality_score=enrollment_session.quality_score,
             started_at=enrollment_session.started_at,
             completed_at=enrollment_session.completed_at,
             created_at=enrollment_session.created_at,
             updated_at=enrollment_session.updated_at,
-            is_deleted=enrollment_session.is_deleted,
         )
         
     except EnrollmentError as e:
@@ -358,18 +432,17 @@ async def check_enrollment_status(
             id=enrollment_session.id,
             session_id=enrollment_session.session_id,
             student_id=enrollment_session.student_id,
+            teacher_id=getattr(enrollment_session, "teacher_id", None),
             device_id=enrollment_session.device_id,
             finger_id=enrollment_session.finger_id,
             school_id=enrollment_session.school_id,
             status=enrollment_session.status,
             error_message=enrollment_session.error_message,
-            template_data=enrollment_session.template_data,
             quality_score=enrollment_session.quality_score,
             started_at=enrollment_session.started_at,
             completed_at=enrollment_session.completed_at,
             created_at=enrollment_session.created_at,
             updated_at=enrollment_session.updated_at,
-            is_deleted=enrollment_session.is_deleted,
         )
         
     except HTTPException:

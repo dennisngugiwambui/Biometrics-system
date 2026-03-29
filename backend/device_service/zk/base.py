@@ -9,20 +9,82 @@ asyncio.to_thread to make it async-compatible.
 import asyncio
 import logging
 import time
+import sys
+import importlib.util
 from typing import Optional, Any, Dict, List
-from zk import ZK
-from zk.finger import Finger
+
+# Import the external zk package (pyzk) explicitly to avoid conflict with local zk directory
+# We need to import it before device_service.zk is fully initialized
+# Save and temporarily remove ALL local zk-related modules from sys.modules
+_local_zk_modules = {}
+for key in list(sys.modules.keys()):
+    if key.startswith('device_service.zk') or key == 'zk':
+        _local_zk_modules[key] = sys.modules.pop(key)
+
+try:
+    # Find the installed zk package by looking for it in site-packages
+    # This ensures we get the external package, not the local directory
+    import site
+    import os
+    from pathlib import Path
+    
+    # Get site-packages directory
+    site_packages = None
+    for path in site.getsitepackages():
+        zk_path = Path(path) / 'zk'
+        if zk_path.exists() and (zk_path / '__init__.py').exists():
+            site_packages = path
+            break
+    
+    if site_packages:
+        # Import using the full path to site-packages
+        spec = importlib.util.spec_from_file_location(
+            "zk_external",
+            Path(site_packages) / "zk" / "__init__.py"
+        )
+        zk_external = importlib.util.module_from_spec(spec)
+        sys.modules['zk_external'] = zk_external
+        spec.loader.exec_module(zk_external)
+        
+        # Import finger module separately
+        finger_spec = importlib.util.spec_from_file_location(
+            "zk_finger_external",
+            Path(site_packages) / "zk" / "finger.py"
+        )
+        zk_finger_external = importlib.util.module_from_spec(finger_spec)
+        sys.modules['zk_finger_external'] = zk_finger_external
+        finger_spec.loader.exec_module(zk_finger_external)
+        
+        # Import what we need
+        ZK = zk_external.ZK
+        Finger = zk_finger_external.Finger
+    else:
+        # Fallback: try normal import (should work if local zk is removed)
+        import zk
+        from zk import ZK
+        from zk.finger import Finger
+finally:
+    # Restore local zk modules
+    sys.modules.update(_local_zk_modules)
 
 # pyzk exception handling - import from zk.exception module
 # Library defines: ZKError (base), ZKErrorConnection, ZKErrorResponse, ZKNetworkError
 try:
-    from zk.exception import (
-        ZKError,
-        ZKErrorConnection,
-        ZKErrorResponse,
-        ZKNetworkError,
-    )
-except ImportError:
+    # Use the same approach for exceptions
+    if 'zk_external' in sys.modules:
+        zk_external = sys.modules['zk_external']
+        ZKError = zk_external.exception.ZKError
+        ZKErrorConnection = zk_external.exception.ZKErrorConnection
+        ZKErrorResponse = zk_external.exception.ZKErrorResponse
+        ZKNetworkError = zk_external.exception.ZKNetworkError
+    else:
+        from zk.exception import (
+            ZKError,
+            ZKErrorConnection,
+            ZKErrorResponse,
+            ZKNetworkError,
+        )
+except (ImportError, AttributeError):
     # Fallback if exception module not available (shouldn't happen with pyzk)
     # Define minimal exceptions to prevent crashes
     class ZKError(Exception):
@@ -503,6 +565,23 @@ class ZKDeviceConnection:
                 return True
         return False
 
+    async def teacher_on_device(self, teacher_id: int) -> bool:
+        """
+        Check if a teacher (by ID) exists on the device.
+
+        Args:
+            teacher_id: Teacher ID (matched against user_id on device, prefix "T")
+
+        Returns:
+            True if user with user_id == "T" + str(teacher_id) exists
+        """
+        users = await self.get_users()
+        target = f"T{teacher_id}"
+        for u in users:
+            if getattr(u, "user_id", None) == target:
+                return True
+        return False
+
     async def get_enrolled_finger_ids(self, user_id: str) -> list[int]:
         """
         Get list of finger IDs (0-9) that have templates enrolled for this user on the device.
@@ -632,6 +711,122 @@ class ZKDeviceConnection:
         except Exception as e:
             logger.error(f"delete_user_template failed: {e}", exc_info=True)
             return False
+
+    async def clear_attendance_on_device(self) -> None:
+        """Remove attendance logs from the device (pyzk clear_attendance)."""
+        if not self.is_connected or self.conn is None:
+            raise RuntimeError("Device not connected")
+        try:
+            await asyncio.to_thread(self.conn.clear_attendance)
+            logger.info("clear_attendance completed on %s:%s", self.ip, self.port)
+        except Exception as e:
+            logger.error("clear_attendance failed on %s:%s: %s", self.ip, self.port, e, exc_info=True)
+            raise
+
+    async def clear_all_data_on_device(self) -> None:
+        """
+        Factory-style wipe: users, attendance, and related data on device (pyzk clear_data).
+
+        This is destructive; the device will need users re-synced from the portal.
+        """
+        if not self.is_connected or self.conn is None:
+            raise RuntimeError("Device not connected")
+        try:
+            await asyncio.to_thread(self.conn.clear_data)
+            logger.warning("clear_data completed on %s:%s (all device data wiped)", self.ip, self.port)
+        except Exception as e:
+            logger.error("clear_data failed on %s:%s: %s", self.ip, self.port, e, exc_info=True)
+            raise
+
+    async def delete_user_from_device(self, uid: int, user_id: str = "") -> None:
+        """Delete one user record from the device (pyzk delete_user)."""
+        if not self.is_connected or self.conn is None:
+            raise RuntimeError("Device not connected")
+        try:
+            await asyncio.to_thread(self.conn.delete_user, uid=uid, user_id=user_id or "")
+            logger.info("delete_user uid=%s user_id=%r on %s:%s", uid, user_id, self.ip, self.port)
+        except Exception as e:
+            logger.error("delete_user failed on %s:%s: %s", self.ip, self.port, e, exc_info=True)
+            raise
+
+    async def delete_all_users_on_device(self) -> int:
+        """
+        Delete every user on the device (iterates get_users + delete_user).
+
+        Attendance logs may remain until cleared separately.
+        Returns the number of delete_user calls that completed without raising.
+        """
+        if not self.is_connected or self.conn is None:
+            raise RuntimeError("Device not connected")
+        users = await self.get_users()
+        ok = 0
+        for u in users:
+            uid = getattr(u, "uid", None)
+            if uid is None:
+                continue
+            user_id = getattr(u, "user_id", "") or ""
+            try:
+                await self.delete_user_from_device(int(uid), user_id)
+                ok += 1
+            except Exception as ex:
+                logger.warning(
+                    "delete_all_users_on_device: uid=%s user_id=%r failed: %s",
+                    uid,
+                    user_id,
+                    ex,
+                )
+        logger.warning(
+            "delete_all_users_on_device finished on %s:%s — removed %s of %s records",
+            self.ip,
+            self.port,
+            ok,
+            len(users),
+        )
+        return ok
+
+    async def delete_all_fingerprint_templates_on_device(self) -> int:
+        """
+        Remove fingerprint templates for all users (finger indices 0–9); user rows may remain.
+        Returns how many template delete calls returned True.
+        """
+        if not self.is_connected or self.conn is None:
+            raise RuntimeError("Device not connected")
+        users = await self.get_users()
+        removed = 0
+        for u in users:
+            uid = getattr(u, "uid", None)
+            user_id = getattr(u, "user_id", None)
+            if uid is None or not user_id:
+                continue
+            for finger_id in range(10):
+                try:
+                    if await self.delete_user_template(str(user_id), finger_id, uid=int(uid)):
+                        removed += 1
+                except Exception as ex:
+                    logger.debug(
+                        "delete_all_fingerprints: user_id=%s finger=%s: %s",
+                        user_id,
+                        finger_id,
+                        ex,
+                    )
+        logger.info(
+            "delete_all_fingerprint_templates_on_device on %s:%s — template removals (ok)=%s",
+            self.ip,
+            self.port,
+            removed,
+        )
+        return removed
+
+    async def restart_device(self) -> None:
+        """Ask the device to restart (pyzk restart). Connection will drop."""
+        if not self.is_connected or self.conn is None:
+            raise RuntimeError("Device not connected")
+        try:
+            await asyncio.to_thread(self.conn.restart)
+            logger.info("restart command sent to %s:%s", self.ip, self.port)
+        except Exception as e:
+            logger.error("restart failed on %s:%s: %s", self.ip, self.port, e, exc_info=True)
+            raise
 
     async def set_user_template(
         self,

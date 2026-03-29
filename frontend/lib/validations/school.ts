@@ -79,22 +79,8 @@ export const schoolRegistrationWithAdminSchema = schoolRegistrationSchema.extend
       .max(100, 'Last name must be less than 100 characters'),
     password: z
       .string()
-      .min(8, 'Password must be at least 8 characters')
-      .max(72, 'Password cannot be longer than 72 bytes')
-      .refine(
-        (val) => {
-          const encoder = new TextEncoder();
-          const bytes = encoder.encode(val);
-          return bytes.length <= 72;
-        },
-        {
-          message: 'Password cannot be longer than 72 bytes. Please use a shorter password.',
-        }
-      )
-      .regex(/[A-Z]/, 'Password must contain an uppercase letter')
-      .regex(/[a-z]/, 'Password must contain a lowercase letter')
-      .regex(/[0-9]/, 'Password must contain a number')
-      .regex(/[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/, 'Password must contain a special character (!@#$%^&*)'),
+      .min(4, 'Password must be at least 4 characters')
+      .max(72, 'Password cannot be longer than 72 characters'),
     confirmPassword: z.string().min(1, 'Please confirm your password'),
   }).refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",

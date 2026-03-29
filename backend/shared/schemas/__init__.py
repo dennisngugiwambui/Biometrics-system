@@ -19,6 +19,13 @@ from shared.schemas.enrollment import (
     EnrollmentStartResponse,
     EnrollmentCountResponse,
 )
+from shared.schemas.notification import (
+    NotificationCreate,
+    NotificationUpdate,
+    NotificationResponse,
+    UnreadCountResponse,
+    PaginatedNotificationResponse,
+)
 
 __all__ = [
     "EventTypeEnum",
@@ -36,4 +43,9 @@ __all__ = [
     "EnrollmentStartRequest",
     "EnrollmentStartResponse",
     "EnrollmentCountResponse",
+    "NotificationCreate",
+    "NotificationUpdate",
+    "NotificationResponse",
+    "UnreadCountResponse",
+    "PaginatedNotificationResponse",
 ]

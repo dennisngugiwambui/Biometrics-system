@@ -15,7 +15,7 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '@/lib/store/authStore';
 import { isTokenExpired } from '@/lib/utils/jwt';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 const LAST_ACTIVITY_KEY = 'last_activity_at';
 
 function getIdleForMs(): number {
@@ -84,17 +84,17 @@ function handleSessionExpiration(message: string = 'Your session has expired. Pl
   }
 
   const authStore = useAuthStore.getState();
-  
+
   // Only logout if user is actually authenticated
   if (authStore.isAuthenticated && authStore.token) {
     // Clear authentication state
     authStore.logout();
-    
+
     // Store message for display after redirect (using sessionStorage which clears on tab close)
     if (message) {
       sessionStorage.setItem('session_expired_message', message);
     }
-    
+
     // Redirect to login page
     window.location.href = '/login';
   }
