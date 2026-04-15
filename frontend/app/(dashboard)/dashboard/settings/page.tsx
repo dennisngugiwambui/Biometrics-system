@@ -466,9 +466,14 @@ export default function SettingsPage() {
     >
       <div className="w-full space-y-8">
         {/* Page Header */}
-        <motion.div variants={fadeInUp} className="space-y-1">
-          <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">School Settings</h2>
-          <p className="text-muted-foreground">Manage your school's information, colours, and branding</p>
+        <motion.div variants={fadeInUp} className="flex items-center gap-4">
+          <div className="p-3 rounded-2xl bg-linear-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/25 text-white shrink-0">
+            <School className="h-6 w-6" />
+          </div>
+          <div className="space-y-0.5">
+            <h2 className="text-2xl font-bold tracking-tight text-transparent bg-clip-text bg-linear-to-r from-indigo-600 to-violet-600 dark:from-indigo-400 dark:to-violet-400 sm:text-3xl">School Settings</h2>
+            <p className="text-muted-foreground text-sm">Manage your school's information, colours, and branding</p>
+          </div>
         </motion.div>
 
         {/* Alerts */}

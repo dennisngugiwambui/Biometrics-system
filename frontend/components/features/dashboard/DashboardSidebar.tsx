@@ -158,8 +158,8 @@ export function DashboardSidebar({
     .slice(0, 2)
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-border/50 glass-panel shadow-premium transition-all duration-300">
-      <SidebarHeader className="border-b border-sidebar-border/30 p-3 relative bg-primary/5 transition-all">
+    <Sidebar collapsible="icon" className="border-r-0 shadow-xl transition-all duration-300">
+      <SidebarHeader className="border-b border-sidebar-border/20 p-3 relative transition-all">
         <MobileCloseButton />
         <div className="flex items-center gap-3 pr-8 md:pr-0 overflow-hidden">
           {/* School Logo */}
@@ -190,8 +190,8 @@ export function DashboardSidebar({
         <ScrollArea className="h-full">
           {/* Core Navigation */}
           <SidebarGroup className="px-3">
-            <SidebarGroupLabel className="px-2 py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-sidebar-foreground/30">
-              Core Fleet
+            <SidebarGroupLabel className="px-2 py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-sidebar-foreground/40">
+              Navigation
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="gap-1.5">
@@ -208,8 +208,8 @@ export function DashboardSidebar({
                           group transition-all duration-300 rounded-xl
                           group-data-[collapsible=icon]:justify-center
                           ${isActive
-                            ? "bg-primary text-primary-foreground shadow-glow bevel-sm"
-                            : "hover:bg-primary/10 hover:text-primary"}
+                            ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-[0_0_16px_-4px_rgba(99,102,241,0.6)] bevel-sm"
+                            : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"}
                         `}
                       >
                         <Link href={item.href} className="flex items-center gap-3 group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:justify-center">
@@ -226,8 +226,8 @@ export function DashboardSidebar({
 
           {/* System Navigation */}
           <SidebarGroup className="px-3 mt-4 group-data-[collapsible=icon]:mt-2">
-            <SidebarGroupLabel className="px-2 py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-sidebar-foreground/30 group-data-[collapsible=icon]:hidden">
-              System Support
+            <SidebarGroupLabel className="px-2 py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-sidebar-foreground/40 group-data-[collapsible=icon]:hidden">
+              System
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="gap-1.5">
@@ -245,8 +245,8 @@ export function DashboardSidebar({
                           group transition-all duration-300 rounded-xl
                           group-data-[collapsible=icon]:justify-center
                           ${isActive
-                            ? "bg-primary text-primary-foreground shadow-glow bevel-sm"
-                            : "hover:bg-primary/10 hover:text-primary"}
+                            ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-[0_0_16px_-4px_rgba(99,102,241,0.6)] bevel-sm"
+                            : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"}
                         `}
                       >
                         <Link href={item.href} className="relative flex items-center gap-3 group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:justify-center">
@@ -271,7 +271,7 @@ export function DashboardSidebar({
         </ScrollArea>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border/50 p-2">
+      <SidebarFooter className="border-t border-sidebar-border/30 p-2">
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>

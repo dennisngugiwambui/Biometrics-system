@@ -59,9 +59,33 @@ const CATEGORY_COLOR_MAP: Record<string, string> = {
   system: "text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30",
 }
 
+// ─────────────────────────────────────────── deduplication helper
+
+interface GroupedNotif extends Notification {
+  _count: number
+  _ids: number[]
+}
+
+function deduplicateItems(items: Notification[]): GroupedNotif[] {
+  const map = new Map<string, GroupedNotif>()
+  for (const n of items) {
+    const key = `${n.type}::${n.title}::${n.message}`
+    if (map.has(key)) {
+      const existing = map.get(key)!
+      existing._count += 1
+      existing._ids.push(n.id)
+      // Keep the unread state if any duplicate is unread
+      if (!n.is_read) existing.is_read = false
+    } else {
+      map.set(key, { ...n, _count: 1, _ids: [n.id] })
+    }
+  }
+  return [...map.values()]
+}
+
 // ─────────────────────────────────────────── Notification Row
 
-function NotifRow({ notif, onRead }: { notif: Notification; onRead: (id: number) => void }) {
+function NotifRow({ notif, onRead }: { notif: GroupedNotif; onRead: (ids: number[]) => void }) {
   const Icon = CATEGORY_ICON_MAP[notif.type] || Bell
   const colors = CATEGORY_COLOR_MAP[notif.type] || "text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800"
 
@@ -71,10 +95,10 @@ function NotifRow({ notif, onRead }: { notif: Notification; onRead: (id: number)
       initial={{ opacity: 0, x: -8 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, height: 0 }}
-      onClick={() => !notif.is_read && onRead(notif.id)}
-      className={`flex items-start gap-4 p-4 rounded-xl cursor-pointer transition-all hover:scale-[1.01] ${notif.is_read
+      onClick={() => !notif.is_read && onRead(notif._ids)}
+      className={`flex items-start gap-4 p-4 cursor-pointer transition-all hover:scale-[1.005] ${notif.is_read
         ? "bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50"
-        : "bg-blue-50/60 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+        : "bg-indigo-50/60 dark:bg-indigo-900/10 border-l-2 border-l-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
         }`}
     >
       {/* Icon */}
@@ -91,11 +115,16 @@ function NotifRow({ notif, onRead }: { notif: Notification; onRead: (id: number)
                 {notif.title}
               </p>
               {!notif.is_read && (
-                <span className="h-2 w-2 rounded-full bg-blue-500 shrink-0" />
+                <span className="h-2 w-2 rounded-full bg-indigo-500 shrink-0" />
               )}
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${colors}`}>
                 {notif.type}
               </span>
+              {notif._count > 1 && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+                  ×{notif._count}
+                </span>
+              )}
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5 leading-snug">{notif.message}</p>
           </div>
@@ -137,11 +166,11 @@ export default function NotificationsPage() {
     return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
   }, [fetchNotifications])
 
-  const handleMarkRead = async (id: number) => {
+  const handleMarkRead = async (ids: number[]) => {
     if (!token) return
     try {
-      await markAsRead(token, id)
-      setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, is_read: true } : n))
+      await Promise.all(ids.map((id) => markAsRead(token, id)))
+      setNotifications((prev) => prev.map((n) => ids.includes(n.id) ? { ...n, is_read: true } : n))
     } catch { /* silent */ }
   }
 
@@ -273,7 +302,7 @@ export default function NotificationsPage() {
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-1">{label}</p>
                 <div className="rounded-2xl border border-gray-200/70 dark:border-gray-700/70 bg-gray-50 dark:bg-gray-800/50 divide-y divide-gray-100 dark:divide-gray-700/50 overflow-hidden shadow-sm">
                   <AnimatePresence>
-                    {items.map((n) => (
+                    {deduplicateItems(items).map((n) => (
                       <NotifRow key={n.id} notif={n} onRead={handleMarkRead} />
                     ))}
                   </AnimatePresence>

@@ -70,8 +70,7 @@ function StatCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.4, ease: "easeOut" }}
-      className="relative overflow-hidden rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow"
-      style={{ background: "white" }}
+      className="relative overflow-hidden rounded-2xl p-5 bg-card border border-border shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5"
     >
       {/* Gradient accent bar */}
       <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${gradient}`} />

@@ -1319,13 +1319,14 @@ export default function AttendancePage() {
         {/* Header */}
         <div className="relative mb-6">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-blue-600 rounded-2xl shadow-lg shadow-blue-500/20 text-white">
+            <div className="p-3 bg-linear-to-br from-indigo-500 to-violet-600 rounded-2xl shadow-lg shadow-indigo-500/25 text-white">
               <ClipboardCheck className="size-6" />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground uppercase">
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-transparent bg-clip-text bg-linear-to-r from-indigo-600 to-violet-600 dark:from-indigo-400 dark:to-violet-400">
                 Attendance Terminal
               </h1>
+              <p className="text-xs text-muted-foreground mt-0.5 font-medium">Real-time biometric event capture</p>
             </div>
           </div>
         </div>
