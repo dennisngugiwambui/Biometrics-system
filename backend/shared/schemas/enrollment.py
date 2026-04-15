@@ -1,8 +1,8 @@
 """Pydantic schemas for Enrollment."""
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Literal
 from enum import Enum
 
 
@@ -22,7 +22,8 @@ class EnrollmentSessionBase(BaseModel):
     student_id: Optional[int] = Field(None, description="Student ID (one of student_id or teacher_id required)")
     teacher_id: Optional[int] = Field(None, description="Teacher ID (one of student_id or teacher_id required)")
     device_id: int = Field(..., description="Device ID")
-    finger_id: int = Field(..., ge=0, le=9, description="Finger ID (0-9)")
+    finger_id: Optional[int] = Field(None, ge=0, le=9, description="Finger ID (0-9); omit for card-only")
+    enrollment_kind: str = Field(default="fingerprint", description="fingerprint | card | card_and_fingerprint")
     status: EnrollmentStatus = Field(default=EnrollmentStatus.PENDING, description="Enrollment status")
 
 
@@ -51,7 +52,8 @@ class EnrollmentSessionResponse(BaseModel):
     student_id: Optional[int] = None
     teacher_id: Optional[int] = None
     device_id: int
-    finger_id: int
+    finger_id: Optional[int] = None
+    enrollment_kind: str = "fingerprint"
     school_id: int
     status: EnrollmentStatus
     error_message: Optional[str] = None
@@ -70,7 +72,30 @@ class EnrollmentStartRequest(BaseModel):
 
     student_id: int = Field(..., description="Student ID")
     device_id: int = Field(..., description="Device ID")
-    finger_id: int = Field(..., ge=0, le=9, description="Finger ID (0-9)")
+    finger_id: Optional[int] = Field(
+        default=None,
+        ge=0,
+        le=9,
+        description="Finger ID (0-9); required for fingerprint / both",
+    )
+    credential_mode: Literal["fingerprint", "card", "both"] = Field(
+        default="fingerprint",
+        description="fingerprint: scan only; card: RFID via set_user; both: card then fingerprint",
+    )
+    card_number: Optional[str] = Field(
+        None,
+        description="Raw card UID string (saved on student and pushed to device when mode is card or both)",
+    )
+
+    @model_validator(mode="after")
+    def _validate_credential_mode(self) -> "EnrollmentStartRequest":
+        if self.credential_mode in ("fingerprint", "both"):
+            if self.finger_id is None:
+                raise ValueError("finger_id is required for fingerprint or both modes")
+        if self.credential_mode in ("card", "both"):
+            if not (self.card_number and str(self.card_number).strip()):
+                raise ValueError("card_number is required for card or both modes")
+        return self
 
 
 class EnrollmentStartRequestTeacher(BaseModel):
@@ -88,9 +113,14 @@ class EnrollmentStartResponse(BaseModel):
     student_id: Optional[int] = None
     teacher_id: Optional[int] = None
     device_id: int
-    finger_id: int
+    finger_id: Optional[int] = None
+    enrollment_kind: str = "fingerprint"
     status: EnrollmentStatus
     started_at: datetime
+    completed_immediately: bool = Field(
+        default=False,
+        description="True when card-only flow finished without fingerprint capture",
+    )
 
     class Config:
         from_attributes = True
@@ -112,7 +142,8 @@ class EnrollmentRecordSummary(BaseModel):
     student_id: Optional[int] = None
     teacher_id: Optional[int] = None
     device_id: int
-    finger_id: int
+    finger_id: Optional[int] = None
+    enrollment_kind: str = "fingerprint"
     quality_score: Optional[int] = None
     completed_at: Optional[datetime] = None
     has_template: bool = Field(description="Whether template is stored for sync")

@@ -1,0 +1,64 @@
+# Claude Code memory (local AI context — not project source)
+.claude/
+
+# IDE / editor settings
+.cursor/
+.idea/
+*.suo
+*.user
+*.vspscc
+*.vssscc
+.vs/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Windows / Office temp
+Microsoft/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Docker
+*.override.yml
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Next.js (covered by frontend/.gitignore too)
+.next/
+out/

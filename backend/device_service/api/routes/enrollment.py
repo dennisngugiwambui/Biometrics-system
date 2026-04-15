@@ -11,6 +11,7 @@ from shared.schemas.enrollment import (
     EnrollmentStartRequestTeacher,
     EnrollmentStartResponse,
     EnrollmentSessionResponse,
+    EnrollmentStatus,
     EnrolledFingersResponse,
     EnrollmentCountResponse,
     EnrollmentRecordSummary,
@@ -27,6 +28,13 @@ from device_service.exceptions import (
 )
 
 router = APIRouter(prefix="/api/v1/enrollment", tags=["enrollment"])
+
+
+def _session_status_enum(raw: object) -> EnrollmentStatus:
+    try:
+        return EnrollmentStatus(str(raw))
+    except ValueError:
+        return EnrollmentStatus.PENDING
 
 
 @router.get(
@@ -94,18 +102,25 @@ async def start_enrollment(
         enrollment_session = await enrollment_service.start_enrollment(
             student_id=request.student_id,
             device_id=request.device_id,
-            finger_id=request.finger_id,
             school_id=current_user.school_id,
+            finger_id=request.finger_id,
+            credential_mode=request.credential_mode,
+            card_number=request.card_number,
         )
-        
+
+        status_enum = _session_status_enum(enrollment_session.status)
+        completed_immediately = status_enum == EnrollmentStatus.COMPLETED
+
         return EnrollmentStartResponse(
             session_id=enrollment_session.session_id,
             student_id=enrollment_session.student_id,
             teacher_id=getattr(enrollment_session, "teacher_id", None),
             device_id=enrollment_session.device_id,
             finger_id=enrollment_session.finger_id,
-            status=enrollment_session.status,
+            enrollment_kind=getattr(enrollment_session, "enrollment_kind", None) or "fingerprint",
+            status=status_enum,
             started_at=enrollment_session.started_at,
+            completed_immediately=completed_immediately,
         )
         
     except DeviceNotFoundError as e:
@@ -136,7 +151,7 @@ async def start_enrollment(
     except EnrollmentError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
+            detail={"message": str(e), "code": e.code},
         )
     except Exception as e:
         # Log unexpected errors
@@ -180,14 +195,20 @@ async def start_teacher_enrollment(
             finger_id=request.finger_id,
             school_id=current_user.school_id,
         )
+        try:
+            t_status = EnrollmentStatus(str(enrollment_session.status))
+        except ValueError:
+            t_status = EnrollmentStatus.PENDING
         return EnrollmentStartResponse(
             session_id=enrollment_session.session_id,
             student_id=None,
             teacher_id=enrollment_session.teacher_id,
             device_id=enrollment_session.device_id,
             finger_id=enrollment_session.finger_id,
-            status=enrollment_session.status,
+            enrollment_kind=getattr(enrollment_session, "enrollment_kind", None) or "fingerprint",
+            status=t_status,
             started_at=enrollment_session.started_at,
+            completed_immediately=False,
         )
     except DeviceNotFoundError as e:
         raise HTTPException(
@@ -227,6 +248,7 @@ def _enrollment_to_summary(session) -> EnrollmentRecordSummary:
         teacher_id=getattr(session, "teacher_id", None),
         device_id=session.device_id,
         finger_id=session.finger_id,
+        enrollment_kind=getattr(session, "enrollment_kind", None) or "fingerprint",
         quality_score=session.quality_score,
         completed_at=session.completed_at,
         has_template=bool(getattr(session, "template_data", None)),
@@ -381,8 +403,9 @@ async def cancel_enrollment(
             teacher_id=getattr(enrollment_session, "teacher_id", None),
             device_id=enrollment_session.device_id,
             finger_id=enrollment_session.finger_id,
+            enrollment_kind=getattr(enrollment_session, "enrollment_kind", None) or "fingerprint",
             school_id=enrollment_session.school_id,
-            status=enrollment_session.status,
+            status=_session_status_enum(enrollment_session.status),
             error_message=enrollment_session.error_message,
             quality_score=enrollment_session.quality_score,
             started_at=enrollment_session.started_at,
@@ -435,8 +458,9 @@ async def check_enrollment_status(
             teacher_id=getattr(enrollment_session, "teacher_id", None),
             device_id=enrollment_session.device_id,
             finger_id=enrollment_session.finger_id,
+            enrollment_kind=getattr(enrollment_session, "enrollment_kind", None) or "fingerprint",
             school_id=enrollment_session.school_id,
-            status=enrollment_session.status,
+            status=_session_status_enum(enrollment_session.status),
             error_message=enrollment_session.error_message,
             quality_score=enrollment_session.quality_score,
             started_at=enrollment_session.started_at,

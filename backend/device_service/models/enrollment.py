@@ -27,8 +27,11 @@ class EnrollmentSession(Base):
     student_id = Column(Integer, ForeignKey("students.id"), nullable=True, index=True)
     teacher_id = Column(Integer, ForeignKey("teachers.id"), nullable=True, index=True)
     device_id = Column(Integer, ForeignKey("devices.id"), nullable=False, index=True)
-    finger_id = Column(Integer, nullable=False)  # 0-9
+    # 0-9 for fingerprint; NULL for card-only enrollment
+    finger_id = Column(Integer, nullable=True)
     school_id = Column(Integer, ForeignKey("schools.id"), nullable=False, index=True)
+    # fingerprint | card | card_and_fingerprint
+    enrollment_kind = Column(String(20), server_default=text("'fingerprint'"), nullable=False)
 
     status = Column(String(20), server_default=text("'pending'"), nullable=False, index=True)
     error_message = Column(Text, nullable=True)

@@ -30,6 +30,7 @@ class EnrollmentRepository:
         # Generate session_id if not provided
         session_id = enrollment_data.session_id or str(uuid.uuid4())
         
+        kind = getattr(enrollment_data, "enrollment_kind", None) or "fingerprint"
         enrollment_session = EnrollmentSession(
             session_id=session_id,
             student_id=enrollment_data.student_id,
@@ -37,6 +38,7 @@ class EnrollmentRepository:
             device_id=enrollment_data.device_id,
             finger_id=enrollment_data.finger_id,
             school_id=enrollment_data.school_id,
+            enrollment_kind=kind,
             status=enrollment_data.status.value if isinstance(enrollment_data.status, EnrollmentStatus) else enrollment_data.status,
         )
         self.db.add(enrollment_session)

@@ -7,6 +7,7 @@ asyncio.to_thread to make it async-compatible.
 """
 
 import asyncio
+import inspect
 import logging
 import time
 import sys
@@ -442,21 +443,35 @@ class ZKDeviceConnection:
             self._is_connected = False
             return False
 
-    async def get_users(self) -> list:
+    async def get_users(self, *, strict: bool = False) -> list:
         """
         Get list of users on the device.
+
+        Args:
+            strict: If True, raise RuntimeError when disconnected or the device
+                cannot return users (callers that need a definitive roster, e.g.
+                unsynced-students, should use strict=True).
 
         Returns:
             List of user objects with uid, user_id, name attributes
         """
         if not self.is_connected or self.conn is None:
-            raise RuntimeError("Device not connected")
+            if strict:
+                raise RuntimeError("Device not connected")
+            logger.warning(
+                "get_users called without active connection for %s:%s",
+                self.ip,
+                self.port,
+            )
+            return []
 
         try:
             users = await asyncio.to_thread(self.conn.get_users)
             return list(users) if users else []
         except Exception as e:
-            logger.warning(f"get_users failed for {self.ip}:{self.port}: {e}")
+            logger.warning("get_users failed for %s:%s: %s", self.ip, self.port, e)
+            if strict:
+                raise RuntimeError(f"Could not read users from device: {e}") from e
             return []
 
     async def get_attendance_logs(self) -> List[Dict[str, Any]]:
@@ -518,6 +533,9 @@ class ZKDeviceConnection:
         name: str,
         user_id: str,
         privilege: int = 0,
+        password: str = "",
+        group_id: str = "",
+        card: int = 0,
     ) -> bool:
         """
         Add or update a user on the device (sync student to device).
@@ -527,6 +545,9 @@ class ZKDeviceConnection:
             name: Display name (e.g. "AdmissionNumber - FirstName LastName")
             user_id: User ID string on device (typically str(student_id))
             privilege: Privilege level (0=normal user, 14=admin), default 0
+            password: Optional device password string (pyzk)
+            group_id: Optional group id string (pyzk)
+            card: RFID card number (0 = none), from zk_card_from_string
 
         Returns:
             True if successful
@@ -534,15 +555,33 @@ class ZKDeviceConnection:
         if not self.is_connected or self.conn is None:
             raise RuntimeError("Device not connected")
 
+        def _call_set_user() -> None:
+            trimmed = name[:24] if len(name) > 24 else name
+            sig = inspect.signature(self.conn.set_user)
+            params = sig.parameters
+            kwargs: Dict[str, Any] = {
+                "uid": uid,
+                "name": trimmed,
+                "privilege": privilege,
+                "user_id": user_id,
+            }
+            if "password" in params:
+                kwargs["password"] = password
+            if "group_id" in params:
+                kwargs["group_id"] = group_id
+            if "card" in params:
+                kwargs["card"] = card
+            self.conn.set_user(**kwargs)
+
         try:
-            await asyncio.to_thread(
-                self.conn.set_user,
-                uid=uid,
-                name=name[:24] if len(name) > 24 else name,  # Device may limit name length
-                privilege=privilege,
-                user_id=user_id,
+            await asyncio.to_thread(_call_set_user)
+            logger.info(
+                "set_user succeeded on %s:%s: user_id=%s card=%s",
+                self.ip,
+                self.port,
+                user_id,
+                card,
             )
-            logger.info(f"set_user succeeded on {self.ip}:{self.port}: user_id={user_id}")
             return True
         except Exception as e:
             logger.error(f"set_user failed for {self.ip}:{self.port}: {e}", exc_info=True)

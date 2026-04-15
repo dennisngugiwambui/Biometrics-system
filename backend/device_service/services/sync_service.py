@@ -18,6 +18,7 @@ from device_service.exceptions import (
     StudentNotFoundError,
     TeacherNotFoundError,
 )
+from device_service.core.zk_card import zk_card_from_string
 
 # Import Student from school_service - device_service shares DB
 from school_service.models.student import Student
@@ -102,14 +103,24 @@ class SyncService:
         # Format name for device: "AdmissionNumber - FirstName LastName"
         name = f"{student.admission_number} - {student.first_name} {student.last_name}"
         user_id_str = str(student_id)
+        raw_card = getattr(student, "access_card_number", None)
+        try:
+            card_val = zk_card_from_string(raw_card)
+        except ValueError:
+            logger.warning(
+                "Invalid access_card_number for student_id=%s; syncing user without card",
+                student_id,
+            )
+            card_val = 0
 
         await conn.set_user(
             uid=student_id,
             name=name,
             user_id=user_id_str,
             privilege=0,
+            card=card_val,
         )
-        logger.info(f"Synced student {student_id} to device {device_id}")
+        logger.info(f"Synced student {student_id} to device {device_id} (card={card_val})")
 
     async def sync_teacher_to_device(
         self,
@@ -283,9 +294,17 @@ class SyncService:
         if device.status != DeviceStatus.ONLINE:
             raise DeviceOfflineError(device_id)
         conn = await self.connection_service.get_connection(device)
-        if not conn:
+        if not conn or not conn.is_connected:
             raise DeviceOfflineError(device_id)
-        users = await conn.get_users()
+        try:
+            users = await conn.get_users(strict=True)
+        except RuntimeError as e:
+            logger.warning(
+                "Could not read user list from device_id=%s for unsynced comparison: %s",
+                device_id,
+                e,
+            )
+            raise DeviceOfflineError(device_id) from e
         return {str(getattr(u, "user_id", "") or "") for u in users if getattr(u, "user_id", None) is not None}
 
     async def list_unsynced_students(

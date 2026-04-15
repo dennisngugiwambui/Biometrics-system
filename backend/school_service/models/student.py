@@ -46,6 +46,9 @@ class Student(Base):
     # Enrollment type
     is_boarding = Column(Boolean, server_default=text("false"), nullable=False, index=True)
 
+    # RFID / Mifare card number (decimal or hex string); pushed to ZKTeco via set_user(card=...)
+    access_card_number = Column(String(32), nullable=True, index=True)
+
     # Metadata
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=True)

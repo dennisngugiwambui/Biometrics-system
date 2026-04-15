@@ -8,20 +8,51 @@ from typing import TYPE_CHECKING, List, Optional, Tuple
 if TYPE_CHECKING:
     from school_service.models.academic_class import AcademicClass
 
-FORM_RE = re.compile(r"form\s*(\d+)", re.IGNORECASE)
-GRADE_RE = re.compile(r"grade\s*(\d+)", re.IGNORECASE)
+# Word boundaries avoid false positives ("inform", "transform", "information 1").
+# Optional en/em dash between label and digit matches "Grade – 11" from some UIs.
+_DASH = r"[–—\-]?"  # en dash, em dash, hyphen
+FORM_RE = re.compile(rf"\bform\b\s*{_DASH}\s*(\d+)", re.IGNORECASE)
+GRADE_RE_SPACE = re.compile(rf"\bgrade\b\s*{_DASH}\s*(\d+)", re.IGNORECASE)
+# Compact "Grade10" / "grade11"
+GRADE_RE_COMPACT = re.compile(r"\bgrade(\d+)\b", re.IGNORECASE)
+# UK-style upper-secondary "Year 10" … "Year 13" only (avoid "Year 2024")
+YEAR_RE = re.compile(rf"\byear\b\s*{_DASH}\s*(\d+)", re.IGNORECASE)
+# "Gr. 11", "Gr 11", "Gr11"
+GR_ABBREV_RE = re.compile(r"\bgr\.?\s*(\d+)", re.IGNORECASE)
+
+_YEAR_AS_GRADE_MIN = 10
+_YEAR_AS_GRADE_MAX = 13
 
 
 def parse_form_or_grade_level(name: str) -> Optional[Tuple[str, int]]:
     """
-    Return ("form", n) or ("grade", n) if the class name contains Form N / Grade N.
+    Return ("form", n) or ("grade", n) if the class name encodes a ladder rung.
+
+    Recognises:
+    - Form N, Grade N (with optional space, hyphen or en dash before N)
+    - Grade10-style compact names
+    - Year 10–Year 13 as grade levels (common naming for senior secondary)
+    - Gr. / Gr / Gr11 style abbreviations
     """
-    m = FORM_RE.search(name or "")
+    if not name or not str(name).strip():
+        return None
+    s = str(name)
+
+    m = FORM_RE.search(s)
     if m:
         return ("form", int(m.group(1)))
-    m = GRADE_RE.search(name or "")
+
+    for rx in (GRADE_RE_SPACE, GRADE_RE_COMPACT, GR_ABBREV_RE):
+        m = rx.search(s)
+        if m:
+            return ("grade", int(m.group(1)))
+
+    m = YEAR_RE.search(s)
     if m:
-        return ("grade", int(m.group(1)))
+        n = int(m.group(1))
+        if _YEAR_AS_GRADE_MIN <= n <= _YEAR_AS_GRADE_MAX:
+            return ("grade", n)
+
     return None
 
 
@@ -52,6 +83,19 @@ def build_promotion_chains(classes: List["AcademicClass"], limit_to_ids: Optiona
     if len(grade) >= 2:
         chains.append([cid for _, cid in sorted(grade, key=lambda x: x[0])])
     return chains
+
+
+def ladder_form_grade_kinds(class_by_id: dict[int, "AcademicClass"], ladder_ids: List[int]) -> set[str]:
+    """Return {'form'} or {'grade'} or both if ladder mixes kinds; empty if any name is unparsable."""
+    kinds: set[str] = set()
+    for cid in ladder_ids:
+        c = class_by_id.get(cid)
+        if not c:
+            continue
+        p = parse_form_or_grade_level(c.name)
+        if p:
+            kinds.add(p[0])
+    return kinds
 
 
 def sort_single_chain_ladder(class_by_id: dict[int, "AcademicClass"], ladder_ids: List[int]) -> List[int]:

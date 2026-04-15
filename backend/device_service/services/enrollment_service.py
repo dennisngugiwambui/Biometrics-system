@@ -2,7 +2,9 @@
 
 import uuid
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
+
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 
@@ -24,6 +26,9 @@ from device_service.exceptions import (
 from shared.schemas.enrollment import EnrollmentSessionCreate, EnrollmentSessionUpdate
 from device_service.zk.enrollment import EnrollmentEvent, EnrollmentProgress
 from device_service.core.encryption import encrypt_template
+from device_service.core.zk_card import zk_card_from_string
+from device_service.services.sync_service import SyncService
+from school_service.models.student import Student
 
 logger = logging.getLogger(__name__)
 
@@ -52,56 +57,120 @@ class EnrollmentService:
         self.connection_service = DeviceConnectionService(db)
         self.fingerprint_template_repository = FingerprintTemplateRepository(db)
 
+    async def _persist_student_card(self, student_id: int, school_id: int, card_raw: str) -> None:
+        result = await self.db.execute(
+            select(Student).where(
+                Student.id == student_id,
+                Student.school_id == school_id,
+                Student.is_deleted == False,  # noqa: E712
+            )
+        )
+        st = result.scalar_one_or_none()
+        if not st:
+            raise EnrollmentError("Student not found for this school.", code="STUDENT_NOT_FOUND")
+        normalized = str(card_raw).strip()[:32]
+        if not normalized:
+            raise EnrollmentError("Card number is empty.", code="INVALID_CARD")
+        st.access_card_number = normalized
+        await self.db.flush()
+
+    async def _start_enrollment_card_only(
+        self,
+        student_id: int,
+        device_id: int,
+        school_id: int,
+        card_number: str,
+    ) -> EnrollmentSession:
+        try:
+            zk_card_from_string(card_number)
+        except ValueError as e:
+            raise EnrollmentError(str(e), code="INVALID_CARD") from e
+
+        device = await self.device_repository.get_by_id(device_id, school_id)
+        if not device:
+            raise DeviceNotFoundError(device_id)
+        if device.status != DeviceStatus.ONLINE:
+            raise DeviceOfflineError(device_id)
+        conn = await self.connection_service.get_connection(device)
+        if not conn:
+            raise DeviceOfflineError(device_id)
+        if not await conn.student_on_device(student_id):
+            raise StudentNotOnDeviceError(student_id, device_id)
+
+        await self._persist_student_card(student_id, school_id, card_number)
+        sync_service = SyncService(self.db)
+        await sync_service.sync_student_to_device(student_id, device_id, school_id)
+
+        session_id = str(uuid.uuid4())
+        sess = EnrollmentSession(
+            session_id=session_id,
+            student_id=student_id,
+            teacher_id=None,
+            device_id=device_id,
+            finger_id=None,
+            school_id=school_id,
+            enrollment_kind="card",
+            status=EnrollmentStatus.COMPLETED.value,
+            completed_at=datetime.now(timezone.utc),
+        )
+        self.db.add(sess)
+        await self.db.commit()
+        await self.db.refresh(sess)
+
+        await enrollment_broadcaster.broadcast_completion(
+            school_id=school_id,
+            session_id=session_id,
+            message="Access card saved and programmed on the device.",
+            quality_score=None,
+        )
+        logger.info("Card enrollment completed session=%s student=%s", session_id, student_id)
+        return sess
+
     async def start_enrollment(
         self,
         student_id: int,
         device_id: int,
-        finger_id: int,
         school_id: int,
+        *,
+        finger_id: Optional[int] = None,
+        credential_mode: str = "fingerprint",
+        card_number: Optional[str] = None,
     ) -> EnrollmentSession:
         """
-        Start enrollment on a device.
-        
-        This method:
-        1. Validates device and student exist
-        2. Checks device is online
-        3. Creates enrollment session in database
-        4. Connects to device and sends enrollment command
-        5. Updates session status to IN_PROGRESS
-        
-        Args:
-            student_id: Student ID
-            device_id: Device ID
-            finger_id: Finger ID (0-9)
-            school_id: School ID
-            
-        Returns:
-            EnrollmentSession instance
-            
-        Raises:
-            DeviceNotFoundError: If device not found
-            DeviceOfflineError: If device is offline
-            EnrollmentError: If enrollment fails
+        Start student enrollment: fingerprint capture, card programming (ZKTeco set_user card), or both.
         """
-        # Get device
+        if credential_mode == "card":
+            return await self._start_enrollment_card_only(
+                student_id, device_id, school_id, card_number or ""
+            )
+
+        if finger_id is None:
+            raise EnrollmentError("finger_id is required for fingerprint enrollment.", code="INVALID_REQUEST")
+
         device = await self.device_repository.get_by_id(device_id, school_id)
         if not device:
             raise DeviceNotFoundError(device_id)
-        
-        # Check device is online
+
         if device.status != DeviceStatus.ONLINE:
             raise DeviceOfflineError(device_id)
 
-        # Get device connection early - needed for student-on-device check
         conn = await self.connection_service.get_connection(device)
         if not conn:
             raise DeviceOfflineError(device_id)
 
-        # Ensure student is synced to device before enrollment (user-driven sync, no auto-sync)
         if not await conn.student_on_device(student_id):
             raise StudentNotOnDeviceError(student_id, device_id)
 
-        # Create enrollment session
+        enrollment_kind = "card_and_fingerprint" if credential_mode == "both" else "fingerprint"
+        if credential_mode == "both":
+            try:
+                zk_card_from_string(card_number or "")
+            except ValueError as e:
+                raise EnrollmentError(str(e), code="INVALID_CARD") from e
+            await self._persist_student_card(student_id, school_id, card_number or "")
+            sync_service = SyncService(self.db)
+            await sync_service.sync_student_to_device(student_id, device_id, school_id)
+
         session_id = str(uuid.uuid4())
         enrollment_session = await self.repository.create(
             EnrollmentSessionCreate(
@@ -110,6 +179,7 @@ class EnrollmentService:
                 device_id=device_id,
                 finger_id=finger_id,
                 school_id=school_id,
+                enrollment_kind=enrollment_kind,
                 status=EnrollmentStatus.PENDING,
             )
         )
@@ -485,7 +555,11 @@ class EnrollmentService:
             )
 
         # Store in fingerprint_templates only for students (canonical store / transfer)
-        if template_data and enrollment_session.student_id is not None:
+        if (
+            template_data
+            and enrollment_session.student_id is not None
+            and enrollment_session.finger_id is not None
+        ):
             await self.fingerprint_template_repository.create(
                 student_id=enrollment_session.student_id,
                 device_id=enrollment_session.device_id,

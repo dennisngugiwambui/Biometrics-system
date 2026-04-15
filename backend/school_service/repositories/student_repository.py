@@ -30,6 +30,8 @@ class StudentRepository:
             stream_id=student_data.stream_id,
             parent_phone=student_data.parent_phone,
             parent_email=student_data.parent_email,
+            is_boarding=student_data.is_boarding,
+            access_card_number=student_data.access_card_number,
         )
         self.db.add(student)
         if commit:

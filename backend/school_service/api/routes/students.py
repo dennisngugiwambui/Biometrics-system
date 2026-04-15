@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import logging
 import math
 from datetime import date
 from typing import Optional, List
@@ -28,8 +29,14 @@ from shared.schemas.student import (
 from shared.schemas.user import UserResponse
 from school_service.api.routes.auth import get_current_user
 from school_service.services.notification_service import NotificationService
+
+logger = logging.getLogger(__name__)
 from school_service.services.cohort_promotion_service import CohortPromotionService
-from school_service.services.class_ladder_order import build_promotion_chains, sort_single_chain_ladder
+from school_service.services.class_ladder_order import (
+    build_promotion_chains,
+    ladder_form_grade_kinds,
+    sort_single_chain_ladder,
+)
 from school_service.services.device_gateway_client import (
     remove_students_from_devices_via_gateway,
     resync_active_students_all_devices_via_gateway,
@@ -293,8 +300,28 @@ async def promote_cohort(
             if not chains:
                 by_id = {c.id: c for c in selected}
                 ordered = sort_single_chain_ladder(by_id, body.ladder_class_ids)
-                chains = [ordered] if len(ordered) >= 2 else []
+                if len(ordered) >= 2:
+                    kinds = ladder_form_grade_kinds(by_id, ordered)
+                    if len(kinds) > 1:
+                        raise HTTPException(
+                            status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=(
+                                "This ladder mixes Form and Grade classes. Remove one kind, "
+                                "or use “promote all school chains” / only Form* or only Grade* in the ladder."
+                            ),
+                        )
+                    chains = [ordered]
         else:
+            by_id = {c.id: c for c in selected}
+            kinds = ladder_form_grade_kinds(by_id, body.ladder_class_ids)
+            if len(kinds) > 1:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=(
+                        "Do not mix Form and Grade in one ladder. Enable auto-sort, "
+                        "or use promote-all-chains, or run separate promotions."
+                    ),
+                )
             chains = [body.ladder_class_ids]
 
     if not chains:
@@ -304,6 +331,14 @@ async def promote_cohort(
                 "Could not build promotion chains. Use class names like 'Form 1' or 'Grade 10', "
                 "or enable 'use all school chains' with at least two such classes."
             ),
+        )
+
+    name_by_id = {c.id: c.name for c in all_classes}
+    for idx, chain in enumerate(chains):
+        logger.info(
+            "Cohort promotion chain %s: %s",
+            idx + 1,
+            " → ".join(name_by_id.get(cid, f"id={cid}") for cid in chain),
         )
 
     svc = CohortPromotionService(db)

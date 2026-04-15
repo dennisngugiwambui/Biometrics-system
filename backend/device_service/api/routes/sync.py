@@ -1,10 +1,14 @@
 """API routes for student-device sync."""
 
+import logging
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, status, Depends, Query
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel, Field
+
+logger = logging.getLogger(__name__)
 
 from device_service.core.database import get_db
 from device_service.services.sync_service import SyncService
@@ -54,6 +58,21 @@ class UnsyncedStudentItem(BaseModel):
     last_name: str
     full_name: str
     class_name: Optional[str] = None
+
+
+def _unsynced_student_item_from_row(r: dict) -> UnsyncedStudentItem:
+    """Build response item; tolerate legacy/null DB strings without failing validation."""
+    fn = (r.get("first_name") or "").strip()
+    ln = (r.get("last_name") or "").strip()
+    full = (r.get("full_name") or f"{fn} {ln}".strip()) or ""
+    return UnsyncedStudentItem(
+        id=r["id"],
+        admission_number=(r.get("admission_number") or "").strip(),
+        first_name=fn,
+        last_name=ln,
+        full_name=full,
+        class_name=r.get("class_name"),
+    )
 
 
 class UnsyncedTeacherItem(BaseModel):
@@ -280,13 +299,32 @@ async def list_unsynced_students(
             class_id=class_id,
             stream_id=stream_id,
         )
-        return [UnsyncedStudentItem(**r) for r in rows]
+        return [_unsynced_student_item_from_row(r) for r in rows]
     except DeviceNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except DeviceOfflineError as e:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e)
         )
+    except SQLAlchemyError:
+        logger.exception(
+            "Database error listing unsynced students (device_id=%s school_id=%s)",
+            device_id,
+            getattr(current_user, "school_id", None),
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Could not load students for device sync. Try again or check server logs.",
+        ) from None
+    except Exception:
+        logger.exception(
+            "Unexpected error listing unsynced students (device_id=%s)",
+            device_id,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Could not load students pending sync. If the device is online, check server logs.",
+        ) from None
 
 
 @router.get(
@@ -309,6 +347,25 @@ async def list_unsynced_teachers(
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e)
         )
+    except SQLAlchemyError:
+        logger.exception(
+            "Database error listing unsynced teachers (device_id=%s school_id=%s)",
+            device_id,
+            getattr(current_user, "school_id", None),
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Could not load teachers for device sync. Try again or check server logs.",
+        ) from None
+    except Exception:
+        logger.exception(
+            "Unexpected error listing unsynced teachers (device_id=%s)",
+            device_id,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Could not load teachers pending sync. If the device is online, check server logs.",
+        ) from None
 
 
 @router.post(

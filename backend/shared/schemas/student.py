@@ -31,6 +31,11 @@ class StudentBase(BaseModel):
     )
     parent_email: Optional[EmailStr] = Field(None, description="Parent/guardian email address")
     is_boarding: bool = Field(False, description="Whether the student is a boarder")
+    access_card_number: Optional[str] = Field(
+        None,
+        max_length=32,
+        description="RFID/access card UID (decimal or hex). Synced to ZKTeco devices as card number.",
+    )
 
 
 class StudentCreate(StudentBase):
@@ -53,6 +58,7 @@ class StudentUpdate(BaseModel):
     parent_phone: Optional[str] = Field(None, pattern=r"^\+?[0-9]{10,15}$")
     parent_email: Optional[EmailStr] = None
     is_boarding: Optional[bool] = None
+    access_card_number: Optional[str] = Field(None, max_length=32)
     # Note: admission_number and school_id are immutable
 
 
