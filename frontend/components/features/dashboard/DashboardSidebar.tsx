@@ -25,23 +25,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
-  LayoutDashboard,
-  Users,
-  Smartphone,
-  ClipboardCheck,
-  UserPlus,
-  Bell,
-  Settings,
-  School,
-  HelpCircle,
-  LogOut,
-  ChevronUp,
-  LucideIcon,
-  GraduationCap,
-  UserCheck,
-  X,
-  FileText,
-  DoorOpen,
+  LayoutDashboard, Users, Smartphone, ClipboardCheck, UserPlus,
+  Bell, Settings, School, HelpCircle, LogOut, ChevronUp,
+  LucideIcon, GraduationCap, UserCheck, X, FileText, DoorOpen,
 } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
@@ -52,7 +38,6 @@ export interface NavigationItem {
   name: string
   icon: LucideIcon
   href: string
-  current?: boolean
   badge?: number
 }
 
@@ -63,41 +48,38 @@ export interface DashboardSidebarProps {
   currentPath?: string
   onLogout?: () => void
   onSettings?: () => void
-  /** School name shown in sidebar header – defaults to "SchoolAdmin" */
   schoolName?: string
-  /** Base64 data URL of the school logo */
   logoDataUrl?: string | null
 }
 
 const coreNavigation: NavigationItem[] = [
-  { name: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
-  { name: "Students", icon: Users, href: "/dashboard/students" },
-  { name: "Classes", icon: GraduationCap, href: "/dashboard/classes" },
-  { name: "Devices", icon: Smartphone, href: "/dashboard/devices" },
-  { name: "Attendance", icon: ClipboardCheck, href: "/dashboard/attendance" },
-  { name: "Presence", icon: DoorOpen, href: "/dashboard/presence" },
-  { name: "Teachers", icon: UserCheck, href: "/dashboard/teachers" },
-  { name: "Enrollment", icon: UserPlus, href: "/dashboard/enrollment" },
-  { name: "Reports", icon: FileText, href: "/dashboard/reports" },
+  { name: "Dashboard",  icon: LayoutDashboard, href: "/dashboard" },
+  { name: "Students",   icon: Users,           href: "/dashboard/students" },
+  { name: "Classes",    icon: GraduationCap,   href: "/dashboard/classes" },
+  { name: "Devices",    icon: Smartphone,      href: "/dashboard/devices" },
+  { name: "Attendance", icon: ClipboardCheck,  href: "/dashboard/attendance" },
+  { name: "Presence",   icon: DoorOpen,        href: "/dashboard/presence" },
+  { name: "Teachers",   icon: UserCheck,       href: "/dashboard/teachers" },
+  { name: "Enrollment", icon: UserPlus,        href: "/dashboard/enrollment" },
+  { name: "Reports",    icon: FileText,        href: "/dashboard/reports" },
 ]
 
-const systemNavigationItems: NavigationItem[] = [
-  { name: "Notifications", icon: Bell, href: "/dashboard/notifications" },
-  { name: "Settings", icon: Settings, href: "/dashboard/settings" },
-  { name: "Help & Support", icon: HelpCircle, href: "/dashboard/help" },
+const systemNavigation: NavigationItem[] = [
+  { name: "Notifications", icon: Bell,        href: "/dashboard/notifications" },
+  { name: "Settings",      icon: Settings,    href: "/dashboard/settings" },
+  { name: "Help & Support",icon: HelpCircle,  href: "/dashboard/help" },
 ]
 
-/** Mobile close X button - only shows on mobile inside the sheet */
 function MobileCloseButton() {
   const { isMobile, setOpenMobile } = useSidebar()
   if (!isMobile) return null
   return (
     <button
       onClick={() => setOpenMobile(false)}
-      className="absolute top-3.5 right-3.5 z-50 flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-accent/70 hover:bg-sidebar-accent text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors"
+      className="absolute top-3.5 right-3.5 z-50 flex h-7 w-7 items-center justify-center rounded-md bg-sidebar-accent/60 hover:bg-sidebar-accent text-sidebar-foreground/60 hover:text-sidebar-foreground transition-colors"
       aria-label="Close menu"
     >
-      <X className="h-4 w-4" />
+      <X className="h-3.5 w-3.5" />
     </button>
   )
 }
@@ -113,195 +95,162 @@ export function DashboardSidebar({
   logoDataUrl,
 }: DashboardSidebarProps) {
   const { token } = useAuthStore()
-  const [unreadCount, setUnreadCount] = useState<number>(0)
+  const [unreadCount, setUnreadCount] = useState(0)
 
   useEffect(() => {
     if (!token) return
-
     const fetchCount = async () => {
       try {
-        // Check if token is expired before making request
-        const { isTokenExpired } = await import('@/lib/utils/jwt')
-        if (isTokenExpired(token)) {
-          // Token expired, don't make request
-          return
-        }
-
-        const count = await getUnreadCount(token)
-        setUnreadCount(count)
-      } catch (error: unknown) {
-        // Silently handle 401 errors (token expired/invalid) - this is a background task
-        if (error && typeof error === 'object' && 'response' in error) {
-          const axiosError = error as { response?: { status?: number } }
-          if (axiosError.response?.status === 401) {
-            // Token is invalid/expired, don't spam console
-            return
-          }
-        }
-        // Only log other errors in development
-        if (process.env.NODE_ENV === 'development') {
-          console.error("Failed to fetch unread count:", error)
-        }
+        const { isTokenExpired } = await import("@/lib/utils/jwt")
+        if (isTokenExpired(token)) return
+        setUnreadCount(await getUnreadCount(token))
+      } catch (err: unknown) {
+        const e = err as { response?: { status?: number } }
+        if (e?.response?.status === 401) return
+        if (process.env.NODE_ENV === "development") console.error(err)
       }
     }
-
     fetchCount()
-    const interval = setInterval(fetchCount, 30000)
-    return () => clearInterval(interval)
+    const id = setInterval(fetchCount, 30_000)
+    return () => clearInterval(id)
   }, [token])
 
   const initials = adminName
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2)
+    .split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+
+  const navItem = (item: NavigationItem, badge = 0) => {
+    const isActive =
+      currentPath === item.href ||
+      (item.href !== "/dashboard" && currentPath?.startsWith(item.href))
+
+    return (
+      <SidebarMenuItem key={item.name}>
+        <SidebarMenuButton
+          asChild
+          isActive={isActive}
+          tooltip={item.name}
+          className={[
+            "relative transition-colors duration-150 rounded-md h-9",
+            "group-data-[collapsible=icon]:justify-center",
+            isActive
+              ? "bg-sidebar-primary/15 text-white before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-5 before:w-[3px] before:rounded-r-full before:bg-sidebar-primary"
+              : "text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+          ].join(" ")}
+        >
+          <Link
+            href={item.href}
+            className="flex items-center gap-2.5 group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:justify-center pl-3"
+          >
+            <item.icon className={`h-4 w-4 shrink-0 ${isActive ? "text-sidebar-primary" : ""}`} />
+            <span className="font-medium text-sm group-data-[collapsible=icon]:hidden">{item.name}</span>
+            {badge > 0 && (
+              <Badge
+                variant="destructive"
+                className="ml-auto mr-2 h-4 min-w-4 rounded px-1 text-[10px] font-semibold group-data-[collapsible=icon]:absolute group-data-[collapsible=icon]:-top-1 group-data-[collapsible=icon]:-right-1"
+              >
+                {badge}
+              </Badge>
+            )}
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    )
+  }
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border/20 transition-all duration-200">
-      <SidebarHeader className="border-b border-sidebar-border/20 p-3 relative">
+
+      {/* ── Header ── */}
+      <SidebarHeader className="border-b border-sidebar-border/20 px-3 py-3.5 relative">
         <MobileCloseButton />
         <div className="flex items-center gap-3 pr-8 md:pr-0 overflow-hidden">
-          {/* School Logo */}
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded bg-primary text-primary-foreground overflow-hidden">
-            {logoDataUrl ? (
-              <img
-                src={logoDataUrl}
-                alt="School Logo"
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <School className="h-5 w-5" />
-            )}
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-600 overflow-hidden">
+            {logoDataUrl
+              ? <img src={logoDataUrl} alt="Logo" className="h-full w-full object-cover" />
+              : <School className="h-4 w-4 text-white" />
+            }
           </div>
-          {/* School Name */}
-          <div className="flex flex-col gap-0.5 leading-none group-data-[collapsible=icon]:hidden min-w-0">
-            <span className="font-semibold text-sidebar-foreground truncate max-w-35 text-sm leading-tight">
+          <div className="flex flex-col leading-none group-data-[collapsible=icon]:hidden min-w-0">
+            <span className="font-semibold text-sidebar-accent-foreground truncate max-w-36 text-sm">
               {schoolName}
             </span>
-            <span className="text-[10px] uppercase tracking-widest text-sidebar-foreground/50 mt-0.5">
+            <span className="text-[10px] uppercase tracking-widest text-sidebar-foreground/40 mt-0.5">
               Administration
             </span>
           </div>
         </div>
       </SidebarHeader>
 
+      {/* ── Content ── */}
       <SidebarContent className="bg-transparent">
         <ScrollArea className="h-full">
-          {/* Core Navigation */}
-          <SidebarGroup className="px-2">
-            <SidebarGroupLabel className="px-2 py-3 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/40">
+
+          {/* Core nav */}
+          <SidebarGroup className="px-2 pt-3">
+            <SidebarGroupLabel className="px-3 py-2 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/35">
               Navigation
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="gap-0.5">
-                {coreNavigation.map((item) => {
-                  const isActive = currentPath === item.href || (item.href !== "/dashboard" && currentPath?.startsWith(item.href))
-                  return (
-                    <SidebarMenuItem key={item.name}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={isActive}
-                        tooltip={item.name}
-                        size="lg"
-                        className={`
-                          transition-colors duration-150 rounded-md
-                          group-data-[collapsible=icon]:justify-center
-                          ${isActive
-                            ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                            : "text-sidebar-foreground/65 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"}
-                        `}
-                      >
-                        <Link href={item.href} className="flex items-center gap-3 group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:justify-center">
-                          <item.icon className={`h-4 w-4 shrink-0 ${isActive ? "text-white" : ""}`} />
-                          <span className="font-medium text-sm group-data-[collapsible=icon]:hidden">{item.name}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  )
-                })}
+                {coreNavigation.map((item) => navItem(item))}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
 
-          {/* System Navigation */}
-          <SidebarGroup className="px-2 mt-3 group-data-[collapsible=icon]:mt-2">
-            <SidebarGroupLabel className="px-2 py-3 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/40 group-data-[collapsible=icon]:hidden">
+          {/* Separator */}
+          <div className="mx-4 my-3 border-t border-sidebar-border/30 group-data-[collapsible=icon]:mx-2" />
+
+          {/* System nav */}
+          <SidebarGroup className="px-2">
+            <SidebarGroupLabel className="px-3 py-2 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/35 group-data-[collapsible=icon]:hidden">
               System
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="gap-0.5">
-                {systemNavigationItems.map((item) => {
-                  const isActive = currentPath === item.href || (item.href !== "/dashboard/settings" && currentPath?.startsWith(item.href))
-                  const badge = (item.name === "Notifications" ? unreadCount : item.badge) || 0
-                  return (
-                    <SidebarMenuItem key={item.name}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={isActive}
-                        tooltip={item.name}
-                        size="lg"
-                        className={`
-                          transition-colors duration-150 rounded-md
-                          group-data-[collapsible=icon]:justify-center
-                          ${isActive
-                            ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                            : "text-sidebar-foreground/65 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"}
-                        `}
-                      >
-                        <Link href={item.href} className="relative flex items-center gap-3 group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:justify-center">
-                          <item.icon className={`h-4 w-4 shrink-0 ${isActive ? "text-white" : ""}`} />
-                          <span className="font-medium text-sm group-data-[collapsible=icon]:hidden">{item.name}</span>
-                          {badge > 0 && (
-                            <Badge
-                              variant="destructive"
-                              className="ml-auto h-4 min-w-4 rounded px-1 text-[10px] font-semibold group-data-[collapsible=icon]:absolute group-data-[collapsible=icon]:-top-1 group-data-[collapsible=icon]:-right-1"
-                            >
-                              {badge}
-                            </Badge>
-                          )}
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  )
+                {systemNavigation.map((item) => {
+                  const badge = item.name === "Notifications" ? unreadCount : (item.badge ?? 0)
+                  return navItem(item, badge)
                 })}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
+
         </ScrollArea>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border/30 p-2">
+      {/* ── Footer ── */}
+      <SidebarFooter className="border-t border-sidebar-border/20 p-2">
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton
                   size="lg"
-                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground h-11"
                 >
-                  <Avatar className="h-8 w-8">
+                  <Avatar className="h-7 w-7 shrink-0">
                     <AvatarImage src={adminAvatar || undefined} />
-                    <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
+                    <AvatarFallback className="bg-blue-600 text-white text-xs font-semibold">
                       {initials}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                    <span className="truncate font-semibold text-sidebar-foreground">{adminName}</span>
-                    <span className="truncate text-xs text-sidebar-foreground/60">{adminEmail}</span>
+                  <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden min-w-0">
+                    <span className="truncate font-semibold text-sidebar-accent-foreground text-sm">{adminName}</span>
+                    <span className="truncate text-[11px] text-sidebar-foreground/50">{adminEmail}</span>
                   </div>
-                  <ChevronUp className="ml-auto h-4 w-4 text-sidebar-foreground/50 group-data-[collapsible=icon]:hidden" />
+                  <ChevronUp className="ml-auto h-3.5 w-3.5 text-sidebar-foreground/40 group-data-[collapsible=icon]:hidden" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
+
               <DropdownMenuContent
-                className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-md shadow-lg border border-border"
+                className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg shadow-xl border border-border"
                 side="top"
                 align="end"
                 sideOffset={6}
               >
                 <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-border">
                   <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-primary text-primary-foreground text-xs">{initials}</AvatarFallback>
+                    <AvatarFallback className="bg-blue-600 text-white text-xs font-semibold">{initials}</AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col min-w-0">
                     <span className="text-sm font-semibold truncate">{adminName}</span>
@@ -309,16 +258,19 @@ export function DashboardSidebar({
                   </div>
                 </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={onSettings}>
+                <DropdownMenuItem onClick={onSettings} className="cursor-pointer">
                   <Settings className="mr-2 h-4 w-4" />
                   Account Settings
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer">
                   <HelpCircle className="mr-2 h-4 w-4" />
                   Help & Support
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={onLogout}>
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive cursor-pointer"
+                  onClick={onLogout}
+                >
                   <LogOut className="mr-2 h-4 w-4" />
                   Sign Out
                 </DropdownMenuItem>
