@@ -158,12 +158,12 @@ export function DashboardSidebar({
     .slice(0, 2)
 
   return (
-    <Sidebar collapsible="icon" className="border-r-0 shadow-xl transition-all duration-300">
-      <SidebarHeader className="border-b border-sidebar-border/20 p-3 relative transition-all">
+    <Sidebar collapsible="icon" className="border-r border-sidebar-border/20 transition-all duration-200">
+      <SidebarHeader className="border-b border-sidebar-border/20 p-3 relative">
         <MobileCloseButton />
         <div className="flex items-center gap-3 pr-8 md:pr-0 overflow-hidden">
           {/* School Logo */}
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-glow overflow-hidden bevel-sm transition-transform hover:scale-105 active:scale-95 duration-300">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded bg-primary text-primary-foreground overflow-hidden">
             {logoDataUrl ? (
               <img
                 src={logoDataUrl}
@@ -175,12 +175,12 @@ export function DashboardSidebar({
             )}
           </div>
           {/* School Name */}
-          <div className="flex flex-col gap-0.5 leading-none transition-all duration-300 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:hidden min-w-0">
-            <span className="font-bold tracking-tight text-sidebar-foreground truncate max-w-[140px] text-sm leading-tight">
+          <div className="flex flex-col gap-0.5 leading-none group-data-[collapsible=icon]:hidden min-w-0">
+            <span className="font-semibold text-sidebar-foreground truncate max-w-35 text-sm leading-tight">
               {schoolName}
             </span>
-            <span className="text-[9px] uppercase font-black tracking-widest text-sidebar-foreground/40 mt-0.5 opacity-70">
-              Management
+            <span className="text-[10px] uppercase tracking-widest text-sidebar-foreground/50 mt-0.5">
+              Administration
             </span>
           </div>
         </div>
@@ -189,12 +189,12 @@ export function DashboardSidebar({
       <SidebarContent className="bg-transparent">
         <ScrollArea className="h-full">
           {/* Core Navigation */}
-          <SidebarGroup className="px-3">
-            <SidebarGroupLabel className="px-2 py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-sidebar-foreground/40">
+          <SidebarGroup className="px-2">
+            <SidebarGroupLabel className="px-2 py-3 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/40">
               Navigation
             </SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu className="gap-1.5">
+              <SidebarMenu className="gap-0.5">
                 {coreNavigation.map((item) => {
                   const isActive = currentPath === item.href || (item.href !== "/dashboard" && currentPath?.startsWith(item.href))
                   return (
@@ -205,16 +205,16 @@ export function DashboardSidebar({
                         tooltip={item.name}
                         size="lg"
                         className={`
-                          group transition-all duration-300 rounded-xl
+                          transition-colors duration-150 rounded-md
                           group-data-[collapsible=icon]:justify-center
                           ${isActive
-                            ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-[0_0_16px_-4px_rgba(99,102,241,0.6)] bevel-sm"
-                            : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"}
+                            ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                            : "text-sidebar-foreground/65 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"}
                         `}
                       >
                         <Link href={item.href} className="flex items-center gap-3 group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:justify-center">
-                          <item.icon className={`h-5 w-5 transition-transform duration-300 group-hover:scale-110 ${isActive ? "text-white" : ""}`} />
-                          <span className="font-semibold group-data-[collapsible=icon]:hidden">{item.name}</span>
+                          <item.icon className={`h-4 w-4 shrink-0 ${isActive ? "text-white" : ""}`} />
+                          <span className="font-medium text-sm group-data-[collapsible=icon]:hidden">{item.name}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -225,12 +225,12 @@ export function DashboardSidebar({
           </SidebarGroup>
 
           {/* System Navigation */}
-          <SidebarGroup className="px-3 mt-4 group-data-[collapsible=icon]:mt-2">
-            <SidebarGroupLabel className="px-2 py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-sidebar-foreground/40 group-data-[collapsible=icon]:hidden">
+          <SidebarGroup className="px-2 mt-3 group-data-[collapsible=icon]:mt-2">
+            <SidebarGroupLabel className="px-2 py-3 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/40 group-data-[collapsible=icon]:hidden">
               System
             </SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu className="gap-1.5">
+              <SidebarMenu className="gap-0.5">
                 {systemNavigationItems.map((item) => {
                   const isActive = currentPath === item.href || (item.href !== "/dashboard/settings" && currentPath?.startsWith(item.href))
                   const badge = (item.name === "Notifications" ? unreadCount : item.badge) || 0
@@ -242,20 +242,20 @@ export function DashboardSidebar({
                         tooltip={item.name}
                         size="lg"
                         className={`
-                          group transition-all duration-300 rounded-xl
+                          transition-colors duration-150 rounded-md
                           group-data-[collapsible=icon]:justify-center
                           ${isActive
-                            ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-[0_0_16px_-4px_rgba(99,102,241,0.6)] bevel-sm"
-                            : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"}
+                            ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                            : "text-sidebar-foreground/65 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"}
                         `}
                       >
                         <Link href={item.href} className="relative flex items-center gap-3 group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:justify-center">
-                          <item.icon className={`h-5 w-5 transition-transform duration-300 group-hover:scale-110 ${isActive ? "text-white" : ""}`} />
-                          <span className="font-semibold group-data-[collapsible=icon]:hidden">{item.name}</span>
+                          <item.icon className={`h-4 w-4 shrink-0 ${isActive ? "text-white" : ""}`} />
+                          <span className="font-medium text-sm group-data-[collapsible=icon]:hidden">{item.name}</span>
                           {badge > 0 && (
                             <Badge
                               variant="destructive"
-                              className="ml-auto h-5 min-w-5 rounded-full px-1.5 text-xs font-bold border-2 border-background animate-pulse group-data-[collapsible=icon]:absolute group-data-[collapsible=icon]:-top-1 group-data-[collapsible=icon]:-right-1 group-data-[collapsible=icon]:h-4 group-data-[collapsible=icon]:min-w-4 group-data-[collapsible=icon]:text-[8px]"
+                              className="ml-auto h-4 min-w-4 rounded px-1 text-[10px] font-semibold group-data-[collapsible=icon]:absolute group-data-[collapsible=icon]:-top-1 group-data-[collapsible=icon]:-right-1"
                             >
                               {badge}
                             </Badge>
@@ -294,18 +294,18 @@ export function DashboardSidebar({
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent
-                className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-xl shadow-xl"
+                className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-md shadow-lg border border-border"
                 side="top"
                 align="end"
-                sideOffset={8}
+                sideOffset={6}
               >
-                <div className="flex items-center gap-3 p-3">
-                  <Avatar className="h-10 w-10">
-                    <AvatarFallback className="bg-primary text-primary-foreground">{initials}</AvatarFallback>
+                <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-border">
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback className="bg-primary text-primary-foreground text-xs">{initials}</AvatarFallback>
                   </Avatar>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium">{adminName}</span>
-                    <span className="text-xs text-muted-foreground">{adminEmail}</span>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-sm font-semibold truncate">{adminName}</span>
+                    <span className="text-xs text-muted-foreground truncate">{adminEmail}</span>
                   </div>
                 </div>
                 <DropdownMenuSeparator />

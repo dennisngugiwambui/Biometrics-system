@@ -15,38 +15,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Bell, Calendar, Settings, LogOut, Activity, UserPlus, CheckCheck, ExternalLink, User, CalendarDays } from "lucide-react"
+import { Bell, Menu, Settings, LogOut, Activity, UserPlus, CheckCheck, ExternalLink, User, CalendarDays } from "lucide-react"
 import { CalendarModal } from "./CalendarModal"
 import Link from "next/link"
 import { listNotifications, markAllAsRead, Notification } from "@/lib/api/notifications"
 
-// ── Animated hamburger / X toggle
-
 function SidebarToggleButton() {
-  const { open, toggleSidebar, isMobile } = useSidebar()
+  const { toggleSidebar } = useSidebar()
   return (
     <button
       onClick={toggleSidebar}
-      className={`relative flex h-9 w-9 items-center justify-center rounded-lg transition-all hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${!open ? "ml-0" : ""}`}
-      aria-label={open ? "Close sidebar" : "Open sidebar"}
+      className="flex h-8 w-8 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      aria-label="Toggle sidebar"
     >
-      <div className="flex h-5 w-5 flex-col items-center justify-center gap-[5px]">
-        <motion.span
-          animate={open ? { rotate: 45, y: 7, width: "100%" } : { rotate: 0, y: 0, width: "100%" }}
-          transition={{ duration: 0.25, ease: "easeInOut" }}
-          className="block h-[2px] w-full rounded-full bg-foreground origin-center"
-        />
-        <motion.span
-          animate={open ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1 }}
-          transition={{ duration: 0.15, ease: "easeInOut" }}
-          className="block h-[2px] w-4/5 rounded-full bg-foreground origin-center"
-        />
-        <motion.span
-          animate={open ? { rotate: -45, y: -7, width: "100%" } : { rotate: 0, y: 0, width: "100%" }}
-          transition={{ duration: 0.25, ease: "easeInOut" }}
-          className="block h-[2px] w-full rounded-full bg-foreground origin-center"
-        />
-      </div>
+      <Menu className="h-4 w-4" />
     </button>
   )
 }
@@ -140,7 +122,7 @@ function NotificationDropdown({ token, count }: { token: string; count: number }
         </div>
 
         {/* List */}
-        <div className="max-h-[320px] overflow-y-auto divide-y divide-border/40">
+        <div className="max-h-80 overflow-y-auto divide-y divide-border/40">
           {loading ? (
             Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="flex items-start gap-3 px-4 py-3">
@@ -226,7 +208,7 @@ export function DashboardHeader({
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-30 flex h-16 items-center gap-2 border-b border-border/50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-sm px-3 sm:px-6 md:sticky md:inset-x-auto md:top-0">
+      <header className="fixed inset-x-0 top-0 z-30 flex h-14 items-center gap-2 border-b border-border bg-white dark:bg-gray-900 px-3 sm:px-6 md:sticky md:inset-x-auto md:top-0">
         <SidebarToggleButton />
         <Separator orientation="vertical" className="h-6 mx-1" />
         <div className="flex-1 min-w-0">
@@ -234,64 +216,61 @@ export function DashboardHeader({
         </div>
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           {/* Notifications */}
-          <div className="hover-lift">
-            <NotificationDropdown token={token} count={notificationCount} />
-          </div>
+          <NotificationDropdown token={token} count={notificationCount} />
 
-          <div className="hover-lift">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative h-9 w-9 hover:bg-primary/10 hover:text-primary transition-colors"
-              onClick={() => setCalendarOpen(true)}
-              aria-label="Open attendance calendar"
-            >
-              <CalendarDays className="h-5 w-5" />
-            </Button>
-          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+            onClick={() => setCalendarOpen(true)}
+            aria-label="Open attendance calendar"
+          >
+            <CalendarDays className="h-4 w-4" />
+          </Button>
 
-          <Separator orientation="vertical" className="h-4 mx-0.5 sm:mx-2" />
+          <Separator orientation="vertical" className="h-4 mx-1" />
 
           {/* User Profile */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/5 hover:ring-2 hover:ring-primary/30 transition-all overflow-hidden border border-primary/20 shadow-sm active:scale-95 group">
-                <Avatar className="h-full w-full transition-transform group-hover:scale-110">
+              <button className="flex items-center gap-2 rounded px-2 py-1 hover:bg-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                <Avatar className="h-7 w-7">
                   <AvatarImage src={adminAvatar || undefined} />
-                  <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">
+                  <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
+                <span className="hidden sm:block text-sm font-medium text-foreground">{adminName}</span>
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-64 rounded-2xl p-2 shadow-2xl border-border/50 glass-panel" align="end" sideOffset={10}>
-              <div className="flex items-center gap-3 p-3 mb-2 rounded-xl bg-primary/5 border border-primary/10">
-                <Avatar className="h-10 w-10 border-2 border-white dark:border-gray-800 shadow-premium">
+            <DropdownMenuContent className="w-56 rounded-md shadow-lg border border-border" align="end" sideOffset={6}>
+              <div className="flex items-center gap-3 px-3 py-2.5 border-b border-border">
+                <Avatar className="h-8 w-8">
                   <AvatarImage src={adminAvatar || undefined} />
-                  <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">{initials}</AvatarFallback>
+                  <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">{initials}</AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col min-w-0">
-                  <p className="text-sm font-bold truncate text-foreground">{adminName}</p>
-                  <p className="text-[11px] text-muted-foreground font-medium">Administrator</p>
+                  <p className="text-sm font-semibold truncate text-foreground">{adminName}</p>
+                  <p className="text-xs text-muted-foreground">Administrator</p>
                 </div>
               </div>
               <DropdownMenuItem
-                className="rounded-xl py-2.5 cursor-pointer focus:bg-primary/10 focus:text-primary transition-colors"
+                className="cursor-pointer text-sm"
                 onSelect={() => router.push("/dashboard/profile")}
               >
                 <User className="mr-2 h-4 w-4" />
-                <span>Full Profile</span>
+                <span>My Profile</span>
               </DropdownMenuItem>
               <DropdownMenuItem
-                className="rounded-xl py-2.5 cursor-pointer focus:bg-primary/10 focus:text-primary transition-colors"
+                className="cursor-pointer text-sm"
                 onSelect={() => (onSettings ? onSettings() : router.push("/dashboard/settings"))}
               >
                 <Settings className="mr-2 h-4 w-4" />
                 <span>System Settings</span>
               </DropdownMenuItem>
-              <DropdownMenuSeparator className="my-2 opacity-50" />
+              <DropdownMenuSeparator />
               <DropdownMenuItem
-                className="rounded-xl py-2.5 cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive font-semibold transition-colors"
+                className="cursor-pointer text-sm text-destructive focus:bg-destructive/10 focus:text-destructive"
                 onSelect={() => onLogout?.()}
               >
                 <LogOut className="mr-2 h-4 w-4" />

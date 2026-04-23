@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import {
   Users, Smartphone, UserPlus, TrendingUp, TrendingDown,
   BarChart2, LineChartIcon, PieChartIcon, Activity,
-  ChevronRight, RefreshCw, Calendar, GraduationCap,
+  ChevronRight, RefreshCw, GraduationCap,
 } from "lucide-react"
 import { MobileConnectionCard } from "@/components/features/dashboard"
 import {
@@ -52,49 +52,38 @@ function StatCard({
   label,
   value,
   icon: Icon,
-  gradient,
+  accentColor,
   sub,
   trend,
-  delay = 0,
 }: {
   label: string
   value: number | string
   icon: typeof Users
-  gradient: string
+  accentColor: string
   sub?: string
   trend?: "up" | "down" | null
-  delay?: number
 }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.4, ease: "easeOut" }}
-      className="relative overflow-hidden rounded-2xl p-5 bg-card border border-border shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5"
-    >
-      {/* Gradient accent bar */}
-      <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${gradient}`} />
-
-      <div className="flex items-start justify-between">
-        <div className={`flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br ${gradient} shadow-sm`}>
-          <Icon className="h-5 w-5 text-white" />
+    <div className="relative bg-card border border-border rounded-md p-4 shadow-sm hover:shadow-md transition-shadow duration-200">
+      <div className="flex items-start justify-between mb-3">
+        <div className={`flex h-9 w-9 items-center justify-center rounded ${accentColor}`}>
+          <Icon className="h-4 w-4" />
         </div>
         {trend && (
-          <span className={`flex items-center gap-0.5 text-xs font-medium rounded-full px-2 py-0.5 ${trend === "up" ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-600"
-            }`}>
+          <span className={`flex items-center gap-0.5 text-xs font-medium rounded px-1.5 py-0.5 ${
+            trend === "up" ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400"
+                           : "bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400"
+          }`}>
             {trend === "up" ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
           </span>
         )}
       </div>
-
-      <div className="mt-3">
-        <p className="text-2xl font-bold text-gray-900 dark:text-white tabular-nums">
-          {typeof value === "number" ? value.toLocaleString() : value}
-        </p>
-        <p className="mt-0.5 text-sm font-medium text-gray-600 dark:text-gray-400">{label}</p>
-        {sub && <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">{sub}</p>}
-      </div>
-    </motion.div>
+      <p className="text-2xl font-bold text-foreground tabular-nums">
+        {typeof value === "number" ? value.toLocaleString() : value}
+      </p>
+      <p className="mt-0.5 text-sm text-muted-foreground">{label}</p>
+      {sub && <p className="mt-0.5 text-xs text-muted-foreground/70">{sub}</p>}
+    </div>
   )
 }
 
@@ -136,12 +125,13 @@ function ChartTypeButton({ type, current, icon: Icon, label, onClick }: {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${current === type
-        ? "bg-blue-600 text-white shadow-sm"
-        : "text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-        }`}
+      className={`flex items-center gap-1.5 rounded-sm px-2.5 py-1 text-[11px] font-medium transition-colors ${
+        current === type
+          ? "bg-card text-foreground shadow-sm"
+          : "text-muted-foreground hover:text-foreground"
+      }`}
     >
-      <Icon className="h-3.5 w-3.5" />
+      <Icon className="h-3 w-3" />
       {label}
     </button>
   )
@@ -316,28 +306,25 @@ export default function DashboardPage() {
   }
 
   return (
-    <motion.main
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: "easeOut" }}
-      className="flex-1 space-y-6 p-4 sm:p-6 lg:p-8"
-    >
-      {/* ── Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <main className="flex-1 space-y-5 p-4 sm:p-6">
+
+      {/* ── Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-border">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
-            Welcome back, {adminFirstName} 👋
+          <h1 className="text-xl font-semibold text-foreground">
+            {school?.name ?? "Dashboard"}
           </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            {school?.name ?? "Your school"} · {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+          <p className="text-sm text-muted-foreground mt-0.5">
+            {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+            {" · "}Welcome, {adminFirstName}
           </p>
         </div>
         <button
           onClick={() => fetchData(true)}
           disabled={isRefreshing}
-          className="flex items-center gap-2 self-start sm:self-auto px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm"
+          className="flex items-center gap-2 self-start sm:self-auto px-3 py-1.5 rounded border border-border bg-card text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors disabled:opacity-50"
         >
-          <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+          <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
           Refresh
         </button>
       </div>
@@ -346,7 +333,7 @@ export default function DashboardPage() {
       {isLoading ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-28 rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse" />
+            <div key={i} className="h-24 rounded-md bg-muted animate-pulse" />
           ))}
         </div>
       ) : (
@@ -355,72 +342,71 @@ export default function DashboardPage() {
             label="Total Students"
             value={stats.totalStudents}
             icon={Users}
-            gradient="from-blue-500 to-blue-600"
+            accentColor="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
             sub="Registered"
-            delay={0}
           />
           <StatCard
             label="Present Today"
             value={stats.presentToday}
             icon={Activity}
-            gradient="from-emerald-500 to-teal-600"
+            accentColor="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
             sub={`${Math.round(stats.presentRate)}% attendance rate`}
             trend="up"
-            delay={0.05}
           />
           <StatCard
             label="Teachers"
             value={stats.totalTeachers}
             icon={GraduationCap}
-            gradient="from-violet-500 to-purple-600"
+            accentColor="bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400"
             sub="Staff members"
-            delay={0.1}
           />
           <StatCard
             label="Devices"
             value={stats.registeredDevices}
             icon={Smartphone}
-            gradient="from-indigo-500 to-blue-600"
+            accentColor="bg-primary/10 text-primary dark:bg-primary/20"
             sub={`${stats.enrollments} enrollments`}
-            delay={0.15}
           />
         </div>
       )}
 
       {/* ── Charts Row */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
 
         {/* Attendance trend chart */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.4 }}
-          className="xl:col-span-2 rounded-2xl border border-gray-200/70 dark:border-gray-700/70 bg-white dark:bg-gray-800 shadow-sm p-5"
-        >
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+        <div className="xl:col-span-2 bg-card border border-border rounded-md shadow-sm p-5">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
             <div>
               <div className="flex items-center gap-3">
-                <h2 className="font-bold text-gray-900 dark:text-gray-100">Attendance This Week</h2>
-                <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-0.5 ml-2">
+                <h2 className="text-sm font-semibold text-foreground">Attendance — Last 7 Days</h2>
+                <div className="flex items-center bg-muted rounded border border-border p-0.5">
                   <button
                     onClick={() => setViewMode("student")}
-                    className={`px-3 py-1 text-[10px] font-bold uppercase rounded-md transition-all ${viewMode === "student" ? "bg-white dark:bg-gray-600 text-blue-600 shadow-sm" : "text-gray-500"
-                      }`}
+                    className={`px-2.5 py-0.5 text-[11px] font-medium rounded-sm transition-colors ${
+                      viewMode === "student"
+                        ? "bg-card text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
                   >
                     Students
                   </button>
                   <button
                     onClick={() => setViewMode("teacher")}
-                    className={`px-3 py-1 text-[10px] font-bold uppercase rounded-md transition-all ${viewMode === "teacher" ? "bg-white dark:bg-gray-600 text-blue-600 shadow-sm" : "text-gray-500"
-                      }`}
+                    className={`px-2.5 py-0.5 text-[11px] font-medium rounded-sm transition-colors ${
+                      viewMode === "teacher"
+                        ? "bg-card text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
                   >
                     Teachers
                   </button>
                 </div>
               </div>
-              <p className="text-xs text-gray-400 mt-0.5">{viewMode === "student" ? "Student" : "Teacher"} presence over the last 7 days</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {viewMode === "student" ? "Student" : "Teacher"} presence over the last 7 days
+              </p>
             </div>
-            <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700/50 rounded-xl p-1">
+            <div className="flex items-center gap-0.5 bg-muted rounded border border-border p-0.5">
               <ChartTypeButton type="bar" current={chartType} icon={BarChart2} label="Bar" onClick={() => setChartType("bar")} />
               <ChartTypeButton type="line" current={chartType} icon={LineChartIcon} label="Line" onClick={() => setChartType("line")} />
               <ChartTypeButton type="area" current={chartType} icon={Activity} label="Area" onClick={() => setChartType("area")} />
@@ -428,69 +414,75 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="h-64">
+          <div className="h-60">
             <AnimatePresence mode="wait">
               <motion.div
                 key={chartType}
-                initial={{ opacity: 0, scale: 0.97 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.97 }}
-                transition={{ duration: 0.2 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
                 className="h-full"
               >
                 {isLoading ? (
-                  <div className="h-full rounded-xl bg-gray-100 dark:bg-gray-700 animate-pulse" />
+                  <div className="h-full rounded bg-muted animate-pulse" />
                 ) : renderChart()}
               </motion.div>
             </AnimatePresence>
           </div>
-        </motion.div>
+        </div>
 
         {/* Mobile Setup Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.22, duration: 0.4 }}
-        >
-          <MobileConnectionCard />
-        </motion.div>
+        <MobileConnectionCard />
 
         {/* Today's Snapshot */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25, duration: 0.4 }}
-          className="rounded-2xl border border-gray-200/70 dark:border-gray-700/70 bg-white dark:bg-gray-800 shadow-sm p-5"
-        >
-          <h2 className="font-bold text-gray-900 dark:text-gray-100 mb-1">Today&rsquo;s Snapshot</h2>
-          <p className="text-xs text-gray-400 mb-5">
-            {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric" })}
-          </p>
+        <div className="bg-card border border-border rounded-md shadow-sm p-5">
+          <div className="flex items-center justify-between mb-4 pb-3 border-b border-border">
+            <h2 className="text-sm font-semibold text-foreground">Today&rsquo;s Snapshot</h2>
+            <span className="text-xs text-muted-foreground">
+              {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+            </span>
+          </div>
 
           {isLoading ? (
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="h-14 rounded-xl bg-gray-100 dark:bg-gray-700 animate-pulse" />
+                <div key={i} className="h-12 rounded bg-muted animate-pulse" />
               ))}
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {[
-                { label: "Present", value: stats.presentToday, color: "bg-blue-500", bar: (viewMode === "student" ? stats.totalStudents : stats.totalTeachers) ? (stats.presentToday / (viewMode === "student" ? stats.totalStudents : stats.totalTeachers)) : 0 },
-                { label: "Absent", value: Math.max(0, (viewMode === "student" ? stats.totalStudents : stats.totalTeachers) - stats.presentToday), color: "bg-gray-300", bar: (viewMode === "student" ? stats.totalStudents : stats.totalTeachers) ? Math.max(0, (viewMode === "student" ? stats.totalStudents : stats.totalTeachers) - stats.presentToday) / (viewMode === "student" ? stats.totalStudents : stats.totalTeachers) : 0 },
-                { label: "Total Events", value: stats.totalToday, color: "bg-indigo-500", bar: 1 },
+                {
+                  label: "Present",
+                  value: stats.presentToday,
+                  color: "bg-primary",
+                  bar: (viewMode === "student" ? stats.totalStudents : stats.totalTeachers)
+                    ? stats.presentToday / (viewMode === "student" ? stats.totalStudents : stats.totalTeachers)
+                    : 0,
+                },
+                {
+                  label: "Absent",
+                  value: Math.max(0, (viewMode === "student" ? stats.totalStudents : stats.totalTeachers) - stats.presentToday),
+                  color: "bg-muted-foreground/30",
+                  bar: (viewMode === "student" ? stats.totalStudents : stats.totalTeachers)
+                    ? Math.max(0, (viewMode === "student" ? stats.totalStudents : stats.totalTeachers) - stats.presentToday) /
+                      (viewMode === "student" ? stats.totalStudents : stats.totalTeachers)
+                    : 0,
+                },
+                { label: "Total Events", value: stats.totalToday, color: "bg-emerald-500", bar: 1 },
               ].map(({ label, value, color, bar }) => (
-                <div key={label} className="rounded-xl bg-gray-50 dark:bg-gray-700/50 p-3.5">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</span>
-                    <span className="text-base font-bold text-gray-900 dark:text-white tabular-nums">{value.toLocaleString()}</span>
+                <div key={label} className="rounded border border-border bg-muted/40 px-3 py-2.5">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs text-muted-foreground">{label}</span>
+                    <span className="text-sm font-semibold text-foreground tabular-nums">{value.toLocaleString()}</span>
                   </div>
-                  <div className="h-1.5 rounded-full bg-gray-200 dark:bg-gray-600 overflow-hidden">
+                  <div className="h-1 rounded-full bg-border overflow-hidden">
                     <motion.div
                       className={`h-full rounded-full ${color}`}
                       initial={{ width: 0 }}
                       animate={{ width: `${Math.min(bar * 100, 100)}%` }}
-                      transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
+                      transition={{ duration: 0.6, ease: "easeOut" }}
                     />
                   </div>
                 </div>
@@ -498,50 +490,45 @@ export default function DashboardPage() {
             </div>
           )}
 
-          <div className="mt-5 pt-4 border-t border-gray-100 dark:border-gray-700">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Quick Access</p>
-            <div className="space-y-2">
+          <div className="mt-4 pt-3 border-t border-border">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Quick Links</p>
+            <div className="space-y-0.5">
               {[
-                { label: "View Attendance", path: "/dashboard/attendance", color: "text-blue-600" },
-                { label: "Manage Students", path: "/dashboard/students", color: "text-indigo-600" },
-                { label: "View Teachers", path: "/dashboard/teachers", color: "text-violet-600" },
-              ].map(({ label, path, color }) => (
+                { label: "View Attendance", path: "/dashboard/attendance" },
+                { label: "Manage Students", path: "/dashboard/students" },
+                { label: "View Teachers", path: "/dashboard/teachers" },
+              ].map(({ label, path }) => (
                 <button
                   key={label}
                   onClick={() => router.push(path)}
-                  className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium ${color} hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors`}
+                  className="flex w-full items-center justify-between rounded px-2 py-1.5 text-xs font-medium text-primary hover:bg-primary/5 transition-colors"
                 >
                   {label}
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="h-3.5 w-3.5" />
                 </button>
               ))}
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
 
-      {/* ── Action Cards */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3, duration: 0.4 }}
-        className="grid grid-cols-1 sm:grid-cols-3 gap-4"
-      >
+      {/* ── Quick Action Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
           {
             icon: Users,
             title: "Register Student",
-            description: "Add a new student to your directory with biometric enrollment.",
+            description: "Add a new student to the directory with biometric enrollment.",
             action: () => router.push("/dashboard/students/new"),
-            gradient: "from-blue-500 to-blue-600",
+            accentColor: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
             label: "Go to Students",
           },
           {
             icon: GraduationCap,
             title: "Manage Teachers",
-            description: "View teacher profiles, attendance and manage your staff.",
+            description: "View teacher profiles, attendance records, and manage staff.",
             action: () => router.push("/dashboard/teachers"),
-            gradient: "from-violet-500 to-purple-600",
+            accentColor: "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400",
             label: "Go to Teachers",
           },
           {
@@ -549,29 +536,26 @@ export default function DashboardPage() {
             title: "Start Enrollment",
             description: "Enroll students with biometric data for accurate tracking.",
             action: () => router.push("/dashboard/enrollment"),
-            gradient: "from-indigo-500 to-blue-600",
+            accentColor: "bg-primary/10 text-primary dark:bg-primary/20",
             label: "Begin Enrollment",
           },
-        ].map(({ icon: Icon, title, description, action, gradient, label }, i) => (
-          <motion.button
+        ].map(({ icon: Icon, title, description, action, accentColor, label }) => (
+          <button
             key={title}
             onClick={action}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.35 + i * 0.05 }}
-            className="group text-left rounded-2xl border border-gray-200/70 dark:border-gray-700/70 bg-white dark:bg-gray-800 p-5 shadow-sm hover:shadow-lg transition-all hover:-translate-y-1"
+            className="group text-left bg-card border border-border rounded-md p-4 shadow-sm hover:shadow-md hover:border-primary/40 transition-all duration-200"
           >
-            <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${gradient} shadow-sm mb-4`}>
-              <Icon className="h-6 w-6 text-white" />
+            <div className={`flex h-9 w-9 items-center justify-center rounded mb-3 ${accentColor}`}>
+              <Icon className="h-4 w-4" />
             </div>
-            <h3 className="font-bold text-gray-900 dark:text-gray-100">{title}</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 mb-4 leading-relaxed">{description}</p>
-            <span className={`text-sm font-semibold bg-clip-text text-transparent bg-gradient-to-r ${gradient} flex items-center gap-1 group-hover:gap-2 transition-all`}>
-              {label} <ChevronRight className="h-4 w-4" style={{ color: "rgb(99 102 241)" }} />
+            <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+            <p className="text-xs text-muted-foreground mt-1 mb-3 leading-relaxed">{description}</p>
+            <span className="flex items-center gap-1 text-xs font-semibold text-primary group-hover:gap-1.5 transition-all">
+              {label} <ChevronRight className="h-3.5 w-3.5" />
             </span>
-          </motion.button>
+          </button>
         ))}
-      </motion.div>
-    </motion.main>
+      </div>
+    </main>
   )
 }
