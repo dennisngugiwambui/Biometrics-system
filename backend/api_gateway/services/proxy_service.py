@@ -147,11 +147,25 @@ class ProxyService:
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail=f"Service unavailable: {self.base_url}. The service is not running or not reachable. Please ensure the service is started on port {port}.",
             )
-        except Exception as e:
-            logger.error(f"Proxy error: {e}")
+        except httpx.RemoteProtocolError as e:
+            # The upstream closed the connection without completing a response —
+            # usually an unhandled exception that killed the worker mid-response.
+            logger.error(
+                f"Upstream {target_url} disconnected mid-response: {e!r}", exc_info=True
+            )
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
-                detail=f"Gateway error: {str(e)}",
+                detail=(
+                    f"The service handling {path} closed the connection without responding. "
+                    f"Check that service's logs for an unhandled exception."
+                ),
+            )
+        except Exception as e:
+            # str(e) is empty for several httpx errors, so include the class name.
+            logger.error(f"Proxy error for {target_url}: {type(e).__name__}: {e}", exc_info=True)
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"Gateway error contacting {path}: {type(e).__name__}: {e}",
             )
 
     async def _proxy_stream(

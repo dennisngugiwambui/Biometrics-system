@@ -24,6 +24,7 @@ class DeviceHealthCheckService:
         self.connection_service = DeviceConnectionService()
         self.running = False
         self.check_interval = settings.DEVICE_HEALTH_CHECK_INTERVAL
+        self.max_concurrency = settings.DEVICE_SYNC_CONCURRENCY
         self._task: Optional[asyncio.Task] = None
         
     async def start(self):
@@ -95,37 +96,51 @@ class DeviceHealthCheckService:
     
     async def check_all_devices(self):
         """Check connectivity for all active devices."""
-        # Create a new database session for this check cycle
+        # Read the device list with a short-lived session and release it before
+        # fanning out. An AsyncSession wraps a single DB connection and cannot be
+        # shared between concurrent tasks, so each device is checked in its own.
         async with AsyncSessionLocal() as db:
             try:
                 repository = DeviceRepository(db)
-                devices = await repository.get_all_active_devices()
-                
-                if not devices:
-                    logger.debug("No active devices to check")
-                    return
-                
-                logger.info(f"Checking {len(devices)} devices")
-                
-                # Check devices concurrently
-                tasks = [self.check_device(device, db) for device in devices]
-                results = await asyncio.gather(*tasks, return_exceptions=True)
-                
-                # Log summary
-                online_count = sum(1 for r in results if r is True)
-                offline_count = sum(1 for r in results if r is False)
-                error_count = sum(1 for r in results if isinstance(r, Exception))
-
-
-                logger.info(
-                    f"Health check complete: {online_count} online, "
-                    f"{offline_count} offline, {error_count} errors"
-                )
+                device_ids = [d.id for d in await repository.get_all_active_devices()]
             except Exception as e:
                 if not self._is_db_connection_error(e):
-                    logger.error("Error checking all devices: %s", e, exc_info=True)
+                    logger.error("Error loading devices to check: %s", e, exc_info=True)
                 raise
-    
+
+        if not device_ids:
+            logger.debug("No active devices to check")
+            return
+
+        logger.info(f"Checking {len(device_ids)} devices")
+
+        semaphore = asyncio.Semaphore(self.max_concurrency)
+        results = await asyncio.gather(
+            *(self._check_device_isolated(did, semaphore) for did in device_ids),
+            return_exceptions=True,
+        )
+
+        # Log summary
+        online_count = sum(1 for r in results if r is True)
+        offline_count = sum(1 for r in results if r is False)
+        error_count = sum(1 for r in results if isinstance(r, Exception))
+
+        logger.info(
+            f"Health check complete: {online_count} online, "
+            f"{offline_count} offline, {error_count} errors"
+        )
+
+    async def _check_device_isolated(self, device_id: int, semaphore: asyncio.Semaphore) -> bool:
+        """Check one device on its own DB session (bounded by semaphore)."""
+        async with semaphore:
+            async with AsyncSessionLocal() as db:
+                device = await DeviceRepository(db).get_by_id(device_id)
+                if device is None:
+                    logger.warning(f"Device {device_id} disappeared before health check")
+                    return False
+                return await self.check_device(device, db)
+
+
     async def check_device(self, device: Device, db: AsyncSession) -> bool:
         """
         Check connectivity for a single device using ZKTeco protocol.

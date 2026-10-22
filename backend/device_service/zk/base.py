@@ -621,6 +621,23 @@ class ZKDeviceConnection:
                 return True
         return False
 
+    async def admin_on_device(self, admin_user_id: int) -> bool:
+        """
+        Check if an admin (login user) exists on the device.
+
+        Args:
+            admin_user_id: Admin user ID (matched against user_id on device, prefix "A")
+
+        Returns:
+            True if user with user_id == "A" + str(admin_user_id) exists
+        """
+        users = await self.get_users()
+        target = f"A{admin_user_id}"
+        for u in users:
+            if getattr(u, "user_id", None) == target:
+                return True
+        return False
+
     async def get_enrolled_finger_ids(self, user_id: str) -> list[int]:
         """
         Get list of finger IDs (0-9) that have templates enrolled for this user on the device.
@@ -751,31 +768,78 @@ class ZKDeviceConnection:
             logger.error(f"delete_user_template failed: {e}", exc_info=True)
             return False
 
+    async def _disable_for_maintenance(self) -> bool:
+        """Put the device into maintenance (disabled) mode before a destructive write.
+
+        Many ZK firmwares (K40 included) acknowledge clear/delete commands with
+        status=OK but only persist them to flash when the device is disabled during
+        the operation. Best-effort: returns True if disable succeeded so the caller
+        knows to re-enable.
+        """
+        if self.conn is None:
+            return False
+        try:
+            await asyncio.to_thread(self.conn.disable_device)
+            return True
+        except Exception as e:  # noqa: BLE001
+            logger.debug("disable_device failed on %s:%s (continuing): %s", self.ip, self.port, e)
+            return False
+
+    async def _enable_after_maintenance(self) -> None:
+        """Re-enable the device after a destructive write. Best-effort."""
+        if self.conn is None:
+            return
+        try:
+            await asyncio.to_thread(self.conn.enable_device)
+        except Exception as e:  # noqa: BLE001
+            logger.debug("enable_device failed on %s:%s: %s", self.ip, self.port, e)
+
+    async def _refresh_device_data(self) -> None:
+        """Force the device to flush its in-memory tables to flash. Best-effort."""
+        if self.conn is None:
+            return
+        try:
+            await asyncio.to_thread(self.conn.refresh_data)
+        except Exception as e:  # noqa: BLE001
+            logger.debug("refresh_data failed on %s:%s: %s", self.ip, self.port, e)
+
     async def clear_attendance_on_device(self) -> None:
         """Remove attendance logs from the device (pyzk clear_attendance)."""
         if not self.is_connected or self.conn is None:
             raise RuntimeError("Device not connected")
+        disabled = await self._disable_for_maintenance()
         try:
             await asyncio.to_thread(self.conn.clear_attendance)
+            await self._refresh_device_data()
             logger.info("clear_attendance completed on %s:%s", self.ip, self.port)
         except Exception as e:
             logger.error("clear_attendance failed on %s:%s: %s", self.ip, self.port, e, exc_info=True)
             raise
+        finally:
+            if disabled:
+                await self._enable_after_maintenance()
 
     async def clear_all_data_on_device(self) -> None:
         """
         Factory-style wipe: users, attendance, and related data on device (pyzk clear_data).
 
         This is destructive; the device will need users re-synced from the portal.
+        The device is disabled during the wipe and refreshed afterwards so firmware
+        (e.g. K40) actually persists the clear instead of just acknowledging it.
         """
         if not self.is_connected or self.conn is None:
             raise RuntimeError("Device not connected")
+        disabled = await self._disable_for_maintenance()
         try:
             await asyncio.to_thread(self.conn.clear_data)
+            await self._refresh_device_data()
             logger.warning("clear_data completed on %s:%s (all device data wiped)", self.ip, self.port)
         except Exception as e:
             logger.error("clear_data failed on %s:%s: %s", self.ip, self.port, e, exc_info=True)
             raise
+        finally:
+            if disabled:
+                await self._enable_after_maintenance()
 
     async def delete_user_from_device(self, uid: int, user_id: str = "") -> None:
         """Delete one user record from the device (pyzk delete_user)."""
@@ -792,28 +856,37 @@ class ZKDeviceConnection:
         """
         Delete every user on the device (iterates get_users + delete_user).
 
-        Attendance logs may remain until cleared separately.
-        Returns the number of delete_user calls that completed without raising.
+        The device is disabled for the whole batch and refreshed at the end so the
+        deletes persist to flash (some firmware drops them otherwise). Attendance
+        logs may remain until cleared separately. Returns the number of delete_user
+        calls that completed without raising.
         """
         if not self.is_connected or self.conn is None:
             raise RuntimeError("Device not connected")
         users = await self.get_users()
+        disabled = await self._disable_for_maintenance()
         ok = 0
-        for u in users:
-            uid = getattr(u, "uid", None)
-            if uid is None:
-                continue
-            user_id = getattr(u, "user_id", "") or ""
-            try:
-                await self.delete_user_from_device(int(uid), user_id)
-                ok += 1
-            except Exception as ex:
-                logger.warning(
-                    "delete_all_users_on_device: uid=%s user_id=%r failed: %s",
-                    uid,
-                    user_id,
-                    ex,
-                )
+        try:
+            for u in users:
+                uid = getattr(u, "uid", None)
+                if uid is None:
+                    continue
+                user_id = getattr(u, "user_id", "") or ""
+                try:
+                    # Inline delete (device already disabled) to avoid re-toggling per user.
+                    await asyncio.to_thread(self.conn.delete_user, uid=int(uid), user_id=user_id or "")
+                    ok += 1
+                except Exception as ex:
+                    logger.warning(
+                        "delete_all_users_on_device: uid=%s user_id=%r failed: %s",
+                        uid,
+                        user_id,
+                        ex,
+                    )
+            await self._refresh_device_data()
+        finally:
+            if disabled:
+                await self._enable_after_maintenance()
         logger.warning(
             "delete_all_users_on_device finished on %s:%s — removed %s of %s records",
             self.ip,

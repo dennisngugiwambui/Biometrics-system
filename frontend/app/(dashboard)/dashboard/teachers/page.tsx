@@ -487,10 +487,10 @@ export default function TeachersPage() {
         <motion.main
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex-1 space-y-10 p-6 lg:p-10 bg-gray-50/50 dark:bg-gray-940"
+            className="flex-1 space-y-6 sm:space-y-10 p-4 sm:p-6 lg:p-10 bg-gray-50/50 dark:bg-gray-940"
         >
             {/* ── Page Header */}
-            <motion.div variants={fadeInUp} initial="hidden" animate="visible" className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6 pb-2">
+            <motion.div variants={fadeInUp} initial="hidden" animate="visible" className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-2">
                 <div className="space-y-2">
                     <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-2xl bg-violet-600 flex items-center justify-center shadow-lg shadow-violet-500/20">

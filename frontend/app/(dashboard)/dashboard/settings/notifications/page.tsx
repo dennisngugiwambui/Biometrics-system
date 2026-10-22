@@ -244,7 +244,7 @@ export default function SettingsNotificationsPage() {
       <div className="fixed top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[800px] h-[800px] rounded-full bg-gradient-to-br from-blue-500/10 to-transparent blur-[120px] pointer-events-none -z-10" />
 
       <motion.div
-        className="space-y-8"
+        className="space-y-8 p-4 sm:p-6 lg:p-8"
         variants={staggerContainer}
         initial="hidden"
         animate="visible"

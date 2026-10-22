@@ -36,8 +36,12 @@ import {
   Smartphone,
   Download,
   Copy,
+  ShieldAlert,
 } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { useRouter } from "next/navigation"
 import { useAuthStore } from "@/lib/store/authStore"
+import { resetSystem, type SystemResetScope } from "@/lib/api/system"
 import { getApiBaseUrlOrFallback } from "@/lib/env"
 import {
   getMySchool,
@@ -91,8 +95,56 @@ const COLOR_LABELS = [
 // ---------------------------------------------------------------------------
 
 export default function SettingsPage() {
-  const { token } = useAuthStore()
+  const router = useRouter()
+  const { token, logout } = useAuthStore()
   const [isLoading, setIsLoading] = useState(true)
+
+  // System reset (Danger Zone) state
+  const [showResetPanel, setShowResetPanel] = useState(false)
+  const [resetPassword, setResetPassword] = useState("")
+  const [resetConfirmText, setResetConfirmText] = useState("")
+  const [resetScope, setResetScope] = useState<SystemResetScope>("both")
+  const [isResetting, setIsResetting] = useState(false)
+  const [resetError, setResetError] = useState<string | null>(null)
+  const [resetResult, setResetResult] = useState<string | null>(null)
+
+  const handleResetSystem = async () => {
+    if (!token) return
+    if (resetConfirmText.trim() !== "RESET") {
+      setResetError('Type RESET to confirm.')
+      return
+    }
+    if (!resetPassword) {
+      setResetError('Enter your password to confirm.')
+      return
+    }
+    setIsResetting(true)
+    setResetError(null)
+    setResetResult(null)
+    try {
+      const summary = await resetSystem(token, { password: resetPassword, scope: resetScope })
+      if (resetScope === "devices") {
+        // System data is intact — stay signed in and report device results.
+        const dev = summary.devices
+        const cleared = dev?.cleared.length ?? 0
+        const failed = dev?.failed.length ?? 0
+        setResetResult(
+          `Devices cleared: ${cleared}${failed ? `, failed: ${failed} (check the device is online)` : ""}.`
+        )
+        setResetPassword("")
+        setResetConfirmText("")
+      } else {
+        // Database wiped — sign out and return to login for a fresh start.
+        logout()
+        router.push("/login")
+      }
+    } catch (err: any) {
+      const detail = err?.response?.data?.detail
+      setResetError(typeof detail === "string" ? detail : "Reset failed. Please try again.")
+    } finally {
+      setIsResetting(false)
+    }
+  }
   const [school, setSchool] = useState<SchoolResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -1298,6 +1350,154 @@ export default function SettingsPage() {
                 </Button>
               </motion.div>
             </CardFooter>
+          </Card>
+        </motion.div>
+
+        {/* ------------------------------------------------------------------ */}
+        {/* Danger Zone – Reset system to default                              */}
+        {/* ------------------------------------------------------------------ */}
+        <motion.div variants={fadeInUp} initial="initial" animate="animate" transition={{ delay: 0.25 }}>
+          <Card className="border-2 border-red-300 dark:border-red-900/60 overflow-hidden">
+            <div className="h-1.5 w-full bg-gradient-to-r from-red-500/40 via-red-600 to-red-500/40" />
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3 text-lg font-bold">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-500/10 text-red-600 dark:text-red-400">
+                  <ShieldAlert className="h-5 w-5" />
+                </div>
+                <span className="text-red-600 dark:text-red-400">Danger Zone</span>
+              </CardTitle>
+              <CardDescription className="text-muted-foreground/80">
+                Reset the entire system to default and start fresh. This permanently deletes all
+                students, teachers, attendance, enrollments and related data.
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent className="space-y-4">
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>This cannot be undone</AlertTitle>
+                <AlertDescription>
+                  Your admin login and your devices (including their IP addresses) are always kept, so
+                  the system stays connected. Choose what to reset below.
+                </AlertDescription>
+              </Alert>
+
+              {resetResult && (
+                <Alert className="border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  <AlertDescription className="text-emerald-700 dark:text-emerald-300">{resetResult}</AlertDescription>
+                </Alert>
+              )}
+
+              {!showResetPanel ? (
+                <Button
+                  variant="destructive"
+                  onClick={() => { setShowResetPanel(true); setResetError(null); setResetResult(null) }}
+                  className="gap-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Reset System
+                </Button>
+              ) : (
+                <div className="space-y-4 rounded-xl border border-red-300 dark:border-red-900/60 bg-red-50/50 dark:bg-red-950/20 p-4">
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">What do you want to reset?</Label>
+                    <div className="grid gap-2">
+                      {[
+                        { value: "both" as const, title: "System + Devices", desc: "Erase all data AND clear every physical device" },
+                        { value: "system" as const, title: "System only", desc: "Erase data from this app; leave physical devices untouched" },
+                        { value: "devices" as const, title: "Devices only", desc: "Clear users & fingerprints on the physical devices; keep app data" },
+                      ].map((opt) => (
+                        <label
+                          key={opt.value}
+                          className={cn(
+                            "flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition-colors",
+                            resetScope === opt.value
+                              ? "border-red-500 bg-red-100/60 dark:bg-red-900/30"
+                              : "border-gray-200 dark:border-gray-700 hover:border-red-300"
+                          )}
+                        >
+                          <input
+                            type="radio"
+                            name="reset-scope"
+                            value={opt.value}
+                            checked={resetScope === opt.value}
+                            onChange={() => setResetScope(opt.value)}
+                            className="mt-1 h-4 w-4"
+                          />
+                          <span>
+                            <span className="block text-sm font-semibold text-foreground">{opt.title}</span>
+                            <span className="block text-xs text-muted-foreground">{opt.desc}</span>
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="reset-confirm" className="text-sm font-medium">
+                      Type <span className="font-mono font-bold">RESET</span> to confirm
+                    </Label>
+                    <Input
+                      id="reset-confirm"
+                      value={resetConfirmText}
+                      onChange={(e) => setResetConfirmText(e.target.value)}
+                      placeholder="RESET"
+                      autoComplete="off"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="reset-password" className="text-sm font-medium">
+                      Confirm your password
+                    </Label>
+                    <Input
+                      id="reset-password"
+                      type="password"
+                      value={resetPassword}
+                      onChange={(e) => setResetPassword(e.target.value)}
+                      placeholder="Your admin password"
+                      autoComplete="current-password"
+                    />
+                  </div>
+
+                  {resetScope !== "system" && (
+                    <p className="text-xs text-muted-foreground">
+                      Devices must be online to be cleared. Offline devices will be reported as failed.
+                    </p>
+                  )}
+
+                  {resetError && <p className="text-sm text-red-600 dark:text-red-400">{resetError}</p>}
+
+                  <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => { setShowResetPanel(false); setResetPassword(""); setResetConfirmText(""); setResetError(null) }}
+                      disabled={isResetting}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={handleResetSystem}
+                      disabled={isResetting || resetConfirmText.trim() !== "RESET" || !resetPassword}
+                      className="gap-2"
+                    >
+                      {isResetting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Resetting...
+                        </>
+                      ) : (
+                        <>
+                          <Trash2 className="h-4 w-4" />
+                          Permanently Reset
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
           </Card>
         </motion.div>
       </div>

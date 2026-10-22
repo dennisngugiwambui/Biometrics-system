@@ -21,6 +21,7 @@ class DeviceInfoSyncService:
         """Initialize device info sync service."""
         self.running = False
         self.sync_interval = 60  # 1 minute (60 seconds)
+        self.max_concurrency = settings.DEVICE_SYNC_CONCURRENCY
         self._task: Optional[asyncio.Task] = None
         
     async def start(self):
@@ -92,38 +93,53 @@ class DeviceInfoSyncService:
     
     async def sync_all_online_devices(self):
         """Sync device information for all online devices."""
-        # Create a new database session for this sync cycle
+        # Read the device list with a short-lived session and release it before
+        # fanning out. An AsyncSession wraps a single DB connection and cannot be
+        # shared between concurrent tasks, so each device is synced in its own.
         async with AsyncSessionLocal() as db:
             try:
                 repository = DeviceRepository(db)
                 # Only sync online devices (they're the only ones we can connect to)
                 # Get all active devices and filter for online status
                 all_devices = await repository.get_all_active_devices()
-                devices = [d for d in all_devices if d.status == DeviceStatus.ONLINE]
-                
-                if not devices:
-                    logger.debug("No online devices to sync")
-                    return
-                
-                logger.info(f"Syncing device info for {len(devices)} online devices")
-                
-                # Sync devices concurrently
-                tasks = [self.sync_device_info(device, db) for device in devices]
-                results = await asyncio.gather(*tasks, return_exceptions=True)
-                
-                # Log summary
-                success_count = sum(1 for r in results if r is True)
-                error_count = sum(1 for r in results if isinstance(r, Exception))
-                
-                logger.info(
-                    f"Device info sync complete: {success_count} successful, "
-                    f"{error_count} errors"
-                )
+                device_ids = [d.id for d in all_devices if d.status == DeviceStatus.ONLINE]
             except Exception as e:
                 if not self._is_db_connection_error(e):
-                    logger.error("Error syncing all devices: %s", e, exc_info=True)
+                    logger.error("Error loading devices to sync: %s", e, exc_info=True)
                 raise
-    
+
+        if not device_ids:
+            logger.debug("No online devices to sync")
+            return
+
+        logger.info(f"Syncing device info for {len(device_ids)} online devices")
+
+        semaphore = asyncio.Semaphore(self.max_concurrency)
+        results = await asyncio.gather(
+            *(self._sync_device_isolated(did, semaphore) for did in device_ids),
+            return_exceptions=True,
+        )
+
+        # Log summary
+        success_count = sum(1 for r in results if r is True)
+        error_count = sum(1 for r in results if isinstance(r, Exception))
+
+        logger.info(
+            f"Device info sync complete: {success_count} successful, "
+            f"{error_count} errors"
+        )
+
+    async def _sync_device_isolated(self, device_id: int, semaphore: asyncio.Semaphore) -> bool:
+        """Sync one device on its own DB session (bounded by semaphore)."""
+        async with semaphore:
+            async with AsyncSessionLocal() as db:
+                device = await DeviceRepository(db).get_by_id(device_id)
+                if device is None:
+                    logger.warning(f"Device {device_id} disappeared before info sync")
+                    return False
+                return await self.sync_device_info(device, db)
+
+
     async def sync_device_info(self, device: Device, db: AsyncSession) -> bool:
         """
         Sync device information for a single device.

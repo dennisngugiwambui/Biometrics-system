@@ -112,6 +112,24 @@ class UserRepository:
         )
         return result.scalar_one_or_none()
 
+    async def list_users_by_school(self, school_id: int) -> list[User]:
+        """
+        List all active (non-deleted) users for a school, newest first.
+
+        Args:
+            school_id: School ID
+
+        Returns:
+            List of User instances
+        """
+        result = await self.db.execute(
+            select(User)
+            .where(User.school_id == school_id)
+            .where(User.is_deleted == False)
+            .order_by(User.created_at.desc())
+        )
+        return list(result.scalars().all())
+
     async def check_email_exists(self, email: str, exclude_user_id: int | None = None) -> bool:
         """
         Check if email already exists.

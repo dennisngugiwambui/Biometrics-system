@@ -9,6 +9,7 @@ from device_service.api.dependencies import get_current_user
 from shared.schemas.enrollment import (
     EnrollmentStartRequest,
     EnrollmentStartRequestTeacher,
+    EnrollmentStartRequestAdmin,
     EnrollmentStartResponse,
     EnrollmentSessionResponse,
     EnrollmentStatus,
@@ -25,6 +26,7 @@ from device_service.exceptions import (
     EnrollmentInProgressError,
     StudentNotOnDeviceError,
     TeacherNotOnDeviceError,
+    AdminUserNotFoundError,
 )
 
 router = APIRouter(prefix="/api/v1/enrollment", tags=["enrollment"])
@@ -232,6 +234,88 @@ async def start_teacher_enrollment(
         )
 
 
+@router.post(
+    "/start/admin",
+    response_model=EnrollmentStartResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Start admin enrollment",
+    description="""
+    Enroll an admin (login user) as a device administrator (privilege=14) by card,
+    fingerprint, or both. The admin is synced to the device with admin privilege first,
+    then biometric/card capture proceeds. Real-time progress is sent via WebSocket.
+    """,
+    responses={
+        201: {"description": "Admin enrollment started successfully"},
+        400: {"description": "Invalid request"},
+        404: {"description": "Admin user or device not found"},
+        503: {"description": "Device is offline"},
+    },
+)
+async def start_admin_enrollment(
+    request: EnrollmentStartRequestAdmin,
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Enroll an admin as a device administrator (privilege=14)."""
+    enrollment_service = EnrollmentService(db)
+    try:
+        enrollment_session = await enrollment_service.start_enrollment_admin(
+            admin_user_id=request.admin_user_id,
+            device_id=request.device_id,
+            school_id=current_user.school_id,
+            finger_id=request.finger_id,
+            credential_mode=request.credential_mode,
+            card_number=request.card_number,
+        )
+
+        status_enum = _session_status_enum(enrollment_session.status)
+        completed_immediately = status_enum == EnrollmentStatus.COMPLETED
+
+        return EnrollmentStartResponse(
+            session_id=enrollment_session.session_id,
+            student_id=None,
+            teacher_id=None,
+            admin_user_id=enrollment_session.admin_user_id,
+            device_id=enrollment_session.device_id,
+            finger_id=enrollment_session.finger_id,
+            enrollment_kind=getattr(enrollment_session, "enrollment_kind", None) or "fingerprint",
+            status=status_enum,
+            started_at=enrollment_session.started_at,
+            completed_immediately=completed_immediately,
+        )
+    except DeviceNotFoundError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"message": str(e), "code": e.code},
+        )
+    except AdminUserNotFoundError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"message": str(e), "code": e.code},
+        )
+    except DeviceOfflineError as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(e),
+        )
+    except EnrollmentError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"message": str(e), "code": e.code},
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(
+            f"Unexpected error starting admin enrollment: {e}", exc_info=True
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An unexpected error occurred while starting admin enrollment",
+        )
+
+
 def _enrollment_to_summary(session) -> EnrollmentRecordSummary:
     """Build EnrollmentRecordSummary from EnrollmentSession."""
     student_name = None
@@ -241,11 +325,16 @@ def _enrollment_to_summary(session) -> EnrollmentRecordSummary:
     if getattr(session, "teacher", None):
         t = session.teacher
         teacher_name = f"{t.first_name} {t.last_name}" if getattr(t, "first_name", None) else getattr(t, "name", None)
+    admin_name = None
+    if getattr(session, "admin_user", None):
+        a = session.admin_user
+        admin_name = f"{a.first_name} {a.last_name}".strip() or a.email
     return EnrollmentRecordSummary(
         id=session.id,
         session_id=session.session_id,
         student_id=session.student_id,
         teacher_id=getattr(session, "teacher_id", None),
+        admin_user_id=getattr(session, "admin_user_id", None),
         device_id=session.device_id,
         finger_id=session.finger_id,
         enrollment_kind=getattr(session, "enrollment_kind", None) or "fingerprint",
@@ -254,6 +343,7 @@ def _enrollment_to_summary(session) -> EnrollmentRecordSummary:
         has_template=bool(getattr(session, "template_data", None)),
         student_name=student_name,
         teacher_name=teacher_name,
+        admin_name=admin_name,
         device_name=session.device.name if session.device else None,
     )
 

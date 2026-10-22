@@ -27,6 +27,10 @@ class Settings(BaseSettings):
     SIMULATION_DELAY_MAX: float = 3.0  # Max delay in seconds
     DEFAULT_DEVICE_TIMEOUT: int = 5  # Connection timeout in seconds
     DEVICE_HEALTH_CHECK_INTERVAL: int = 5  # Health check interval in seconds
+    # Max devices contacted concurrently by the health-check / info-sync loops.
+    # Each concurrent device holds its own DB session, so keep this below the
+    # engine pool size (see core/database.py).
+    DEVICE_SYNC_CONCURRENCY: int = 5
 
     # ZKTeco Device Connection Settings
     DEVICE_DEFAULT_PORT: int = 4370  # Default ZKTeco device port

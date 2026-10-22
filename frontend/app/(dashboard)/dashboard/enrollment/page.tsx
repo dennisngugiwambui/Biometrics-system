@@ -5,12 +5,13 @@ import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { fadeInUp } from '@/lib/animations/framer-motion';
 import { EnrollmentWizard } from '@/components/features/enrollment/EnrollmentWizard';
+import { AdminEnrollment } from '@/components/features/enrollment/AdminEnrollment';
 import { startEnrollment, startTeacherEnrollment, EnrollmentApiError } from '@/lib/api/enrollment';
-import { GraduationCap, UserCircle } from 'lucide-react';
+import { GraduationCap, UserCircle, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function EnrollmentPage() {
-  const [activeTab, setActiveTab] = useState<'student' | 'teacher'>('student');
+  const [activeTab, setActiveTab] = useState<'student' | 'teacher' | 'admin'>('student');
 
   const handleStartEnrollment = async (data: {
     studentId?: number;
@@ -109,7 +110,7 @@ export default function EnrollmentPage() {
             </p>
           </div>
 
-          <div className="w-full max-w-sm mx-auto grid grid-cols-2 gap-2 mb-8 p-1 rounded-xl bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50">
+          <div className="w-full max-w-md mx-auto grid grid-cols-3 gap-2 mb-8 p-1 rounded-xl bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50">
             <button
               type="button"
               onClick={() => setActiveTab('student')}
@@ -136,6 +137,19 @@ export default function EnrollmentPage() {
               <UserCircle className="size-3.5" />
               Teacher
             </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('admin')}
+              className={cn(
+                'flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-bold text-xs transition-all',
+                activeTab === 'admin'
+                  ? 'bg-amber-600 text-white shadow-md'
+                  : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50'
+              )}
+            >
+              <ShieldCheck className="size-3.5" />
+              Admin
+            </button>
           </div>
           {activeTab === 'student' && (
             <EnrollmentWizard mode="student" onStartEnrollment={handleStartEnrollment} />
@@ -143,6 +157,7 @@ export default function EnrollmentPage() {
           {activeTab === 'teacher' && (
             <EnrollmentWizard mode="teacher" onStartEnrollment={handleStartEnrollment} />
           )}
+          {activeTab === 'admin' && <AdminEnrollment />}
         </motion.div>
       </div>
     </div>

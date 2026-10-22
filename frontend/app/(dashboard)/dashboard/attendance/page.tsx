@@ -1411,7 +1411,7 @@ export default function AttendancePage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
           {[
             { label: "Live Scans", value: totalSeen, icon: Fingerprint, color: "blue" },
             { label: "Check-Ins", value: liveCounters.in, icon: LogIn, color: "green" },

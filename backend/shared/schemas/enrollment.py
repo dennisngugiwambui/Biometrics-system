@@ -19,8 +19,9 @@ class EnrollmentStatus(str, Enum):
 class EnrollmentSessionBase(BaseModel):
     """Base schema for EnrollmentSession with common fields."""
 
-    student_id: Optional[int] = Field(None, description="Student ID (one of student_id or teacher_id required)")
-    teacher_id: Optional[int] = Field(None, description="Teacher ID (one of student_id or teacher_id required)")
+    student_id: Optional[int] = Field(None, description="Student ID (one of student_id, teacher_id, admin_user_id required)")
+    teacher_id: Optional[int] = Field(None, description="Teacher ID (one of student_id, teacher_id, admin_user_id required)")
+    admin_user_id: Optional[int] = Field(None, description="Admin user ID (device administrator, privilege=14)")
     device_id: int = Field(..., description="Device ID")
     finger_id: Optional[int] = Field(None, ge=0, le=9, description="Finger ID (0-9); omit for card-only")
     enrollment_kind: str = Field(default="fingerprint", description="fingerprint | card | card_and_fingerprint")
@@ -51,6 +52,7 @@ class EnrollmentSessionResponse(BaseModel):
     session_id: str
     student_id: Optional[int] = None
     teacher_id: Optional[int] = None
+    admin_user_id: Optional[int] = None
     device_id: int
     finger_id: Optional[int] = None
     enrollment_kind: str = "fingerprint"
@@ -106,12 +108,48 @@ class EnrollmentStartRequestTeacher(BaseModel):
     finger_id: int = Field(..., ge=0, le=9, description="Finger ID (0-9)")
 
 
+class EnrollmentStartRequestAdmin(BaseModel):
+    """Schema for admin (device administrator) enrollment start request.
+
+    Enrolls a login user as a device administrator (privilege=14) by fingerprint,
+    card, or both.
+    """
+
+    admin_user_id: int = Field(..., description="Admin user ID (login user)")
+    device_id: int = Field(..., description="Device ID")
+    finger_id: Optional[int] = Field(
+        default=None,
+        ge=0,
+        le=9,
+        description="Finger ID (0-9); required for fingerprint / both",
+    )
+    credential_mode: Literal["fingerprint", "card", "both"] = Field(
+        default="fingerprint",
+        description="fingerprint: scan only; card: RFID via set_user; both: card then fingerprint",
+    )
+    card_number: Optional[str] = Field(
+        None,
+        description="Raw card UID string (pushed to device when mode is card or both)",
+    )
+
+    @model_validator(mode="after")
+    def _validate_credential_mode(self) -> "EnrollmentStartRequestAdmin":
+        if self.credential_mode in ("fingerprint", "both"):
+            if self.finger_id is None:
+                raise ValueError("finger_id is required for fingerprint or both modes")
+        if self.credential_mode in ("card", "both"):
+            if not (self.card_number and str(self.card_number).strip()):
+                raise ValueError("card_number is required for card or both modes")
+        return self
+
+
 class EnrollmentStartResponse(BaseModel):
     """Schema for enrollment start response."""
 
     session_id: str
     student_id: Optional[int] = None
     teacher_id: Optional[int] = None
+    admin_user_id: Optional[int] = None
     device_id: int
     finger_id: Optional[int] = None
     enrollment_kind: str = "fingerprint"
@@ -141,6 +179,7 @@ class EnrollmentRecordSummary(BaseModel):
     session_id: str
     student_id: Optional[int] = None
     teacher_id: Optional[int] = None
+    admin_user_id: Optional[int] = None
     device_id: int
     finger_id: Optional[int] = None
     enrollment_kind: str = "fingerprint"
@@ -149,6 +188,7 @@ class EnrollmentRecordSummary(BaseModel):
     has_template: bool = Field(description="Whether template is stored for sync")
     student_name: Optional[str] = None
     teacher_name: Optional[str] = None
+    admin_name: Optional[str] = None
     device_name: Optional[str] = None
 
     class Config:

@@ -268,7 +268,7 @@ export default function PresencePage() {
                 Real-time
               </Badge>
             </div>
-            <h1 className="text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 flex items-center gap-3 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 flex items-center gap-3 tracking-tight">
               Presence Monitor
             </h1>
             <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
@@ -282,7 +282,7 @@ export default function PresencePage() {
                 type="date"
                 value={targetDate}
                 onChange={(e) => setTargetDate(e.target.value)}
-                className="w-[180px] pl-10 border-blue-200/60 focus:border-blue-500 focus:ring-blue-500 bg-white/50 dark:bg-gray-900/50 rounded-xl font-medium"
+                className="w-40 sm:w-44 pl-10 border-blue-200/60 focus:border-blue-500 focus:ring-blue-500 bg-white/50 dark:bg-gray-900/50 rounded-xl font-medium"
               />
             </div>
             <Button

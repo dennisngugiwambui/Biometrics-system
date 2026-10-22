@@ -286,6 +286,22 @@ async def get_current_user(
     return UserResponse.model_validate(user)
 
 
+@router.get(
+    "/users",
+    response_model=list[UserResponse],
+    summary="List users for the current school",
+    description="Return all active users (admins/staff) for the authenticated user's school.",
+)
+async def list_users(
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """List users belonging to the current user's school."""
+    user_service = UserService(db)
+    users = await user_service.list_users_by_school(current_user.school_id)
+    return [UserResponse.model_validate(u) for u in users]
+
+
 @router.post(
     "/register",
     response_model=UserResponse,

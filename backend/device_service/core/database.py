@@ -15,10 +15,17 @@ from device_service.models.fingerprint_template import FingerprintTemplate
 from attendance_service.models.attendance_record import AttendanceRecord  # noqa: F401
 
 # Create async engine
+# The background loops (health check, info sync, attendance poll) each hold a
+# session per device they contact, so the pool has to cover those plus request
+# handlers. pool_pre_ping discards connections that were broken by an earlier
+# error instead of handing them out again.
 engine = create_async_engine(
     settings.DATABASE_URL,
     echo=settings.DEBUG,
     future=True,
+    pool_size=20,
+    max_overflow=10,
+    pool_pre_ping=True,
 )
 
 # Create async session factory

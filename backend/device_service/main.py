@@ -31,6 +31,7 @@ from device_service.api.routes import (
     websocket_router,
     enrollment_router,
     sync_router,
+    system_router,
 )
 from device_service.services.device_health_check import DeviceHealthCheckService
 from device_service.services.device_info_sync import DeviceInfoSyncService
@@ -121,6 +122,7 @@ app.include_router(device_groups_router)
 app.include_router(websocket_router)
 app.include_router(enrollment_router)
 app.include_router(sync_router)
+app.include_router(system_router)
 
 # CORS middleware
 app.add_middleware(

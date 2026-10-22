@@ -267,7 +267,8 @@ export default function NotificationsPage() {
       </div>
 
       {/* ── Tabs */}
-      <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1 self-start w-fit">
+      <div className="overflow-x-auto">
+      <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1 w-fit min-w-max">
         {tabs.map((t) => (
           <button key={t.id} onClick={() => setTab(t.id)}
             className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-all ${tab === t.id ? "bg-white dark:bg-gray-700 text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
@@ -279,6 +280,7 @@ export default function NotificationsPage() {
             )}
           </button>
         ))}
+      </div>
       </div>
 
       {/* ── Notification list */}

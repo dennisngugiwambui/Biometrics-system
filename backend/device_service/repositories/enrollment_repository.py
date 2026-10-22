@@ -35,6 +35,7 @@ class EnrollmentRepository:
             session_id=session_id,
             student_id=enrollment_data.student_id,
             teacher_id=enrollment_data.teacher_id,
+            admin_user_id=getattr(enrollment_data, "admin_user_id", None),
             device_id=enrollment_data.device_id,
             finger_id=enrollment_data.finger_id,
             school_id=enrollment_data.school_id,

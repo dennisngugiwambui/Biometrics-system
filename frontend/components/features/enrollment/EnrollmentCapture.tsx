@@ -16,6 +16,10 @@ import { cancelEnrollment } from "@/lib/api/enrollment"
 interface EnrollmentCaptureProps {
   student?: StudentResponse | null
   teacher?: TeacherResponse | null
+  /** Overrides the displayed person name (e.g. for admin enrollment). */
+  personName?: string
+  /** Label for the person column in the info card. */
+  personLabel?: string
   device: DeviceResponse
   fingerId: number
   sessionId?: string
@@ -37,6 +41,8 @@ const STATUS_MESSAGES: Record<CaptureStatus, string> = {
 export function EnrollmentCapture({
   student,
   teacher,
+  personName: personNameOverride,
+  personLabel,
   device,
   fingerId,
   sessionId,
@@ -45,11 +51,12 @@ export function EnrollmentCapture({
   onCancel,
 }: EnrollmentCaptureProps) {
   const personName =
-    teacher != null
+    personNameOverride ??
+    (teacher != null
       ? `${teacher.first_name} ${teacher.last_name}`
       : student != null
         ? `${student.first_name} ${student.last_name}`
-        : "Person"
+        : "Person")
   const fingerInfo = FINGERS.find((f) => f.id === fingerId)
 
   // Connect to enrollment progress WebSocket
@@ -264,7 +271,7 @@ export function EnrollmentCapture({
       <div className="w-full max-w-md p-4 rounded-xl bg-gradient-to-r from-blue-50/50 via-indigo-50/50 to-purple-50/50 dark:from-gray-800/50 dark:via-gray-800/50 dark:to-gray-800/50 border border-gray-200/50 dark:border-gray-700/50">
         <div className="grid grid-cols-3 gap-4 text-sm">
           <div>
-            <p className="text-gray-600 dark:text-gray-400">Student</p>
+            <p className="text-gray-600 dark:text-gray-400">{personLabel ?? "Student"}</p>
             <p className="font-medium truncate text-gray-900 dark:text-gray-100">
               {personName}
             </p>

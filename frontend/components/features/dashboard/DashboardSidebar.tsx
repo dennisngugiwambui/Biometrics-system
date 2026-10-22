@@ -130,23 +130,25 @@ export function DashboardSidebar({
           isActive={isActive}
           tooltip={item.name}
           className={[
-            "relative transition-colors duration-150 rounded-md h-9",
+            "relative h-9 rounded-xl transition-all duration-150",
             "group-data-[collapsible=icon]:justify-center",
             isActive
-              ? "bg-sidebar-primary/15 text-white before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-5 before:w-[3px] before:rounded-r-full before:bg-sidebar-primary"
-              : "text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+              ? "bg-blue-600 text-white shadow-sm"
+              : "text-sidebar-foreground/55 hover:bg-white/8 hover:text-sidebar-accent-foreground",
           ].join(" ")}
         >
           <Link
             href={item.href}
-            className="flex items-center gap-2.5 group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:justify-center pl-3"
+            className="flex items-center gap-2.5 pl-3 group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:justify-center"
           >
-            <item.icon className={`h-4 w-4 shrink-0 ${isActive ? "text-sidebar-primary" : ""}`} />
-            <span className="font-medium text-sm group-data-[collapsible=icon]:hidden">{item.name}</span>
+            <item.icon className={`h-4 w-4 shrink-0 ${isActive ? "text-white" : ""}`} />
+            <span className={`text-sm group-data-[collapsible=icon]:hidden ${isActive ? "font-semibold" : "font-medium"}`}>
+              {item.name}
+            </span>
             {badge > 0 && (
               <Badge
                 variant="destructive"
-                className="ml-auto mr-2 h-4 min-w-4 rounded px-1 text-[10px] font-semibold group-data-[collapsible=icon]:absolute group-data-[collapsible=icon]:-top-1 group-data-[collapsible=icon]:-right-1"
+                className="ml-auto mr-2 h-4 min-w-4 rounded-full px-1 text-[10px] font-bold group-data-[collapsible=icon]:absolute group-data-[collapsible=icon]:-top-1 group-data-[collapsible=icon]:-right-1"
               >
                 {badge}
               </Badge>
@@ -161,20 +163,23 @@ export function DashboardSidebar({
     <Sidebar collapsible="icon" className="border-r border-sidebar-border/20 transition-all duration-200">
 
       {/* ── Header ── */}
-      <SidebarHeader className="border-b border-sidebar-border/20 px-3 py-3.5 relative">
+      <SidebarHeader className="relative border-b border-sidebar-border/20 px-3 py-4">
         <MobileCloseButton />
-        <div className="flex items-center gap-3 pr-8 md:pr-0 overflow-hidden">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-600 overflow-hidden">
+        <div className="flex items-center gap-3 overflow-hidden pr-8 md:pr-0">
+          <div
+            className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl shadow-sm"
+            style={{ background: "linear-gradient(135deg,#2563eb,#1d4ed8)" }}
+          >
             {logoDataUrl
               ? <img src={logoDataUrl} alt="Logo" className="h-full w-full object-cover" />
-              : <School className="h-4 w-4 text-white" />
+              : <School className="h-5 w-5 text-white" />
             }
           </div>
-          <div className="flex flex-col leading-none group-data-[collapsible=icon]:hidden min-w-0">
-            <span className="font-semibold text-sidebar-accent-foreground truncate max-w-36 text-sm">
+          <div className="flex min-w-0 flex-col leading-none group-data-[collapsible=icon]:hidden">
+            <span className="max-w-36 truncate text-sm font-bold text-sidebar-accent-foreground">
               {schoolName}
             </span>
-            <span className="text-[10px] uppercase tracking-widest text-sidebar-foreground/40 mt-0.5">
+            <span className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.18em] text-sidebar-foreground/35">
               Administration
             </span>
           </div>
@@ -186,9 +191,9 @@ export function DashboardSidebar({
         <ScrollArea className="h-full">
 
           {/* Core nav */}
-          <SidebarGroup className="px-2 pt-3">
-            <SidebarGroupLabel className="px-3 py-2 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/35">
-              Navigation
+          <SidebarGroup className="px-2 pt-4">
+            <SidebarGroupLabel className="px-3 pb-1.5 text-[9px] font-bold uppercase tracking-[0.18em] text-sidebar-foreground/30">
+              Menu
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="gap-0.5">
@@ -198,11 +203,11 @@ export function DashboardSidebar({
           </SidebarGroup>
 
           {/* Separator */}
-          <div className="mx-4 my-3 border-t border-sidebar-border/30 group-data-[collapsible=icon]:mx-2" />
+          <div className="mx-3 my-3 border-t border-sidebar-border/20 group-data-[collapsible=icon]:mx-2" />
 
           {/* System nav */}
           <SidebarGroup className="px-2">
-            <SidebarGroupLabel className="px-3 py-2 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/35 group-data-[collapsible=icon]:hidden">
+            <SidebarGroupLabel className="px-3 pb-1.5 text-[9px] font-bold uppercase tracking-[0.18em] text-sidebar-foreground/30 group-data-[collapsible=icon]:hidden">
               System
             </SidebarGroupLabel>
             <SidebarGroupContent>

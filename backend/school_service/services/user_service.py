@@ -145,6 +145,18 @@ class UserService:
         """
         return await self.user_repo.get_user_by_id(user_id)
 
+    async def list_users_by_school(self, school_id: int) -> list[User]:
+        """
+        List all active users for a school.
+
+        Args:
+            school_id: School ID
+
+        Returns:
+            List of User instances
+        """
+        return await self.user_repo.list_users_by_school(school_id)
+
     async def get_user_by_email(self, email: str) -> User | None:
         """
         Get user by email.

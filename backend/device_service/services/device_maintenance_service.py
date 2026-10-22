@@ -40,11 +40,34 @@ class DeviceMaintenanceService:
             await self.connection_service.disconnect_device(device_id)
 
     async def clear_all_device_data(self, device_id: int, school_id: int) -> None:
+        """Factory-style wipe of a device.
+
+        pyzk ``clear_data`` alone is firmware-dependent and on some devices (K40)
+        acknowledges but leaves users behind, so we explicitly delete every user and
+        clear attendance first, then call clear_data as a belt-and-braces step.
+        """
         _, conn = await self._conn(device_id, school_id)
+        errors: list[str] = []
         try:
-            await conn.clear_all_data_on_device()
+            try:
+                await conn.delete_all_users_on_device()
+            except Exception as e:  # noqa: BLE001
+                errors.append(f"delete_users: {e}")
+            try:
+                await conn.clear_attendance_on_device()
+            except Exception as e:  # noqa: BLE001
+                errors.append(f"clear_attendance: {e}")
+            try:
+                await conn.clear_all_data_on_device()
+            except Exception as e:  # noqa: BLE001
+                errors.append(f"clear_data: {e}")
+            # Only surface a hard failure if everything failed; partial clears still help.
+            if len(errors) == 3:
+                raise RuntimeError("; ".join(errors))
         finally:
             await self.connection_service.disconnect_device(device_id)
+        if errors:
+            logger.warning("clear_all_device_data on device %s had non-fatal errors: %s", device_id, errors)
         try:
             await DeviceCapacityService(self.db).refresh_device_capacity(device_id)
         except Exception as e:

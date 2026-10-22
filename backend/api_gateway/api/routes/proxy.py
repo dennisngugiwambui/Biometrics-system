@@ -252,6 +252,22 @@ async def proxy_enrollment_service(
 
 
 @router.api_route(
+    "/api/v1/system/reset",
+    methods=["POST", "OPTIONS"],
+    include_in_schema=True,
+    tags=["proxy", "system"],
+)
+async def proxy_system_reset(
+    request: Request,
+    proxy: Any = Depends(lambda: get_device_service_proxy(settings)),
+):
+    """Proxy system reset to Device Service — /api/v1/system/reset"""
+    if request.method == "OPTIONS":
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    return await proxy.proxy_request(request, "/api/v1/system/reset")
+
+
+@router.api_route(
     "/api/v1/sync/{path:path}",
     methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     include_in_schema=True,

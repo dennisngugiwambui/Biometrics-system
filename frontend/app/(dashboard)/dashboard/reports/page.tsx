@@ -279,7 +279,7 @@ export default function ReportsPage() {
               <FileText className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+              <h1 className="text-2xl sm:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">
                 Analytics Hub
               </h1>
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">
@@ -458,8 +458,8 @@ export default function ReportsPage() {
 
         {/* Charts & Trends */}
         <motion.div variants={fadeInUp} className="lg:col-span-8 space-y-8">
-          <Card className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border-white/50 dark:border-gray-700/50 shadow-2xl rounded-3xl overflow-hidden h-[500px]">
-            <CardHeader className="p-8 flex flex-row items-center justify-between">
+          <Card className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border-white/50 dark:border-gray-700/50 shadow-2xl rounded-3xl overflow-hidden">
+            <CardHeader className="p-5 sm:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
                 <CardTitle className="text-2xl font-extrabold tracking-tight">Analytical Trends</CardTitle>
                 <CardDescription className="text-xs font-bold uppercase tracking-widest mt-1">Personnel Volume Vectors (14-Day View)</CardDescription>
@@ -469,8 +469,8 @@ export default function ReportsPage() {
                 <div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-gray-300" /><span className="text-[10px] font-extrabold uppercase text-muted-foreground">Absent</span></div>
               </div>
             </CardHeader>
-            <CardContent className="p-8 pt-0">
-              <div className="h-[320px] w-full">
+            <CardContent className="p-5 sm:p-8 pt-0">
+              <div className="h-56 sm:h-72 lg:h-80 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={chartData}>
                     <defs>
@@ -508,7 +508,7 @@ export default function ReportsPage() {
           
           {/* Ledger Table */}
           <Card className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border-white/50 dark:border-gray-700/50 shadow-2xl rounded-3xl overflow-hidden">
-             <CardHeader className="p-8 border-b border-gray-100 dark:border-gray-800 flex flex-row items-center justify-between">
+             <CardHeader className="p-5 sm:p-8 border-b border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                    <CardTitle className="text-xl font-extrabold">Biometric Ledger</CardTitle>
                    <CardDescription className="text-[10px] font-extrabold uppercase tracking-widest mt-1 text-muted-foreground">Real-Time Event Sequential Feed</CardDescription>
@@ -517,8 +517,8 @@ export default function ReportsPage() {
                   Live Feed Status: Active
                 </Badge>
              </CardHeader>
-             <CardContent className="p-0">
-                <Table>
+             <CardContent className="p-0 overflow-x-auto">
+                <Table className="min-w-135">
                   <TableHeader>
                     <TableRow className="bg-indigo-50/80 dark:bg-indigo-900/30 border-0">
                       <TableHead className="px-8 h-12 text-[10px] font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-300">Time</TableHead>

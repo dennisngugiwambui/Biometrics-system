@@ -26,6 +26,8 @@ class EnrollmentSession(Base):
     session_id = Column(String(100), unique=True, nullable=False, index=True)
     student_id = Column(Integer, ForeignKey("students.id"), nullable=True, index=True)
     teacher_id = Column(Integer, ForeignKey("teachers.id"), nullable=True, index=True)
+    # Set when enrolling a device administrator (a login user) with device privilege=14
+    admin_user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
     device_id = Column(Integer, ForeignKey("devices.id"), nullable=False, index=True)
     # 0-9 for fingerprint; NULL for card-only enrollment
     finger_id = Column(Integer, nullable=True)
@@ -52,6 +54,7 @@ class EnrollmentSession(Base):
     # Relationships
     student = relationship("Student", back_populates="enrollment_sessions", lazy="selectin")
     teacher = relationship("Teacher", back_populates="enrollment_sessions", lazy="selectin")
+    admin_user = relationship("User", lazy="selectin")
     device = relationship("Device", back_populates="enrollment_sessions", lazy="selectin")
     school = relationship("School", lazy="selectin")
 

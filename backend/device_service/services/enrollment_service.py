@@ -22,12 +22,16 @@ from device_service.exceptions import (
     EnrollmentInProgressError,
     StudentNotOnDeviceError,
     TeacherNotOnDeviceError,
+    AdminUserNotFoundError,
 )
 from shared.schemas.enrollment import EnrollmentSessionCreate, EnrollmentSessionUpdate
 from device_service.zk.enrollment import EnrollmentEvent, EnrollmentProgress
 from device_service.core.encryption import encrypt_template
 from device_service.core.zk_card import zk_card_from_string
-from device_service.services.sync_service import SyncService
+from device_service.services.sync_service import (
+    SyncService,
+    admin_device_user_id,
+)
 from school_service.models.student import Student
 
 logger = logging.getLogger(__name__)
@@ -342,6 +346,156 @@ class EnrollmentService:
             logger.error(f"Teacher enrollment failed: session={session_id}, error={e}", exc_info=True)
             raise EnrollmentError(
                 f"Failed to start teacher enrollment: {error_msg}",
+                code="ENROLLMENT_ERROR",
+            ) from e
+
+    async def start_enrollment_admin(
+        self,
+        admin_user_id: int,
+        device_id: int,
+        school_id: int,
+        *,
+        finger_id: Optional[int] = None,
+        credential_mode: str = "fingerprint",
+        card_number: Optional[str] = None,
+    ) -> EnrollmentSession:
+        """
+        Enroll an admin (login user) as a device administrator (privilege=14).
+
+        The admin is synced to the device first (creating the device user record with
+        admin privilege), then enrolled by card, fingerprint, or both. Unlike students,
+        admins are synced on demand here (there is no separate admin sync step).
+        """
+        sync_service = SyncService(self.db)
+
+        # Card-only: sync admin (with card + admin privilege) and record a completed session.
+        if credential_mode == "card":
+            try:
+                zk_card_from_string(card_number or "")
+            except ValueError as e:
+                raise EnrollmentError(str(e), code="INVALID_CARD") from e
+
+            await sync_service.sync_admin_to_device(
+                admin_user_id, device_id, school_id, card_number=card_number
+            )
+
+            session_id = str(uuid.uuid4())
+            sess = EnrollmentSession(
+                session_id=session_id,
+                student_id=None,
+                teacher_id=None,
+                admin_user_id=admin_user_id,
+                device_id=device_id,
+                finger_id=None,
+                school_id=school_id,
+                enrollment_kind="card",
+                status=EnrollmentStatus.COMPLETED.value,
+                completed_at=datetime.now(timezone.utc),
+            )
+            self.db.add(sess)
+            await self.db.commit()
+            await self.db.refresh(sess)
+
+            await enrollment_broadcaster.broadcast_completion(
+                school_id=school_id,
+                session_id=session_id,
+                message="Admin card saved and programmed on the device.",
+                quality_score=None,
+            )
+            logger.info(
+                "Admin card enrollment completed session=%s admin=%s", session_id, admin_user_id
+            )
+            return sess
+
+        # Fingerprint (or both): sync admin first, then run fingerprint capture.
+        if finger_id is None:
+            raise EnrollmentError(
+                "finger_id is required for fingerprint enrollment.", code="INVALID_REQUEST"
+            )
+
+        enrollment_kind = "card_and_fingerprint" if credential_mode == "both" else "fingerprint"
+        if credential_mode == "both":
+            try:
+                zk_card_from_string(card_number or "")
+            except ValueError as e:
+                raise EnrollmentError(str(e), code="INVALID_CARD") from e
+
+        # Sync admin to the device (with card if "both") so the privileged user record exists.
+        admin_uid = await sync_service.sync_admin_to_device(
+            admin_user_id,
+            device_id,
+            school_id,
+            card_number=card_number if credential_mode == "both" else None,
+        )
+
+        device = await self.device_repository.get_by_id(device_id, school_id)
+        if not device:
+            raise DeviceNotFoundError(device_id)
+        if device.status != DeviceStatus.ONLINE:
+            raise DeviceOfflineError(device_id)
+
+        conn = await self.connection_service.get_connection(device)
+        if not conn:
+            raise DeviceOfflineError(device_id)
+
+        session_id = str(uuid.uuid4())
+        enrollment_session = await self.repository.create(
+            EnrollmentSessionCreate(
+                session_id=session_id,
+                student_id=None,
+                admin_user_id=admin_user_id,
+                device_id=device_id,
+                finger_id=finger_id,
+                school_id=school_id,
+                enrollment_kind=enrollment_kind,
+                status=EnrollmentStatus.PENDING,
+            )
+        )
+
+        try:
+            enrollment_session.status = EnrollmentStatus.IN_PROGRESS.value
+            await self.db.commit()
+            await self.db.refresh(enrollment_session)
+
+            await enrollment_broadcaster.broadcast_progress(
+                school_id=school_id,
+                session_id=session_id,
+                progress=0,
+                status="ready",
+                message="Enrollment started. Place your finger on the scanner.",
+            )
+
+            import asyncio
+            asyncio.create_task(self._run_enrollment(
+                conn=conn,
+                enrollment_id=enrollment_session.id,
+                session_id=session_id,
+                school_id=school_id,
+                user_id_str=admin_device_user_id(admin_user_id),
+                uid=admin_uid,
+                finger_id=finger_id,
+            ))
+
+            logger.info(
+                f"Admin enrollment started: session={session_id}, "
+                f"admin={admin_user_id}, device={device_id}, finger={finger_id}"
+            )
+            return enrollment_session
+        except Exception as e:
+            error_msg = str(e)
+            await self.repository.update_status(
+                enrollment_session.id,
+                EnrollmentStatus.FAILED,
+                error_message=error_msg,
+            )
+            await enrollment_broadcaster.broadcast_error(
+                school_id=school_id,
+                session_id=session_id,
+                error_message=error_msg,
+            )
+            logger.error(f"Admin enrollment failed: session={session_id}, error={e}", exc_info=True)
+            raise EnrollmentError(
+                f"Failed to start admin enrollment: {error_msg}",
                 code="ENROLLMENT_ERROR",
             ) from e
 

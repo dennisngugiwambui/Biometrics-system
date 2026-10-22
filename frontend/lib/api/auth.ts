@@ -9,6 +9,7 @@
 
 import axios from 'axios';
 import type { AdminAccountFormData } from '@/lib/validations/user';
+import { useAuthStore } from '@/lib/store/authStore';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -250,6 +251,51 @@ export async function registerUser(
     console.error('Unexpected error during user registration:', error);
 
     throw new UserRegistrationError(errorMessage, 500);
+  }
+}
+
+/**
+ * List all users (admins/staff) for the current school.
+ */
+export async function listUsers(): Promise<UserResponse[]> {
+  const token = useAuthStore.getState().token;
+  const response = await axios.get<UserResponse[]>(
+    `${API_BASE_URL}/api/v1/auth/users`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return response.data;
+}
+
+/**
+ * Create a new admin user for the current school.
+ *
+ * Reuses the protected register endpoint with role="admin".
+ */
+export async function createAdminUser(data: {
+  email: string;
+  first_name: string;
+  last_name: string;
+  password: string;
+}): Promise<UserResponse> {
+  const { token, user } = useAuthStore.getState();
+  if (!user) {
+    throw new UserRegistrationError('Not authenticated', 401);
+  }
+  try {
+    const response = await axios.post<UserResponse>(
+      `${API_BASE_URL}/api/v1/auth/register`,
+      { ...data, school_id: user.school_id, role: 'admin' },
+      { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status || 500;
+      const detail = error.response?.data?.detail;
+      const message = typeof detail === 'string' ? detail : 'Failed to create admin';
+      throw new UserRegistrationError(message, statusCode);
+    }
+    throw new UserRegistrationError('An unexpected error occurred', 500);
   }
 }
 

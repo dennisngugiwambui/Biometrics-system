@@ -99,3 +99,14 @@ class TeacherNotOnDeviceError(AppException):
         )
         self.teacher_id = teacher_id
         self.device_id = device_id
+
+
+class AdminUserNotFoundError(AppException):
+    """Raised when the admin user is not found."""
+
+    def __init__(self, admin_user_id: int):
+        super().__init__(
+            message=f"Admin user {admin_user_id} not found",
+            code="ADMIN_USER_NOT_FOUND",
+        )
+        self.admin_user_id = admin_user_id

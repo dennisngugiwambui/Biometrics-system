@@ -24,14 +24,24 @@ export interface EnrollmentStartRequestTeacher {
   finger_id: number;
 }
 
+export interface EnrollmentStartRequestAdmin {
+  admin_user_id: number;
+  device_id: number;
+  finger_id?: number | null;
+  credential_mode?: 'fingerprint' | 'card' | 'both';
+  card_number?: string | null;
+}
+
 export interface EnrollmentStartResponse {
   session_id: string;
   student_id?: number | null;
   teacher_id?: number | null;
+  admin_user_id?: number | null;
   device_id: number;
   finger_id: number;
   status: EnrollmentStatus;
   started_at: string;
+  completed_immediately?: boolean;
 }
 
 export interface EnrollmentCountResponse {
@@ -200,6 +210,57 @@ export async function startTeacherEnrollment(
         );
       }
       const message = error.message || `Failed to start teacher enrollment (${statusCode})`;
+      throw new EnrollmentApiError(message, statusCode);
+    }
+    throw new EnrollmentApiError('An unexpected error occurred', 500);
+  }
+}
+
+/**
+ * Enroll an admin (login user) as a device administrator (privilege=14).
+ * Supports card, fingerprint, or both. The admin is synced to the device first.
+ */
+export async function startAdminEnrollment(
+  request: EnrollmentStartRequestAdmin
+): Promise<EnrollmentStartResponse> {
+  try {
+    const token = useAuthStore.getState().token;
+
+    const response = await axios.post<EnrollmentStartResponse>(
+      `${API_BASE_URL}/api/v1/enrollment/start/admin`,
+      request,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status || 500;
+      const errorData = error.response?.data as ApiError | undefined;
+
+      if (errorData?.detail || errorData?.message) {
+        const raw = errorData.detail || errorData.message;
+        const message =
+          typeof raw === 'object' && raw && 'message' in raw
+            ? String((raw as { message: string }).message)
+            : String(raw || `Failed to start admin enrollment (${statusCode})`);
+        const code =
+          typeof raw === 'object' && raw && 'code' in raw
+            ? (raw as { code?: string }).code
+            : errorData.code;
+        throw new EnrollmentApiError(message, statusCode, code);
+      }
+      if (statusCode === 404) {
+        throw new EnrollmentApiError('Admin or device not found', statusCode, 'NOT_FOUND');
+      }
+      if (statusCode === 503) {
+        throw new EnrollmentApiError('Device is offline or unreachable', statusCode, 'DEVICE_OFFLINE');
+      }
+      const message = error.message || `Failed to start admin enrollment (${statusCode})`;
       throw new EnrollmentApiError(message, statusCode);
     }
     throw new EnrollmentApiError('An unexpected error occurred', 500);

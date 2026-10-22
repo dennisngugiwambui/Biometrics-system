@@ -17,14 +17,27 @@ from device_service.exceptions import (
     DeviceNotFoundError,
     StudentNotFoundError,
     TeacherNotFoundError,
+    AdminUserNotFoundError,
 )
 from device_service.core.zk_card import zk_card_from_string
 
 # Import Student from school_service - device_service shares DB
 from school_service.models.student import Student
 from school_service.models.teacher import Teacher
+from school_service.models.user import User
 
 logger = logging.getLogger(__name__)
+
+# Device user_id namespacing: students use str(student_id), teachers "T{id}",
+# admins "A{id}". The numeric device uid is a 2-byte slot index (max 65535) that
+# must stay within the device's capacity, so admin uids are assigned to a free
+# slot at sync time rather than a fixed large offset.
+DEVICE_MAX_UID = 65000
+
+
+def admin_device_user_id(user_id: int) -> str:
+    """Device user_id string for an admin (login user)."""
+    return f"A{user_id}"
 
 
 class SyncService:
@@ -156,6 +169,98 @@ class SyncService:
             privilege=0,
         )
         logger.info(f"Synced teacher {teacher_id} to device {device_id}")
+
+    async def _get_admin_user(self, admin_user_id: int, school_id: int) -> User:
+        """Fetch an admin (login user) by ID within school. Raises AdminUserNotFoundError."""
+        result = await self.db.execute(
+            select(User).where(
+                User.id == admin_user_id,
+                User.school_id == school_id,
+                User.is_deleted == False,
+            )
+        )
+        user = result.scalar_one_or_none()
+        if not user:
+            raise AdminUserNotFoundError(admin_user_id)
+        return user
+
+    async def sync_admin_to_device(
+        self,
+        admin_user_id: int,
+        device_id: int,
+        school_id: int,
+        *,
+        card_number: Optional[str] = None,
+    ) -> int:
+        """Sync an admin (login user) to a device as a device administrator (privilege=14).
+
+        Uses device user_id "A{id}" and assigns a free numeric uid slot (reusing the
+        admin's existing slot if already present). Optionally programs a card in the
+        same set_user call. Returns the device uid used.
+        """
+        user = await self._get_admin_user(admin_user_id, school_id)
+
+        device = await self.device_repository.get_by_id(device_id, school_id)
+        if not device:
+            raise DeviceNotFoundError(device_id)
+        if device.status != DeviceStatus.ONLINE:
+            raise DeviceOfflineError(device_id)
+
+        conn = await self.connection_service.get_connection(device)
+        if not conn:
+            raise DeviceOfflineError(device_id)
+
+        user_id_str = admin_device_user_id(admin_user_id)
+        uid = await self._resolve_device_uid(conn, user_id_str)
+
+        name = f"ADMIN - {user.first_name} {user.last_name}"
+        card_val = 0
+        if card_number is not None and str(card_number).strip():
+            try:
+                card_val = zk_card_from_string(card_number)
+            except ValueError:
+                logger.warning(
+                    "Invalid card_number for admin_user_id=%s; syncing admin without card",
+                    admin_user_id,
+                )
+                card_val = 0
+
+        await conn.set_user(
+            uid=uid,
+            name=name,
+            user_id=user_id_str,
+            privilege=14,
+            card=card_val,
+        )
+        logger.info(
+            f"Synced admin user {admin_user_id} to device {device_id} as device admin "
+            f"(uid={uid}, privilege=14, card={card_val})"
+        )
+        return uid
+
+    async def _resolve_device_uid(self, conn, user_id_str: str) -> int:
+        """Return the device uid for user_id_str, reusing its slot if present else a free one."""
+        used: set[int] = set()
+        try:
+            existing = await conn.get_users()
+        except Exception:
+            existing = []
+        for u in existing:
+            raw_uid = getattr(u, "uid", None)
+            if raw_uid is not None:
+                try:
+                    used.add(int(raw_uid))
+                except (TypeError, ValueError):
+                    pass
+            if getattr(u, "user_id", None) == user_id_str and raw_uid is not None:
+                return int(raw_uid)
+
+        candidate = (max(used) + 1) if used else 1
+        if candidate > DEVICE_MAX_UID:
+            for i in range(1, DEVICE_MAX_UID):
+                if i not in used:
+                    return i
+        return candidate
 
     async def check_student_on_device(
         self,

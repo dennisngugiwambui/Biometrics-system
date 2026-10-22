@@ -134,18 +134,18 @@ export default function DashboardLayout({
 
   if (!hasHydrated) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50/50 to-indigo-50/30 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-gray-900">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="flex flex-col items-center gap-4"
+          className="flex flex-col items-center gap-3"
         >
           <motion.div
             animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full"
+            transition={{ duration: 0.9, repeat: Infinity, ease: "linear" }}
+            className="h-7 w-7 rounded-full border-[3px] border-blue-200 border-t-blue-600"
           />
-          <p className="text-sm text-muted-foreground">Loading...</p>
+          <p className="text-xs font-medium text-gray-400 tracking-wide">Loading</p>
         </motion.div>
       </div>
     )
@@ -161,7 +161,7 @@ export default function DashboardLayout({
     <TooltipProvider>
       <SidebarProvider defaultOpen={sidebarDefaultOpen}>
         <SidebarCloser />
-        <div className="flex min-h-screen w-full bg-gradient-to-br from-slate-50 via-blue-50/50 to-indigo-50/30 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <div className="flex min-h-screen w-full bg-slate-50 dark:bg-gray-900">
           <DashboardSidebar
             adminName={adminFullName}
             adminEmail={user.email}
@@ -173,7 +173,7 @@ export default function DashboardLayout({
             logoDataUrl={logoDataUrl}
           />
 
-          <SidebarInset className="flex flex-col bg-slate-50/50 dark:bg-gray-950/50">
+          <SidebarInset className="flex flex-col bg-slate-50 dark:bg-gray-950">
             <DashboardHeader
               title={title}
               adminName={adminFullName}
@@ -184,9 +184,9 @@ export default function DashboardLayout({
               onSettings={handleSettings}
             />
 
-            <main className="flex-1 overflow-y-auto custom-scrollbar pt-16 md:pt-0">
+            <main className="flex-1 overflow-y-auto pt-14 md:pt-0">
               <Suspense fallback={
-                <div className="flex h-[60vh] w-full items-center justify-center">
+                <div className="flex min-h-96 w-full items-center justify-center">
                   <div className="flex flex-col items-center gap-4">
                     <div className="h-10 w-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest animate-pulse">Loading</p>
@@ -198,9 +198,8 @@ export default function DashboardLayout({
                   initial={{ opacity: 0, scale: 0.995, y: 4 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
-                  className="p-0"
                 >
-                  <div className="w-full bg-white dark:bg-gray-900 min-h-[calc(100vh-4rem)] transition-all">
+                  <div className="w-full">
                     {children}
                   </div>
                 </motion.div>
