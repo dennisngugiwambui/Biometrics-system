@@ -13,6 +13,7 @@ import { useSchoolBrandingStore } from "@/lib/store/schoolBrandingStore"
 import { getMySchool } from "@/lib/api/schools"
 import { getUnreadCount } from "@/lib/api/notifications"
 import Loading from "./dashboard/loading"
+import { NavigationProgress } from "@/components/shared/NavigationProgress"
 
 /** Closes the sidebar on every route change when the viewport is mobile */
 function SidebarCloser() {
@@ -184,7 +185,10 @@ export default function DashboardLayout({
               onSettings={handleSettings}
             />
 
-            <main className="flex-1 overflow-y-auto pt-14 md:pt-0">
+            <main className="relative flex-1 overflow-y-auto pt-14 md:pt-0">
+              <Suspense fallback={null}>
+                <NavigationProgress />
+              </Suspense>
               <Suspense fallback={
                 <div className="flex min-h-96 w-full items-center justify-center">
                   <div className="flex flex-col items-center gap-4">

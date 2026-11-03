@@ -38,6 +38,24 @@ async def proxy_school_service(
 
 
 @router.api_route(
+    "/api/v1/platform/{path:path}",
+    methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    include_in_schema=True,
+    tags=["proxy", "platform"],
+)
+async def proxy_platform(
+    request: Request,
+    path: str = "",
+    proxy: Any = Depends(lambda: get_school_service_proxy(settings)),
+):
+    """Proxy the platform owner console API to School Service — /api/v1/platform/*"""
+    if request.method == "OPTIONS":
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    normalized_path = path.lstrip("/") if path else ""
+    return await proxy.proxy_request(request, f"/api/v1/platform/{normalized_path}")
+
+
+@router.api_route(
     "/api/v1/auth/{path:path}",
     methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     include_in_schema=True,

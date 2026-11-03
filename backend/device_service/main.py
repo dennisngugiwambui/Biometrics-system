@@ -33,6 +33,7 @@ from device_service.api.routes import (
     sync_router,
     system_router,
 )
+from device_service.api.routes.iclock import router as iclock_router
 from device_service.services.device_health_check import DeviceHealthCheckService
 from device_service.services.device_info_sync import DeviceInfoSyncService
 from device_service.services.attendance_poll_service import AttendancePollService
@@ -123,6 +124,8 @@ app.include_router(websocket_router)
 app.include_router(enrollment_router)
 app.include_router(sync_router)
 app.include_router(system_router)
+# Cloud devices (push/ADMS) — reached directly, not through the gateway (deploy/server.js)
+app.include_router(iclock_router)
 
 # CORS middleware
 app.add_middleware(

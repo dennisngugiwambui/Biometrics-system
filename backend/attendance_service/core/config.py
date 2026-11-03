@@ -14,6 +14,8 @@ class Settings(BaseSettings):
 
     # Database
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/school_biometric"
+    # Optional schema inside DATABASE_URL (when sharing a database with another app)
+    DB_SCHEMA: str = ""
 
     # Redis
     REDIS_URL: str = "redis://localhost:6379/3"

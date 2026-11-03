@@ -1,7 +1,7 @@
 """Pydantic schemas for Device."""
 
-from pydantic import BaseModel, Field, field_validator, IPvAnyAddress
-from typing import Optional
+from pydantic import BaseModel, Field, field_validator, model_validator, IPvAnyAddress
+from typing import Literal, Optional
 from datetime import datetime
 from enum import Enum
 
@@ -18,7 +18,10 @@ class DeviceBase(BaseModel):
     """Base schema with common device fields."""
 
     name: str = Field(..., min_length=1, max_length=200, description="Device display name")
-    ip_address: str = Field(..., description="Device IP address (IPv4 or IPv6)")
+    # direct: the server connects to ip_address:port (same network as the server).
+    # cloud: the device calls this system over the internet (Cloud Server Setting) — no IP needed.
+    connection_mode: Literal["direct", "cloud"] = Field(default="direct", description="direct (LAN) or cloud (push over internet)")
+    ip_address: Optional[str] = Field(None, description="Device IP address (IPv4 or IPv6); direct mode only")
     port: int = Field(default=4370, ge=1, le=65535, description="Device port (default: 4370)")
     com_password: Optional[str] = Field(None, max_length=20, description="Communication password for device authentication")
     serial_number: Optional[str] = Field(None, max_length=100, description="Device serial number")
@@ -27,8 +30,10 @@ class DeviceBase(BaseModel):
 
     @field_validator("ip_address")
     @classmethod
-    def validate_ip_address(cls, v: str) -> str:
+    def validate_ip_address(cls, v: Optional[str]) -> Optional[str]:
         """Validate IP address format."""
+        if v is None or v == "":
+            return None
         try:
             IPvAnyAddress(v)
             return v
@@ -41,11 +46,22 @@ class DeviceCreate(DeviceBase):
 
     device_group_id: Optional[int] = Field(None, description="Optional device group ID")
 
+    @model_validator(mode="after")
+    def check_mode(self):
+        if self.connection_mode == "direct" and not self.ip_address:
+            raise ValueError("Enter the device's IP address (or choose cloud connection)")
+        if self.connection_mode == "cloud" and not (self.serial_number or "").strip():
+            raise ValueError("Enter the device's serial number — a cloud device is recognised by it")
+        if self.serial_number:
+            self.serial_number = self.serial_number.strip().upper() if self.connection_mode == "cloud" else self.serial_number.strip()
+        return self
+
 
 class DeviceUpdate(BaseModel):
     """Schema for updating device (all fields optional)."""
 
     name: Optional[str] = Field(None, min_length=1, max_length=200)
+    connection_mode: Optional[Literal["direct", "cloud"]] = None
     ip_address: Optional[str] = None
     port: Optional[int] = Field(None, ge=1, le=65535)
     com_password: Optional[str] = Field(None, max_length=20, description="Communication password for device authentication")
@@ -58,8 +74,8 @@ class DeviceUpdate(BaseModel):
     @classmethod
     def validate_ip_address(cls, v: Optional[str]) -> Optional[str]:
         """Validate IP address format if provided."""
-        if v is None:
-            return v
+        if v is None or v == "":
+            return None
         try:
             IPvAnyAddress(v)
             return v
@@ -78,6 +94,8 @@ class DeviceResponse(DeviceBase):
     max_users: Optional[int] = None
     enrolled_users: int = 0
     device_group_id: Optional[int] = None
+    push_last_seen_at: Optional[datetime] = None
+    push_remote_ip: Optional[str] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
 

@@ -2,11 +2,13 @@
 
 import io
 import logging
+import os
 from collections import defaultdict
-from datetime import date
+from datetime import date, datetime
 from typing import Literal, Optional
 
 import httpx
+import pytz
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.responses import StreamingResponse
 
@@ -16,6 +18,43 @@ from api_gateway.services.report_builder import build_report_pdf, build_report_p
 from shared.schemas.user import UserResponse
 
 logger = logging.getLogger(__name__)
+
+# Stored times are UTC; reports read in the school's own time.
+REPORT_TZ = pytz.timezone(os.getenv("ATTENDANCE_TIMEZONE", "Africa/Nairobi"))
+
+
+def _today() -> date:
+    return datetime.now(REPORT_TZ).date()
+
+
+def _local(val) -> Optional[datetime]:
+    if not val:
+        return None
+    try:
+        dt = datetime.fromisoformat(str(val).replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if dt.tzinfo is None:
+        dt = pytz.utc.localize(dt)
+    return dt.astimezone(REPORT_TZ)
+
+
+def _fmt_time(val) -> str:
+    dt = _local(val)
+    return dt.strftime("%H:%M") if dt else "-"
+
+
+def _fmt_day(iso_day: str) -> str:
+    try:
+        return datetime.strptime(iso_day, "%Y-%m-%d").strftime("%a %d %b %Y")
+    except ValueError:
+        return iso_day
+
+
+def _period_text(d_from: date, d_to: date) -> str:
+    if d_from == d_to:
+        return d_from.strftime("%A %d %B %Y")
+    return f"{d_from:%d %b %Y} to {d_to:%d %b %Y}"
 
 router = APIRouter(prefix="/api/v1/reports", tags=["reports"])
 
@@ -104,10 +143,8 @@ def _group_summary_rows_by_class(rows: list[list], class_col: int = 2) -> list[t
 
 
 def _fmt_pdf_ts(val) -> str:
-    if not val:
-        return "-"
-    s = str(val).replace("T", " ")
-    return s[:19] if len(s) >= 19 else s
+    dt = _local(val)
+    return dt.strftime("%d %b %Y, %H:%M") if dt else "-"
 
 
 def _prepare_items(
@@ -130,10 +167,8 @@ def _prepare_items(
 
 
 def _day_key_from_record(r: dict) -> str:
-    o = r.get("occurred_at")
-    if not o:
-        return ""
-    return str(o)[:10]
+    dt = _local(r.get("occurred_at"))
+    return dt.strftime("%Y-%m-%d") if dt else ""
 
 
 def _student_summary_rows_single_day(items: list[dict]) -> list[list]:
@@ -175,8 +210,8 @@ def _student_summary_rows_single_day(items: list[dict]) -> list[list]:
                 b["student_name"] or "-",
                 b["admission_number"] or "-",
                 b["class_name"] or "-",
-                _fmt_pdf_ts(b["first_in"]) if b["first_in"] else "-",
-                _fmt_pdf_ts(b["last_out"]) if b["last_out"] else "-",
+                _fmt_time(b["first_in"]),
+                _fmt_time(b["last_out"]),
                 b["device"] or "-",
             ]
         )
@@ -223,12 +258,12 @@ def _student_summary_rows_multi_day(items: list[dict]) -> list[list]:
         b = buckets[(sid, dk)]
         rows.append(
             [
-                dk,
+                _fmt_day(dk),
                 b["student_name"] or "-",
                 b["admission_number"] or "-",
                 b["class_name"] or "-",
-                _fmt_pdf_ts(b["first_in"]) if b["first_in"] else "-",
-                _fmt_pdf_ts(b["last_out"]) if b["last_out"] else "-",
+                _fmt_time(b["first_in"]),
+                _fmt_time(b["last_out"]),
                 b["device"] or "-",
             ]
         )
@@ -270,8 +305,8 @@ def _teacher_summary_rows_single_day(items: list[dict]) -> list[list]:
             [
                 b["teacher_name"] or "-",
                 b["employee_id"] or "-",
-                _fmt_pdf_ts(b["first_in"]) if b["first_in"] else "-",
-                _fmt_pdf_ts(b["last_out"]) if b["last_out"] else "-",
+                _fmt_time(b["first_in"]),
+                _fmt_time(b["last_out"]),
                 b["device"] or "-",
             ]
         )
@@ -315,11 +350,11 @@ def _teacher_summary_rows_multi_day(items: list[dict]) -> list[list]:
         b = buckets[(tid, dk)]
         rows.append(
             [
-                dk,
+                _fmt_day(dk),
                 b["teacher_name"] or "-",
                 b["employee_id"] or "-",
-                _fmt_pdf_ts(b["first_in"]) if b["first_in"] else "-",
-                _fmt_pdf_ts(b["last_out"]) if b["last_out"] else "-",
+                _fmt_time(b["first_in"]),
+                _fmt_time(b["last_out"]),
                 b["device"] or "-",
             ]
         )
@@ -413,24 +448,21 @@ async def report_present_today(
     school = await _get_school(auth)
     raw = await _get_attendance(
         auth,
-        target_date=date.today(),
+        target_date=_today(),
         user_type=user_type,
         class_id=class_id,
         stream_id=stream_id,
     )
     items = _prepare_items(raw, include_duplicates=include_duplicates, event_scope="all")
-    title = "DAILY ATTENDANCE SNAPSHOT"
+    title = "Daily Attendance Report" if user_type == "student" else "Staff Daily Attendance Report"
     buf = io.BytesIO()
     group_label = await _get_group_label(auth, class_id=class_id, stream_id=stream_id)
-    cat_bits = [report_layout, group_label]
-    if group_by_class and user_type == "student":
-        cat_bits.append("by class")
+    today = _today()
     metadata = {
-        "date_from": date.today().isoformat(),
-        "date_to": date.today().isoformat(),
-        "year": str(date.today().year),
-        "grade": "All Classes" if user_type == "student" else "All Departments",
-        "category": "Today · " + " · ".join(cat_bits),
+        "date_from": today.isoformat(),
+        "date_to": today.isoformat(),
+        "scope": group_label if user_type == "student" else "All teaching staff",
+        "subtitle": f"{'Learners' if user_type == 'student' else 'Teachers'} present · {_period_text(today, today)}",
     }
 
     if user_type == "student":
@@ -446,7 +478,7 @@ async def report_present_today(
             else:
                 build_report_pdf(buf, title, school, rows, headers, report_metadata=metadata, col_widths_mm=cw)
         else:
-            headers = ["Name", "Admission No", "Class", "Event", "Date/Time", "Device"]
+            headers = ["Name", "Admission No", "Class", "Event", "Date & time", "Device"]
 
             def row_tl(r: dict) -> list:
                 return [
@@ -477,7 +509,7 @@ async def report_present_today(
             rows = _teacher_summary_rows_single_day(items)
             build_report_pdf(buf, title, school, rows, headers, report_metadata=metadata, col_widths_mm=COL_TEACHER_SUMMARY_5)
         else:
-            headers = ["Name", "Employee ID", "Event", "Date/Time", "Device"]
+            headers = ["Name", "Employee ID", "Event", "Date & time", "Device"]
             rows = [
                 [
                     r.get("teacher_name") or "-",
@@ -542,12 +574,10 @@ async def report_present_range(
     metadata = {
         "date_from": date_from.isoformat(),
         "date_to": date_to.isoformat(),
-        "date": date.today().strftime("%b %d, %Y"),
-        "year": str(date_from.year),
-        "category": f"{category} · {report_layout} · scope={event_scope}",
-        "grade": f"{user_type.capitalize()}s",
+        "scope": category if user_type == "student" else "All teaching staff",
+        "subtitle": f"{'Learners' if user_type == 'student' else 'Teachers'} · {_period_text(date_from, date_to)}",
     }
-    title = "HISTORICAL ATTENDANCE REPORT"
+    title = "Attendance Register" if user_type == "student" else "Staff Attendance Register"
     buf = io.BytesIO()
 
     if user_type == "student":
@@ -562,7 +592,7 @@ async def report_present_range(
             else:
                 build_report_pdf(buf, title, school, rows, headers, report_metadata=metadata, col_widths_mm=COL_STUD_SUMMARY_7)
         else:
-            headers = ["Name", "Admission No", "Class", "Event", "Date/Time", "Device"]
+            headers = ["Name", "Admission No", "Class", "Event", "Date & time", "Device"]
 
             def row_tl(r: dict) -> list:
                 return [
@@ -593,7 +623,7 @@ async def report_present_range(
             rows = _teacher_summary_rows_multi_day(items)
             build_report_pdf(buf, title, school, rows, headers, report_metadata=metadata, col_widths_mm=COL_TEACHER_RANGE_6)
         else:
-            headers = ["Name", "Employee ID", "Event", "Date/Time", "Device"]
+            headers = ["Name", "Employee ID", "Event", "Date & time", "Device"]
             rows = [
                 [
                     r.get("teacher_name") or "-",
@@ -655,12 +685,10 @@ async def report_events(
     metadata = {
         "date_from": date_from.isoformat(),
         "date_to": date_to.isoformat(),
-        "date": date.today().strftime("%b %d, %Y"),
-        "year": str(date_from.year),
-        "category": f"{category} · Audit · {report_layout} · scope={event_scope}",
-        "grade": f"{user_type.capitalize()} Log",
+        "scope": category if user_type == "student" else "All teaching staff",
+        "subtitle": f"{'Learners' if user_type == 'student' else 'Teachers'} · {_period_text(date_from, date_to)}",
     }
-    title = "STUDENT TIME-IN / TIME-OUT REPORT"
+    title = "Learner Time-in / Time-out Report" if user_type == "student" else "Staff Time-in / Time-out Report"
     buf = io.BytesIO()
 
     if user_type == "student":
@@ -675,7 +703,7 @@ async def report_events(
             else:
                 build_report_pdf(buf, title, school, rows, headers, report_metadata=metadata, col_widths_mm=COL_STUD_SUMMARY_7)
         else:
-            headers = ["Name", "Admission No", "Class", "Event", "Date/Time", "Device"]
+            headers = ["Name", "Admission No", "Class", "Event", "Date & time", "Device"]
 
             def row_ev(r: dict) -> list:
                 return [
@@ -706,7 +734,7 @@ async def report_events(
             rows = _teacher_summary_rows_multi_day(items)
             build_report_pdf(buf, title, school, rows, headers, report_metadata=metadata, col_widths_mm=COL_TEACHER_RANGE_6)
         else:
-            headers = ["Name", "Employee ID", "Event", "Date/Time", "Device"]
+            headers = ["Name", "Employee ID", "Event", "Date & time", "Device"]
             rows = [
                 [
                     r.get("teacher_name") or "-",

@@ -17,6 +17,8 @@ class Settings(BaseSettings):
 
     # Database
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/school_biometric"
+    # Optional schema inside DATABASE_URL (when sharing a database with another app)
+    DB_SCHEMA: str = ""
 
     # Redis
     REDIS_URL: str = "redis://localhost:6379/1"
@@ -31,6 +33,18 @@ class Settings(BaseSettings):
     # Refresh token is long-lived to support auto-refresh / sliding sessions
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     ALGORITHM: str = "HS256"
+
+    # Public address of the website — put in the credentials email (sign-in link)
+    APP_BASE_URL: str = "http://localhost:3000"
+
+    # Outgoing mail for the /management console (school admin credentials, certificates).
+    # Same names as the gateway's, so one .env serves both. Port 465 = SSL, otherwise STARTTLS.
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 587
+    SMTP_USERNAME: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM_EMAIL: str = ""
+    SMTP_FROM_NAME: str = "Shulepoa Attendance"
 
     # CORS
     ALLOWED_ORIGINS: List[str] = [

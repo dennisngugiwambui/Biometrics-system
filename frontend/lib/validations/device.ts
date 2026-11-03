@@ -14,7 +14,7 @@ export const deviceStatusEnum = z.enum(['online', 'offline', 'unknown']);
 /**
  * IP address validation (IPv4 or IPv6).
  */
-const ipAddressSchema = z
+export const ipAddressSchema = z
   .string()
   .min(1, 'IP address is required')
   .refine(
@@ -37,8 +37,12 @@ export const deviceFormSchema = z.object({
     .string()
     .min(1, 'Device name is required')
     .max(200, 'Device name must be less than 200 characters'),
-  
-  ip_address: ipAddressSchema,
+
+  // direct: the server reaches the device on its network; cloud: the device calls the server over the internet
+  connection_mode: z.enum(['direct', 'cloud']).default('direct'),
+
+  ip_address: z.union([ipAddressSchema, z.literal('')]).nullable().optional()
+    .transform((val) => (val === '' ? null : val)),
   
   port: z
     .number()
@@ -80,6 +84,13 @@ export const deviceFormSchema = z.object({
     .positive()
     .nullable()
     .optional(),
+}).superRefine((d, ctx) => {
+  if (d.connection_mode === 'direct' && !d.ip_address) {
+    ctx.addIssue({ code: 'custom', path: ['ip_address'], message: 'IP address is required for a device on the same network' });
+  }
+  if (d.connection_mode === 'cloud' && !d.serial_number) {
+    ctx.addIssue({ code: 'custom', path: ['serial_number'], message: 'Serial number is required — a cloud device is recognised by it' });
+  }
 });
 
 /**
@@ -97,7 +108,10 @@ export const deviceUpdateSchema = z.object({
     .max(200, 'Device name must be less than 200 characters')
     .optional(),
   
-  ip_address: ipAddressSchema.optional(),
+  connection_mode: z.enum(['direct', 'cloud']).optional(),
+
+  ip_address: z.union([ipAddressSchema, z.literal('')]).nullable().optional()
+    .transform((val) => (val === '' ? null : val)),
   
   port: z
     .number()

@@ -1,163 +1,116 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Smartphone, Copy, Check, Download, Info, ExternalLink, ShieldCheck, Zap } from "lucide-react"
+import { useEffect, useState } from "react"
+import { Smartphone, Copy, Check, Download, Share, PlusSquare, MoreVertical, CheckCircle2 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import {
-    Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter
+    Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog"
-import { getSystemInfo } from "@/lib/api/system"
-import { useAuthStore } from "@/lib/store/authStore"
+import { promptInstall, useInstallState } from "@/components/shared/PwaRegister"
 import { toast } from "sonner"
 
+/**
+ * Install the system as an app (PWA). Teachers and staff open the site on
+ * their phone and add it to the home screen; they sign in with the same
+ * account and see the same pages their role allows here.
+ */
 export function MobileConnectionCard() {
-    const { token } = useAuthStore()
-    const [ip, setIp] = useState<string>("Detecting...")
+    const state = useInstallState()
+    const [origin, setOrigin] = useState("")
     const [copied, setCopied] = useState(false)
-    const [loading, setLoading] = useState(true)
 
-    useEffect(() => {
-        async function load() {
-            if (!token) return
-            try {
-                const info = await getSystemInfo(token)
-                setIp(info.internal_ip)
-            } catch (err) {
-                setIp(window.location.hostname)
-            } finally {
-                setLoading(false)
-            }
-        }
-        load()
-    }, [token])
+    useEffect(() => setOrigin(window.location.origin), [])
 
-    const copyToClipboard = () => {
-        const url = `http://${ip}:8000`
-        navigator.clipboard.writeText(url)
+    const copyLink = () => {
+        navigator.clipboard.writeText(origin)
         setCopied(true)
-        toast.success("Connection URL copied to clipboard")
+        toast.success("App link copied — share it with your staff")
         setTimeout(() => setCopied(false), 2000)
     }
 
+    const install = async () => {
+        if (await promptInstall()) toast.success("Installed — open Shulepoa from your home screen")
+    }
+
     return (
-        <Card className="relative overflow-hidden border-none shadow-lg bg-gradient-to-br from-white to-blue-50/30 dark:from-gray-900 dark:to-blue-900/10">
+        <Card className="relative overflow-hidden border-none shadow-lg bg-gradient-to-br from-white to-green-50/40 dark:from-gray-900 dark:to-green-900/10">
             <div className="absolute top-0 right-0 p-3 opacity-10 pointer-events-none">
-                <Smartphone size={120} className="text-blue-600 rotate-12" />
+                <Smartphone size={120} className="text-green-600 rotate-12" />
             </div>
 
             <CardHeader>
                 <div className="flex items-center gap-2 mb-1">
-                    <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600">
+                    <div className="p-1.5 bg-green-100 dark:bg-green-900/30 rounded-lg text-green-700">
                         <Smartphone size={16} />
                     </div>
-                    <CardTitle className="text-lg font-bold">Mobile App Setup</CardTitle>
+                    <CardTitle className="text-lg font-bold">Shulepoa App</CardTitle>
                 </div>
-                <CardDescription>Connect teachers to the system via mobile</CardDescription>
+                <CardDescription>Install on any phone — same login, same permissions</CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-4">
-                <div className="p-4 rounded-xl bg-white dark:bg-gray-800 border border-blue-100 dark:border-blue-900/20 shadow-sm">
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Server Connection URL</p>
+                <div className="p-4 rounded-xl bg-white dark:bg-gray-800 border border-green-100 dark:border-green-900/20 shadow-sm">
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Open on the phone</p>
                     <div className="flex items-center justify-between gap-3">
-                        <code className="text-sm font-bold text-blue-600 dark:text-blue-400 select-all">
-                            {loading ? "Loading..." : `http://${ip}:8000`}
+                        <code className="min-w-0 truncate text-sm font-bold text-green-700 dark:text-green-400 select-all">
+                            {origin || "…"}
                         </code>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30"
-                            onClick={copyToClipboard}
-                        >
-                            {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
+                        <Button variant="ghost" size="icon" aria-label="Copy app link"
+                            className="h-8 w-8 shrink-0 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30" onClick={copyLink}>
+                            {copied ? <Check size={14} className="text-green-600" /> : <Copy size={14} />}
                         </Button>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                    <Dialog>
-                        <DialogTrigger asChild>
-                            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md border-none group">
-                                <Download size={16} className="mr-2 group-hover:animate-bounce" />
-                                Get App
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-2xl bg-white dark:bg-gray-900 border-none shadow-2xl p-0 overflow-hidden">
-                            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-8 text-white">
+                    {state === "installed" ? (
+                        <div className="flex items-center justify-center gap-2 rounded-xl bg-green-50 text-sm font-semibold text-green-700 dark:bg-green-900/20">
+                            <CheckCircle2 size={16} /> Installed
+                        </div>
+                    ) : state === "available" ? (
+                        <Button onClick={install} className="w-full bg-green-600 hover:bg-green-700 text-white rounded-xl shadow-md border-none">
+                            <Download size={16} className="mr-2" /> Install app
+                        </Button>
+                    ) : (
+                        <Dialog>
+                            <DialogTrigger asChild>
+                                <Button className="w-full bg-green-600 hover:bg-green-700 text-white rounded-xl shadow-md border-none">
+                                    <Download size={16} className="mr-2" /> Get App
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-lg">
                                 <DialogHeader>
-                                    <DialogTitle className="text-2xl font-bold flex items-center gap-3 text-white">
-                                        <Smartphone className="animate-pulse" />
-                                        Mobile App Setup Guide
+                                    <DialogTitle className="flex items-center gap-2">
+                                        <Smartphone size={18} className="text-green-600" /> Install Shulepoa on a phone
                                     </DialogTitle>
-                                    <DialogDescription className="text-blue-100 text-base mt-2">
-                                        Follow these simple steps to start tracking attendance on your phone.
+                                    <DialogDescription>
+                                        No download from a store. Open <span className="font-semibold text-gray-900 dark:text-white">{origin}</span> on
+                                        the phone, add it to the home screen, then sign in with the same account used here.
                                     </DialogDescription>
                                 </DialogHeader>
-                            </div>
-
-                            <div className="p-8 space-y-8">
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    <InstructionStep
-                                        number="1"
-                                        icon={<Download size={20} />}
-                                        title="Download"
-                                        desc="Download the APK from the link below and install it on your Android device."
-                                    />
-                                    <InstructionStep
-                                        number="2"
-                                        icon={<Zap size={20} />}
-                                        title="Configure"
-                                        desc="Open the app and paste the Server URL shown on your dashboard."
-                                    />
-                                    <InstructionStep
-                                        number="3"
-                                        icon={<ShieldCheck size={20} />}
-                                        title="Login"
-                                        desc="Use your teacher credentials to securely sign in and start tracking."
-                                    />
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                    <Steps title="Android (Chrome)" steps={[
+                                        { icon: <MoreVertical size={15} />, text: "Tap the ⋮ menu" },
+                                        { icon: <Download size={15} />, text: "Tap “Install app” (or “Add to Home screen”)" },
+                                        { icon: <Smartphone size={15} />, text: "Open Shulepoa from the home screen" },
+                                    ]} />
+                                    <Steps title="iPhone (Safari)" steps={[
+                                        { icon: <Share size={15} />, text: "Tap the Share button" },
+                                        { icon: <PlusSquare size={15} />, text: "Tap “Add to Home Screen”" },
+                                        { icon: <Smartphone size={15} />, text: "Open Shulepoa from the home screen" },
+                                    ]} />
                                 </div>
-
-                                <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-2xl border border-blue-100 dark:border-blue-900/30">
-                                    <h4 className="font-bold flex items-center gap-2 mb-4 text-blue-900 dark:text-blue-100">
-                                        <Info size={18} />
-                                        Configuration Details
-                                    </h4>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="space-y-1">
-                                            <p className="text-xs text-blue-600 font-medium uppercase tracking-wider">Server Address</p>
-                                            <p className="font-mono text-sm font-bold select-all">http://{ip}:8000</p>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <p className="text-xs text-blue-600 font-medium uppercase tracking-wider">Requirements</p>
-                                            <p className="text-sm">Android 8.0 or higher</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="flex flex-col sm:flex-row gap-4">
-                                    <Button className="flex-1 h-14 bg-gradient-to-r from-blue-600 to-indigo-600 hover:shadow-lg transition-all rounded-2xl text-white font-bold text-lg gap-2">
-                                        <Download size={20} />
-                                        Download APK
-                                    </Button>
-                                    <Button variant="outline" className="flex-1 h-14 rounded-2xl font-bold gap-2" onClick={copyToClipboard}>
-                                        {copied ? <Check size={20} className="text-green-500" /> : <Copy size={20} />}
-                                        Copy URL
-                                    </Button>
-                                </div>
-                            </div>
-
-                            <div className="bg-gray-50 dark:bg-gray-800/50 p-4 text-center border-t border-gray-100 dark:border-gray-800">
                                 <p className="text-xs text-gray-500">
-                                    Need help? Contact technical support at support@pixel-solutions.co.ke
+                                    Each person only sees the pages their account is allowed — the app and this website are the same system.
                                 </p>
-                            </div>
-                        </DialogContent>
-                    </Dialog>
+                            </DialogContent>
+                        </Dialog>
+                    )}
 
-                    <Button variant="outline" className="w-full rounded-xl border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20" onClick={copyToClipboard}>
-                        {copied ? <Check size={16} className="mr-2 text-green-500" /> : <Copy size={16} className="mr-2" />}
-                        Copy URL
+                    <Button variant="outline" className="w-full rounded-xl border-green-200 dark:border-green-800 hover:bg-green-50 dark:hover:bg-green-900/20" onClick={copyLink}>
+                        {copied ? <Check size={16} className="mr-2 text-green-600" /> : <Copy size={16} className="mr-2" />}
+                        Copy link
                     </Button>
                 </div>
             </CardContent>
@@ -165,19 +118,20 @@ export function MobileConnectionCard() {
     )
 }
 
-function InstructionStep({ number, icon, title, desc }: { number: string; icon: React.ReactNode; title: string; desc: string }) {
+function Steps({ title, steps }: { title: string; steps: { icon: React.ReactNode; text: string }[] }) {
     return (
-        <div className="space-y-3 relative group">
-            <div className="absolute -top-3 -right-3 text-4xl font-black text-blue-600/5 pointer-events-none group-hover:text-blue-600/10 transition-colors">
-                {number}
-            </div>
-            <div className="h-12 w-12 rounded-2xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
-                {icon}
-            </div>
-            <h5 className="font-bold text-gray-900 dark:text-white">{title}</h5>
-            <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-                {desc}
-            </p>
+        <div className="rounded-xl border border-gray-100 p-4 dark:border-gray-800">
+            <p className="mb-3 text-sm font-bold text-gray-900 dark:text-white">{title}</p>
+            <ol className="space-y-2.5">
+                {steps.map((s, i) => (
+                    <li key={i} className="flex items-start gap-2.5 text-sm text-gray-600 dark:text-gray-300">
+                        <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-green-50 text-green-700 dark:bg-green-900/30">
+                            {s.icon}
+                        </span>
+                        {s.text}
+                    </li>
+                ))}
+            </ol>
         </div>
     )
 }

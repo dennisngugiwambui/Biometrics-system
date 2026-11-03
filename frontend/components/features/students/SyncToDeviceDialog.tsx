@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Server, MapPin, Loader2, AlertCircle, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { listDevices, type DeviceResponse, DeviceApiError } from "@/lib/api/devices"
+import { listDevices, type DeviceResponse, DeviceApiError, deviceAddress } from "@/lib/api/devices"
 import { syncStudentToDevice, getSyncStatus, SyncApiError } from "@/lib/api/sync"
 import { DeviceStatusBadge } from "@/components/features/devices/DeviceStatusBadge"
 import { useAuthStore } from "@/lib/store/authStore"
@@ -179,7 +179,7 @@ export function SyncToDeviceDialog({
                           </div>
                         )}
                         <div className="text-xs text-muted-foreground mt-0.5 font-mono">
-                          {device.ip_address}:{device.port}
+                          {deviceAddress(device)}
                         </div>
                       </div>
                     </div>

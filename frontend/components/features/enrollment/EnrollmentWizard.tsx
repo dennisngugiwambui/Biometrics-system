@@ -33,6 +33,7 @@ import type { TeacherResponse } from "@/lib/api/teachers"
 import type { DeviceResponse } from "@/lib/api/devices"
 import { DeviceStatusBadge } from "@/components/features/devices/DeviceStatusBadge"
 import { getFingerInfo, FINGERS } from "@/lib/utils/fingers"
+import { deviceAddress } from "@/lib/api/devices"
 
 const STEPS_STUDENT = [
   { id: 1, name: "Select Student", icon: User, description: "Choose a student to enroll" },
@@ -507,7 +508,7 @@ export function EnrollmentWizard({ mode = "student", onStartEnrollment }: Enroll
                         <Wifi className="size-4 text-gray-500 dark:text-gray-400" />
                         <span className="text-gray-500 dark:text-gray-400">IP:</span>
                         <span className="font-medium font-mono text-xs text-gray-900 dark:text-gray-100">
-                          {selectedDevice.ip_address}:{selectedDevice.port}
+                          {deviceAddress(selectedDevice)}
                         </span>
                       </div>
                     </div>

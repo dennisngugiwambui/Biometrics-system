@@ -21,7 +21,9 @@ from school_service.models.academic_class import AcademicClass  # noqa: F401
 from school_service.models.teacher import Teacher  # noqa: F401
 from school_service.models.notification import Notification  # noqa: F401
 from school_service.models.alumni_record import AlumniRecord  # noqa: F401
+from school_service.models.platform import PlatformAdmin, SchoolLicense  # noqa: F401
 from device_service.models.device import Device  # noqa: F401
+from device_service.models.push_command import DevicePushCommand  # noqa: F401
 from device_service.models.device_group import DeviceGroup  # noqa: F401
 from device_service.models.enrollment import EnrollmentSession  # noqa: F401
 from device_service.models.fingerprint_template import FingerprintTemplate  # noqa: F401
@@ -41,6 +43,8 @@ from dotenv import load_dotenv
 load_dotenv()
 database_url = os.getenv("DATABASE_URL", config.get_main_option("sqlalchemy.url"))
 config.set_main_option("sqlalchemy.url", database_url)
+# Optional: keep every table (and alembic_version) in this schema
+db_schema = os.getenv("DB_SCHEMA", "")
 
 # Import all models to ensure they're registered with Base
 target_metadata = Base.metadata
@@ -80,9 +84,13 @@ async def run_migrations_online() -> None:
         configuration,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
+        connect_args={"server_settings": {"search_path": db_schema}} if db_schema else {},
     )
 
     async with connectable.connect() as connection:
+        if db_schema:
+            await connection.exec_driver_sql(f'CREATE SCHEMA IF NOT EXISTS "{db_schema}"')
+            await connection.commit()
         await connection.run_sync(do_run_migrations)
 
     await connectable.dispose()

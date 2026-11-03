@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Wifi, WifiOff, CheckCircle2, MapPin, Server } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
-import { listDevices, type DeviceResponse, DeviceApiError } from "@/lib/api/devices"
+import { listDevices, type DeviceResponse, DeviceApiError, deviceAddress } from "@/lib/api/devices"
 import { useAuthStore } from "@/lib/store/authStore"
 
 interface DeviceSelectorProps {
@@ -116,7 +116,7 @@ export function DeviceSelector({ selectedDevice, onSelect }: DeviceSelectorProps
                             </div>
                           )}
                           <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                            {device.ip_address}:{device.port}
+                            {deviceAddress(device)}
                           </div>
                         </div>
                       </div>

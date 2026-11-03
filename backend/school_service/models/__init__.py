@@ -9,6 +9,7 @@ from school_service.models.teacher import Teacher
 from school_service.models.support_ticket import SupportTicket, TicketMessage
 from school_service.models.notification import Notification
 from school_service.models.alumni_record import AlumniRecord
+from school_service.models.platform import PlatformAdmin, SchoolLicense
 
 # Type alias for convenience (Class is a Python keyword, so model is named AcademicClass)
 Class = AcademicClass
@@ -26,4 +27,6 @@ __all__ = [
     "TicketMessage",
     "Notification",
     "AlumniRecord",
+    "PlatformAdmin",
+    "SchoolLicense",
 ]

@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from school_service.core.database import get_db
 from school_service.core.security import create_access_token, create_refresh_token
+from school_service.services.licensing import require_license
 from school_service.repositories.teacher_repository import TeacherRepository
 from sqlalchemy import select
 from school_service.models.school import School
@@ -98,6 +99,7 @@ async def mobile_login(
     
     if not teacher.is_active:
         raise HTTPException(status_code=403, detail="Teacher account is inactive")
+    await require_license(db, school.id)
 
     # 3. Create tokens
     access_token = create_access_token(

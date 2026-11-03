@@ -199,6 +199,15 @@ export default function ReportsPage() {
 
   const openPreview = async (url: string, defaultFilename: string) => {
     const result = await generatePreview(url)
+    // Phones (Android Chrome, most in-app browsers) cannot show a PDF inside the
+    // page — the preview would open blank — so hand them the file straight away.
+    if (result && typeof navigator !== "undefined" && navigator.pdfViewerEnabled === false) {
+      const a = document.createElement("a")
+      a.href = result.blobUrl
+      a.download = result.filename || defaultFilename
+      a.click()
+      return
+    }
     if (result) {
       setPreviewUrl(result.blobUrl)
       setPreviewFilename(result.filename || defaultFilename)
@@ -588,11 +597,16 @@ export default function ReportsPage() {
 
           <DialogFooter className="p-6 border-t bg-white dark:bg-slate-950 flex flex-row items-center justify-between">
             <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-               <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" /> Digitally Signed Institutional Record
+               <div className="h-2 w-2 rounded-full bg-emerald-500" /> Official attendance record
             </span>
+            <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => previewUrl && window.open(previewUrl, "_blank")} className="h-12 rounded-xl font-bold">
+              Open in new tab
+            </Button>
             <Button onClick={handlePreviewDownload} className="h-12 px-8 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl gap-3">
               <Download className="h-5 w-5" /> Download Full PDF
             </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>

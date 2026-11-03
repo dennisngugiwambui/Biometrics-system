@@ -1376,11 +1376,11 @@ export default function AttendancePage() {
         animate="visible"
         className="glass-panel shadow-premium rounded-3xl border border-white/20 dark:border-white/10 p-5 bevel-sm"
       >
-        <div className="flex items-center justify-between gap-3 mb-5 px-1">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-5 px-1">
           <h2 className="text-xs font-black uppercase tracking-[0.15em] text-muted-foreground opacity-70">
             Scanning Metrics
           </h2>
-          <div className="flex items-center gap-4 text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-white/40 dark:bg-black/20 px-3 py-1.5 rounded-full border border-white/10">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-white/40 dark:bg-black/20 px-3 py-1.5 rounded-full border border-white/10">
             <div className="flex items-center gap-1.5">
               <Clock className="size-3 text-primary" />
               Scan: <span className="text-foreground tabular-nums">

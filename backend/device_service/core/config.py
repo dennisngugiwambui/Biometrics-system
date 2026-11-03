@@ -17,6 +17,8 @@ class Settings(BaseSettings):
 
     # Database
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/school_biometric"
+    # Optional schema inside DATABASE_URL (when sharing a database with another app)
+    DB_SCHEMA: str = ""
 
     # Redis
     REDIS_URL: str = "redis://localhost:6379/2"
@@ -51,6 +53,15 @@ class Settings(BaseSettings):
 
     # API Gateway (for triggering parent notifications after attendance save)
     API_GATEWAY_URL: str = "http://localhost:8000"
+
+    # Public address of the website. Cloud (push) devices are pointed at its host name
+    # under Menu → Comm → Cloud Server Setting.
+    APP_BASE_URL: str = "http://localhost:3000"
+
+    @property
+    def PUBLIC_HOST(self) -> str:
+        from urllib.parse import urlparse
+        return urlparse(self.APP_BASE_URL).hostname or ""
     NOTIFICATION_INTERNAL_KEY: str = ""  # Must match gateway NOTIFICATION_INTERNAL_KEY and school INTERNAL_API_KEY
 
     # Security (shared with school_service)

@@ -1,6 +1,7 @@
 """API routes for Authentication."""
 
 from fastapi import APIRouter, HTTPException, status, Depends
+from school_service.services.licensing import require_license
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -73,7 +74,9 @@ async def login(
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
+    await require_license(db, user.school_id)
+
     # Create token pair (access + refresh)
     access_token = create_access_token(
         data={
@@ -137,7 +140,9 @@ async def login_json(
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
+    await require_license(db, user.school_id)
+
     # Create token pair (access + refresh)
     access_token = create_access_token(
         data={
@@ -211,6 +216,7 @@ async def refresh_token(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="User account is inactive",
         )
+    await require_license(db, user.school_id)
 
     new_access = create_access_token(
         data={

@@ -134,6 +134,7 @@ export default function EditDevicePage() {
             deviceId={deviceId ?? undefined}
             initialData={{
               name: device.name,
+              connection_mode: device.connection_mode ?? "direct",
               ip_address: device.ip_address,
               port: device.port,
               com_password: device.com_password,

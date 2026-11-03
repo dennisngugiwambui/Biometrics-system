@@ -2,6 +2,7 @@
 
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from device_service.core.config import settings
+from shared.database.connect import schema_connect_args
 
 # Import all models to ensure SQLAlchemy can resolve relationships
 # This is critical for the health check service which creates sessions independently
@@ -21,6 +22,7 @@ from attendance_service.models.attendance_record import AttendanceRecord  # noqa
 # error instead of handing them out again.
 engine = create_async_engine(
     settings.DATABASE_URL,
+    connect_args=schema_connect_args(settings.DB_SCHEMA),
     echo=settings.DEBUG,
     future=True,
     pool_size=20,

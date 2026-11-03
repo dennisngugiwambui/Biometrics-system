@@ -9,6 +9,8 @@ from device_service.services.network_setup_hints import collect_local_ipv4_addre
 from device_service.zk.base import ZKDeviceConnection
 from device_service.models.device import Device
 from device_service.repositories.device_repository import DeviceRepository
+from device_service.services import push_protocol
+from device_service.services.cloud_connection import PushDeviceConnection
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +45,11 @@ class DeviceConnectionService:
         Returns:
             ZKDeviceConnection instance or None if connection fails
         """
+        # Cloud devices call us; there is no socket to open. Hand back the push
+        # wrapper while the device is checking in, otherwise report it offline.
+        if push_protocol.is_cloud(device):
+            return PushDeviceConnection(device) if push_protocol.is_online(device) else None
+
         # Check if connection exists and is still valid
         if device.id in self._connections:
             conn = self._connections[device.id]

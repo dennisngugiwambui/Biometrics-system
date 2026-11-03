@@ -379,27 +379,27 @@ export default function PresencePage() {
             </CardHeader>
             <CardContent className="p-0">
               {/* Workspace Controls */}
-              <div className="p-6 border-b border-gray-100 dark:border-gray-700 bg-gray-50/30 dark:bg-gray-900/10 flex flex-wrap items-end gap-6">
-                <div className="space-y-2">
+              <div className="p-4 sm:p-6 border-b border-gray-100 dark:border-gray-700 bg-gray-50/30 dark:bg-gray-900/10 flex flex-wrap items-end gap-4 sm:gap-6">
+                <div className="w-full space-y-2 sm:w-auto">
                   <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Date Range</Label>
                   <div className="flex items-center gap-2">
-                    <div className="relative group">
+                    <div className="relative group min-w-0 flex-1 sm:flex-none">
                       <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-blue-500 transition-colors" />
                       <Input
                         type="date"
                         value={liveFrom}
                         onChange={(e) => setLiveFrom(e.target.value)}
-                        className="w-[160px] pl-10 h-10 border-gray-200 dark:border-gray-700 focus:border-blue-500 rounded-xl bg-white dark:bg-gray-900"
+                        className="w-full sm:w-[160px] pl-10 h-10 border-gray-200 dark:border-gray-700 focus:border-blue-500 rounded-xl bg-white dark:bg-gray-900"
                       />
                     </div>
                     <span className="text-muted-foreground font-extrabold">→</span>
-                    <div className="relative group">
+                    <div className="relative group min-w-0 flex-1 sm:flex-none">
                       <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-blue-500 transition-colors" />
                       <Input
                         type="date"
                         value={liveTo}
                         onChange={(e) => setLiveTo(e.target.value)}
-                        className="w-[160px] pl-10 h-10 border-gray-200 dark:border-gray-700 focus:border-blue-500 rounded-xl bg-white dark:bg-gray-900"
+                        className="w-full sm:w-[160px] pl-10 h-10 border-gray-200 dark:border-gray-700 focus:border-blue-500 rounded-xl bg-white dark:bg-gray-900"
                       />
                     </div>
                   </div>

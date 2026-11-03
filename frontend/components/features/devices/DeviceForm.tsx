@@ -10,12 +10,13 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Card } from "@/components/ui/card"
-import { Loader2, Wifi, AlertCircle } from "lucide-react"
+import { Loader2, Wifi, AlertCircle, Globe, Network } from "lucide-react"
 import { fadeInUp } from "@/lib/animations/framer-motion"
-import { deviceFormSchema, deviceUpdateSchema, type DeviceFormData, type DeviceUpdateFormData } from "@/lib/validations/device"
+import { deviceFormSchema, deviceUpdateSchema, ipAddressSchema, type DeviceFormData, type DeviceUpdateFormData } from "@/lib/validations/device"
 import { testDeviceConnection, testDeviceConnectionByAddress } from "@/lib/api/devices"
 import { DeviceGroupSelector } from "./DeviceGroupSelector"
 import { DeviceNetworkSetupCard } from "./DeviceNetworkSetupCard"
+import { CloudSetupCard } from "./CloudSetupCard"
 
 export interface DeviceFormProps {
   deviceId?: number
@@ -49,6 +50,7 @@ export function DeviceForm({
     resolver: zodResolver(schema) as any, // Type assertion needed due to union type complexity
     defaultValues: initialData || {
       port: 4370,
+      connection_mode: "direct",
     },
   })
 
@@ -64,6 +66,8 @@ export function DeviceForm({
   const ipAddress = watch("ip_address")
   const port = watch("port")
   const comPassword = watch("com_password")
+  const mode = watch("connection_mode") ?? "direct"
+  const cloud = mode === "cloud"
 
   /**
    * Test device connection before saving.
@@ -76,7 +80,7 @@ export function DeviceForm({
 
     // Validate IP address format first
     try {
-      deviceFormSchema.shape.ip_address.parse(ipAddress)
+      ipAddressSchema.parse(ipAddress)
     } catch {
       setTestResult("Please enter a valid IP address")
       return
@@ -195,6 +199,34 @@ export function DeviceForm({
               )}
             </div>
 
+            {/* How the device reaches the system */}
+            <div>
+              <Label className="text-blue-700 dark:text-blue-400">Connection *</Label>
+              <div className="mt-1 grid grid-cols-1 gap-2 sm:grid-cols-2" role="radiogroup">
+                {([
+                  { value: "cloud", icon: Globe, title: "Over the internet (cloud)", text: "Device anywhere with internet. Recommended for this online system." },
+                  { value: "direct", icon: Network, title: "Same network (direct)", text: "Server and device on one local network; enter the device IP." },
+                ] as const).map(({ value, icon: Icon, title, text }) => (
+                  <button key={value} type="button" role="radio" aria-checked={mode === value}
+                    onClick={() => setValue("connection_mode", value, { shouldValidate: true })}
+                    className={`flex items-start gap-3 rounded-xl border p-3 text-left transition-colors ${mode === value
+                      ? "border-green-500 bg-green-50 ring-2 ring-green-500/20 dark:bg-green-950/20"
+                      : "border-gray-200 hover:border-gray-300 dark:border-gray-700"}`}>
+                    <Icon className={`mt-0.5 h-5 w-5 shrink-0 ${mode === value ? "text-green-700" : "text-gray-400"}`} />
+                    <span>
+                      <span className="block text-sm font-semibold text-gray-900 dark:text-white">{title}</span>
+                      <span className="block text-xs text-gray-500">{text}</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {cloud && (
+              <CloudSetupCard token={token} onPickSerial={(sn) => setValue("serial_number", sn, { shouldValidate: true })} />
+            )}
+
+            {!cloud && <>
             {/* IP Address and Port */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
@@ -294,16 +326,17 @@ export function DeviceForm({
                 </ul>
               )}
             </div>
+            </>}
 
             {/* Serial Number */}
             <div>
-              <Label htmlFor="serial_number" className="text-gray-700 dark:text-gray-300">
-                Serial Number
+              <Label htmlFor="serial_number" className={cloud ? "text-blue-700 dark:text-blue-400" : "text-gray-700 dark:text-gray-300"}>
+                Serial Number{cloud ? " *" : ""}
               </Label>
               <Input
                 id="serial_number"
                 {...register("serial_number")}
-                placeholder="Optional - Device serial number"
+                placeholder={cloud ? "e.g. CKJG203960123 (Menu → System Info)" : "Optional - Device serial number"}
                 className="mt-1 border-gray-300 focus:border-purple-500 focus:ring-purple-500 font-mono"
               />
               {errors.serial_number && (

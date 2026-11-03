@@ -45,7 +45,7 @@ _PROCESSED_KEYS_MAX_PER_DEVICE = 5000
 from attendance_service.models.attendance_record import AttendanceRecord, EventType
 from shared.schemas.attendance import IngestionSummaryResponse
 
-from device_service.models.device import DeviceStatus
+from device_service.models.device import Device, DeviceStatus
 from device_service.repositories.device_repository import DeviceRepository
 from device_service.repositories.attendance_record_repository import AttendanceRecordRepository
 from device_service.services.device_info_service import DeviceInfoService
@@ -139,11 +139,22 @@ class AttendanceIngestionService:
         if device.status != DeviceStatus.ONLINE:
             raise DeviceOfflineError(device_id)
 
+        logs = await self.device_info_service.fetch_attendance_logs(device)
+        return await self.ingest_logs(device, logs)
+
+    async def ingest_logs(self, device: Device, logs: list[dict]) -> IngestionSummary:
+        """
+        Store a batch of punches from one device: steps 2–8 of ingest_for_device.
+
+        Used by the poller (logs read from a direct device) and by cloud devices,
+        whose punches arrive by upload (POST /iclock/cdata?table=ATTLOG). Each log
+        is {"user_id", "timestamp", "punch", "device_serial"}.
+        """
+        device_id, school_id = device.id, device.school_id
         try:
             # ----------------------------------------------------------
-            # 1. Fetch raw logs & normalize naive timestamps to tz-aware
+            # 1. Normalize naive timestamps to tz-aware
             # ----------------------------------------------------------
-            logs = await self.device_info_service.fetch_attendance_logs(device)
             total = len(logs)
             if total == 0:
                 return IngestionSummary(inserted=0, skipped=0, duplicates_filtered=0, total=0)

@@ -4,6 +4,7 @@ import enum
 from sqlalchemy import Column, Integer, String, Enum, ForeignKey, Boolean, DateTime, Text, UniqueConstraint, TypeDecorator
 from sqlalchemy.sql import func, text
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import JSONB
 from shared.database.base import Base
 
 
@@ -53,7 +54,7 @@ class Device(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     school_id = Column(Integer, ForeignKey("schools.id"), nullable=False, index=True)
     name = Column(String(200), nullable=False)
-    ip_address = Column(String(45), nullable=False)  # IPv4 or IPv6
+    ip_address = Column(String(45), nullable=True)  # IPv4 or IPv6; empty for cloud devices (they call us)
     port = Column(Integer, nullable=False, server_default=text("4370"))  # Default ZKTeco port
     com_password = Column(String(20), nullable=True)  # Communication password for device authentication
     serial_number = Column(String(100), unique=True, nullable=True, index=True)
@@ -83,6 +84,16 @@ class Device(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=True)
     is_deleted = Column(Boolean, server_default=text("false"), nullable=False, index=True)
+
+    # Connection: "direct" = the server opens TCP to ip_address:port (same network);
+    # "cloud" = the device calls /iclock/* over the internet (services/push_protocol.py).
+    connection_mode = Column(String(10), server_default=text("'direct'"), nullable=False)
+    push_last_seen_at = Column(DateTime(timezone=True), nullable=True)
+    push_remote_ip = Column(String(45), nullable=True)
+    push_info = Column(JSONB, nullable=True)   # firmware, counts, capacities the device reported
+    push_users = Column(JSONB, nullable=True)  # {pin: {name, card, role, fingers}} — what is on the device
+    push_att_stamp = Column(String(40), nullable=True)
+    push_op_stamp = Column(String(40), nullable=True)
 
     # Relationships
     school = relationship("School", back_populates="devices", lazy="selectin")

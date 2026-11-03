@@ -31,8 +31,8 @@ class DeviceService:
         Raises:
             ValueError: If IP/port combination or serial number already exists
         """
-        # Check for duplicate IP/port combination within the school
-        existing_ip_port = await self.repository.get_by_ip_port(
+        # Check for duplicate IP/port combination within the school (cloud devices have no IP)
+        existing_ip_port = device_data.ip_address and await self.repository.get_by_ip_port(
             ip_address=device_data.ip_address,
             port=device_data.port,
             school_id=school_id
@@ -54,6 +54,9 @@ class DeviceService:
         
         # Create device
         device = await self.repository.create(device_data, school_id)
+        if device.serial_number:
+            from device_service.services.push_protocol import forget_unclaimed
+            forget_unclaimed(device.serial_number)
         return device
 
     async def get_device_by_id(
@@ -132,7 +135,7 @@ class DeviceService:
             new_port = update_dict.get("port", existing_device.port)
             
             # Check if another device (not this one) has this IP/port
-            conflict_device = await self.repository.get_by_ip_port(
+            conflict_device = new_ip and await self.repository.get_by_ip_port(
                 ip_address=new_ip,
                 port=new_port,
                 school_id=existing_device.school_id

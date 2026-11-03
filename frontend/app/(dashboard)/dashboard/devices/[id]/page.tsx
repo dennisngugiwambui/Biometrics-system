@@ -62,6 +62,7 @@ import {
   type DeviceTimeResponse,
   type DeviceConnectionTestResponse,
   DeviceApiError,
+  deviceAddress,
 } from "@/lib/api/devices"
 import { DeviceStatusBadge } from "@/components/features/devices/DeviceStatusBadge"
 import { DeviceCapacityIndicator } from "@/components/features/devices/DeviceCapacityIndicator"
@@ -605,7 +606,7 @@ export default function DeviceDetailPage() {
                     IP Address & Port
                   </p>
                   <p className="font-mono font-medium">
-                    {device.ip_address}:{device.port}
+                    {deviceAddress(device)}
                   </p>
                 </div>
 

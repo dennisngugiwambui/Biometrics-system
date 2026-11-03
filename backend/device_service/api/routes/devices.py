@@ -1,6 +1,7 @@
 """API routes for Device management."""
 
-from fastapi import APIRouter, HTTPException, status, Depends, Query, Path
+from fastapi import APIRouter, HTTPException, status, Depends, Query, Path, Request
+from device_service.core.config import settings
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 import math
@@ -233,6 +234,30 @@ async def get_network_setup_hints(
         subnets=subnets,
         warnings=warnings,
     )
+
+
+@router.get(
+    "/cloud-setup",
+    summary="What to enter on a device for cloud connection, and devices calling in unregistered",
+)
+async def get_cloud_setup(
+    request: Request,
+    current_user: UserResponse = Depends(get_current_user),
+):
+    """
+    Cloud mode works from any network: on the device open Menu → Comm → Cloud Server
+    Setting and enter the server address below with port 80. Until the device is
+    added here (by its serial number) its punches are held on the device.
+    """
+    from device_service.services import push_protocol
+    fwd = request.headers.get("x-forwarded-for")
+    viewer_ip = fwd.split(",")[0].strip() if fwd else (request.client.host if request.client else None)
+    return {
+        "server_address": settings.PUBLIC_HOST,
+        "server_port": 80,
+        "check_in_seconds": push_protocol.DELAY_S,
+        "unclaimed": push_protocol.list_unclaimed(viewer_ip),
+    }
 
 
 @router.get(

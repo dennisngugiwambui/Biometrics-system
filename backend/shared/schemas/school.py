@@ -1,5 +1,7 @@
 """Pydantic schemas for School."""
 
+import re
+
 from pydantic import BaseModel, EmailStr, Field, field_validator
 from datetime import datetime
 from typing import Optional, Literal, Any
@@ -83,10 +85,23 @@ class SchoolUpdate(BaseModel):
     geofence_lng: Optional[float] = Field(None, description="School location longitude for mobile check-in geofence")
     geofence_radius_m: Optional[int] = Field(None, description="Geofence radius in metres (default 150)")
 
+    @field_validator("phone", mode="before")
+    @classmethod
+    def strip_phone_separators(cls, v: Any) -> Any:
+        """Accept '0712 345-678' as typed; an empty field clears the phone."""
+        if isinstance(v, str):
+            v = re.sub(r"[\s().-]", "", v)
+            return v or None
+        return v
+
 
 class SchoolResponse(SchoolBase):
     """Schema for school response."""
 
+    # Output only: report what is stored (schools created from /management may
+    # carry a phone like "0712 345 678") instead of failing the whole request.
+    code: str
+    phone: Optional[str] = None
     id: int
     is_deleted: bool
     created_at: datetime

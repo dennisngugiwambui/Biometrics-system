@@ -62,3 +62,6 @@ yarn-debug.log*
 # Next.js (covered by frontend/.gitignore too)
 .next/
 out/
+
+# Platform owner first sign-in (temporary password) — never commit
+FIRST-LOGIN.txt

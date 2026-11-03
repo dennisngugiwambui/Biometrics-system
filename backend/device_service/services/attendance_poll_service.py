@@ -98,7 +98,11 @@ class AttendancePollService:
             try:
                 repository = DeviceRepository(db)
                 all_devices = await repository.get_all_active_devices()
-                online_devices = [d for d in all_devices if d.status == DeviceStatus.ONLINE]
+                # Cloud devices upload their punches as they happen; only direct ones are read.
+                online_devices = [
+                    d for d in all_devices
+                    if d.status == DeviceStatus.ONLINE and getattr(d, "connection_mode", "direct") != "cloud"
+                ]
 
                 if not online_devices:
                     logger.debug("No online devices to poll for attendance")

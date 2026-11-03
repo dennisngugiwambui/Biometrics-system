@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence, type Variants } from "framer-motion"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -59,12 +59,12 @@ import { useSchoolBrandingStore, DEFAULT_SCHOOL_COLORS } from "@/lib/store/schoo
 // Animation variants
 // ---------------------------------------------------------------------------
 
-const pageVariants = {
+const pageVariants: Variants = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
 }
 
-const alertVariants = {
+const alertVariants: Variants = {
   initial: { opacity: 0, y: -10, scale: 0.95 },
   animate: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.3, ease: "easeOut" } },
   exit: { opacity: 0, y: -10, scale: 0.95, transition: { duration: 0.2 } },

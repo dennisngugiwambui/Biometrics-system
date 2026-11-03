@@ -14,7 +14,7 @@ if str(backend_dir) not in sys.path:
     sys.path.insert(0, str(backend_dir))
 
 from school_service.core.config import settings
-from school_service.api.routes import schools, auth, students, classes, streams, teachers, notifications, internal, mobile
+from school_service.api.routes import schools, auth, students, classes, streams, teachers, notifications, internal, mobile, platform
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +45,7 @@ app.include_router(teachers.router)
 app.include_router(notifications.router)
 app.include_router(internal.router)
 app.include_router(mobile.router)
+app.include_router(platform.router)
 
 
 def _is_db_connection_error(exc: BaseException) -> bool:

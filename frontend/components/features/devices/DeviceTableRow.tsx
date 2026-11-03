@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { DeviceStatusBadge } from "./DeviceStatusBadge"
 import { DeviceCapacityIndicator } from "./DeviceCapacityIndicator"
 import { staggerItem } from "@/lib/animations/framer-motion"
-import { type DeviceResponse, type DeviceStatus } from "@/lib/api/devices"
+import { type DeviceResponse, type DeviceStatus, deviceAddress } from "@/lib/api/devices"
 import { Wifi, WifiOff, Clock } from "lucide-react"
 
 export interface DeviceTableRowProps {
@@ -79,7 +79,7 @@ export function DeviceTableRow({
       </TableCell>
       <TableCell className="cursor-pointer" onClick={() => onDeviceClick(device.id)}>
         <div className="font-mono text-sm">
-          {device.ip_address}:{device.port}
+          {deviceAddress(device)}
         </div>
       </TableCell>
       <TableCell className="cursor-pointer" onClick={() => onDeviceClick(device.id)}>

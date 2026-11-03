@@ -27,13 +27,16 @@ export interface DeviceResponse {
   id: number;
   school_id: number;
   name: string;
-  ip_address: string;
+  connection_mode: "direct" | "cloud";
+  ip_address: string | null;
   port: number;
   com_password: string | null;
   serial_number: string | null;
   location: string | null;
   description: string | null;
   status: DeviceStatus;
+  push_last_seen_at?: string | null; // cloud: last time the device called in
+  push_remote_ip?: string | null; // cloud: the school's public address it called from
   last_seen: string | null; // ISO datetime string
   last_sync: string | null; // ISO datetime string
   max_users: number | null;
@@ -59,7 +62,8 @@ export interface PaginatedDeviceResponse {
  */
 export interface DeviceCreateData {
   name: string;
-  ip_address: string;
+  connection_mode?: "direct" | "cloud";
+  ip_address: string | null;
   port?: number;
   com_password?: string | null;
   serial_number?: string | null;
@@ -73,7 +77,8 @@ export interface DeviceCreateData {
  */
 export interface DeviceUpdateData {
   name?: string;
-  ip_address?: string;
+  connection_mode?: "direct" | "cloud";
+  ip_address?: string | null;
   port?: number;
   com_password?: string | null;
   serial_number?: string | null;
@@ -1163,4 +1168,29 @@ export async function deleteUserFromDevice(
     uid,
     user_id: userId,
   });
+}
+
+
+/**
+ * Cloud connection setup: what to enter on the device, and devices calling in
+ * that are not added yet (pick one to fill in its serial number).
+ */
+export interface CloudSetup {
+  server_address: string;
+  server_port: number;
+  check_in_seconds: number;
+  unclaimed: { serial: string; last_seen: string; firmware: string | null; same_network: boolean }[];
+}
+
+export async function getCloudSetup(token: string): Promise<CloudSetup> {
+  const res = await fetch(`${API_BASE_URL}/api/v1/devices/cloud-setup`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new DeviceApiError(`Could not load cloud setup (${res.status})`, res.status);
+  return res.json();
+}
+
+/** How a device is reached, for lists and headers: "Cloud · SERIAL" or "192.168.1.201:4370". */
+export function deviceAddress(d: Pick<DeviceResponse, "connection_mode" | "ip_address" | "port" | "serial_number">): string {
+  return d.connection_mode === "cloud" ? `Cloud · ${d.serial_number ?? "no serial"}` : `${d.ip_address ?? "—"}:${d.port}`;
 }

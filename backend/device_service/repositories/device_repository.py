@@ -21,8 +21,10 @@ class DeviceRepository:
         device = Device(
             school_id=school_id,
             name=device_data.name,
+            connection_mode=device_data.connection_mode,
             ip_address=device_data.ip_address,
             port=device_data.port,
+            com_password=device_data.com_password,
             serial_number=device_data.serial_number,
             location=device_data.location,
             description=device_data.description,

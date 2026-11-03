@@ -17,15 +17,17 @@ export default function NewDevicePage() {
       throw new Error("Authentication required")
     }
 
-    // For create, we need all required fields
-    if (!data.name || !data.ip_address || !data.port) {
+    const cloud = data.connection_mode === "cloud"
+    // For create, we need all required fields (a cloud device needs no IP — it calls us)
+    if (!data.name || (!cloud && (!data.ip_address || !data.port))) {
       throw new Error("Name, IP address, and port are required")
     }
 
     await createDevice(token, {
       name: data.name,
-      ip_address: data.ip_address,
-      port: data.port,
+      connection_mode: cloud ? "cloud" : "direct",
+      ip_address: cloud ? null : data.ip_address ?? null,
+      port: data.port ?? 4370,
       com_password: data.com_password ?? null,
       serial_number: data.serial_number ?? null,
       location: data.location ?? null,

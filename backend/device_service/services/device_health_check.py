@@ -11,6 +11,7 @@ from device_service.services.device_connection import DeviceConnectionService
 from device_service.services.device_status_broadcaster import broadcaster
 from device_service.repositories.device_repository import DeviceRepository
 from device_service.core.config import settings
+from device_service.services import push_protocol
 from device_service.core.database import AsyncSessionLocal
 
 logger = logging.getLogger(__name__)
@@ -153,6 +154,12 @@ class DeviceHealthCheckService:
             True if device is online, False otherwise
         """
         try:
+            # Cloud devices are online while they keep checking in (/iclock/getrequest).
+            if push_protocol.is_cloud(device):
+                is_online = push_protocol.is_online(device)
+                await self.update_device_status(device.id, is_online, db)
+                return is_online
+
             # Skip simulation mode devices (handled separately)
             if settings.SIMULATION_MODE:
                 # In simulation mode, simulate random online/offline (90% online rate)
