@@ -237,7 +237,7 @@ export function FingerSelector({ selectedFinger, onSelect, student, deviceId }: 
       </div>
 
       {/* Hand Illustrations */}
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-12 p-6 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-800/50 dark:via-gray-800/50 dark:to-gray-800/50 rounded-2xl border border-gray-200/50 dark:border-gray-700/50">
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-12 p-6  rounded-2xl border border-gray-200/50 dark:border-gray-700/50">
         <HandIllustration
           hand="left"
           selectedFinger={selectedFinger}

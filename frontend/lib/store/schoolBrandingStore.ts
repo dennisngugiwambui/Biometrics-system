@@ -29,11 +29,11 @@ export interface SchoolBrandingState {
 }
 
 export const DEFAULT_SCHOOL_COLORS = [
-    '#2563eb', // primary blue
-    '#7c3aed', // secondary purple
-    '#0ea5e9', // accent sky
-    '#10b981', // success green
-    '#f59e0b', // warning amber
+    '#15803d', // Shulepoa green
+    '#166534', // dark green
+    '#22c55e', // bright green
+    '#16a34a', // success green
+    '#d97706', // warning amber
 ];
 
 export const useSchoolBrandingStore = create<SchoolBrandingState>()(

@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import {
   ArrowRight, BellRing, CheckCircle2, ChevronDown, Clock3, Cloud, FileText, Fingerprint,
-  GraduationCap, LayoutDashboard, MessageSquareText, ShieldCheck, Smartphone, Users,
+  GraduationCap, LayoutDashboard, Lock, Mail, MessageCircle, MessageSquareText, Phone, ShieldCheck, Smartphone, Users,
 } from "lucide-react"
 import { FAQ, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/seo"
 
@@ -100,187 +100,202 @@ const jsonLd = {
   ],
 }
 
-function Logo({ light = false, compact = false }: { light?: boolean; compact?: boolean }) {
+const PHONE = "+254 758 024 400"
+const PHONE_LINK = "tel:+254758024400"
+const WHATSAPP = "https://wa.me/254758024400"
+const EMAIL = "info@shulepoa.co.ke"
+
+function Logo({ light = false }: { light?: boolean }) {
   return (
-    <span className="flex items-center gap-2.5">
+    <span className="flex items-center gap-3">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/icon.svg" alt="" width={36} height={36} className="h-9 w-9" />
-      <span className={`whitespace-nowrap text-[19px] font-extrabold tracking-tight ${light ? "text-white" : "text-slate-900"}`}>
-        Shulepoa<span className={`${light ? "text-green-300" : "text-green-600"} ${compact ? "hidden sm:inline" : ""}`}> Attendance</span>
+      <img src="/icon.svg" alt="" width={40} height={40} className="h-10 w-10" />
+      <span className={`font-display text-[22px] font-bold leading-[1.1] tracking-tight ${light ? "text-white" : "text-[#101828]"}`}>
+        Shulepoa
+        <small className={`hidden font-sans text-[11px] font-medium tracking-normal sm:block ${light ? "text-white/75" : "text-[#475467]"}`}>
+          Biometric Attendance System
+        </small>
       </span>
     </span>
   )
 }
 
-// Illustrative dashboard card for the hero (sample data).
+// What a morning looks like, over the hero photo (sample data, and labelled so).
 function HeroPreview() {
   const rows = [
-    { name: "Grade 7 East", pct: 98 },
-    { name: "Grade 8 West", pct: 94 },
-    { name: "Form 2 North", pct: 91 },
-    { name: "Form 3 South", pct: 87 },
+    { icon: Fingerprint, title: "07:12 clocked in", sub: "Main gate terminal" },
+    { icon: MessageSquareText, title: "SMS sent to parent", sub: "Arrived safely at 07:12" },
+    { icon: FileText, title: "Daily register ready", sub: "Grade 7 East, as a PDF" },
   ]
   return (
-    <div className="relative mx-auto w-full max-w-[460px]" aria-hidden="true">
-      <div className="absolute -inset-6 rounded-[2rem] bg-green-400/20 blur-2xl" />
-      <div className="relative rounded-3xl bg-white p-5 shadow-[0_30px_70px_-24px_rgb(15_23_42/0.35)] ring-1 ring-slate-900/5 sm:p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Today · Live</p>
-            <p className="mt-1 text-[28px] font-extrabold tracking-tight text-slate-900">
-              1,248 <span className="text-base font-semibold text-slate-500">of 1,302 in</span>
-            </p>
-          </div>
-          <span className="flex items-center gap-1.5 rounded-full bg-green-50 px-3 py-1 text-xs font-bold text-green-700 ring-1 ring-green-200">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" /> 95.9%
-          </span>
-        </div>
-        <div className="mt-5 space-y-3">
-          {rows.map((r) => (
-            <div key={r.name}>
-              <div className="flex justify-between text-[13px] font-medium text-slate-700">
-                <span>{r.name}</span>
-                <span className="font-bold text-slate-900">{r.pct}%</span>
-              </div>
-              <div className="mt-1.5 h-2 rounded-full bg-slate-100">
-                <div className="h-2 rounded-full bg-gradient-to-r from-green-500 to-green-700" style={{ width: `${r.pct}%` }} />
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="mt-5 flex items-center gap-3 rounded-2xl bg-slate-50 p-3 ring-1 ring-slate-100">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-green-600 text-white">
-            <Fingerprint className="h-5 w-5" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-[13px] font-semibold text-slate-900">Wanjiru K. · Grade 7 East</p>
-            <p className="text-[12px] text-slate-500">Checked in 7:12 AM · Parent notified</p>
-          </div>
-          <BellRing className="h-4 w-4 shrink-0 text-amber-500" />
-        </div>
+    <div className="w-full max-w-[330px] rounded-2xl bg-white p-4 text-[#101828] shadow-[0_24px_50px_rgba(0,0,0,.35)]" aria-hidden="true">
+      <div className="flex items-center justify-between border-b border-[#e4e7ec] pb-2.5">
+        <p className="flex items-center gap-2 text-[13px] font-bold">
+          <span className="h-2 w-2 rounded-full bg-[#16a34a]" /> Today at the gate
+        </p>
+        <span className="text-[10.5px] font-bold uppercase tracking-wider text-[#667085]">Sample</span>
       </div>
+      <ul className="divide-y divide-[#f2f4f7]">
+        {rows.map((r) => (
+          <li key={r.title} className="flex items-center gap-3 py-2.5">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#f2f4f7] text-[#15803d]">
+              <r.icon className="h-[18px] w-[18px]" />
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate text-[13.5px] font-bold">{r.title}</span>
+              <span className="block truncate text-[12px] text-[#667085]">{r.sub}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }
 
+const BAND = [
+  { icon: Fingerprint, title: "ZKTeco biometric", text: "learners and staff, live" },
+  { icon: MessageSquareText, title: "Parent SMS", text: "the moment they arrive" },
+  { icon: FileText, title: "PDF reports", text: "registers, one click away" },
+  { icon: Cloud, title: "No school server", text: "works over any internet" },
+]
+
+const btn = "inline-flex items-center justify-center gap-2 whitespace-nowrap font-bold transition-[background,border-color,color,transform,box-shadow] duration-150 hover:-translate-y-0.5"
+
 export default function Home() {
   return (
-    <div className="min-h-screen bg-white text-slate-900">
+    <div className="min-h-screen bg-white text-[#101828]">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      {/* Header */}
-      <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/85 backdrop-blur">
-        <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6" aria-label="Main">
-          <Link href="/" aria-label="Shulepoa Attendance home"><Logo compact /></Link>
-          <div className="hidden items-center gap-7 text-sm font-medium text-slate-600 md:flex">
-            <a href="#features" className="hover:text-green-700">Features</a>
-            <a href="#how-it-works" className="hover:text-green-700">How it works</a>
-            <a href="#faq" className="hover:text-green-700">FAQ</a>
+      {/* Contact strip */}
+      <div className="bg-[#166534] text-[12.5px] text-white/85">
+        <div className="mx-auto flex h-[34px] max-w-[1360px] items-center justify-between gap-4 px-[clamp(16px,4vw,40px)]">
+          <span className="truncate">Biometric attendance for Kenyan schools</span>
+          <div className="hidden items-center gap-5 font-semibold text-white sm:flex">
+            <a href={PHONE_LINK} className="inline-flex items-center gap-1.5 hover:text-[#dcfce7]"><Phone className="h-3.5 w-3.5" /> {PHONE}</a>
+            <a href={WHATSAPP} className="inline-flex items-center gap-1.5 hover:text-[#dcfce7]"><MessageCircle className="h-3.5 w-3.5" /> WhatsApp</a>
+            <a href={`mailto:${EMAIL}`} className="hidden items-center gap-1.5 hover:text-[#dcfce7] md:inline-flex"><Mail className="h-3.5 w-3.5" /> {EMAIL}</a>
           </div>
-          <div className="flex items-center gap-2">
-            <Link href="/login" className="whitespace-nowrap rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 sm:px-4">
-              Sign in
+        </div>
+      </div>
+
+      {/* Header */}
+      <header className="sticky top-0 z-30 border-b border-[#e4e7ec] bg-white">
+        <nav className="mx-auto flex h-[72px] max-w-[1360px] items-center justify-between gap-4 px-[clamp(16px,4vw,40px)]" aria-label="Main">
+          <Link href="/" aria-label="Shulepoa Attendance home"><Logo /></Link>
+          <div className="hidden items-center gap-0.5 text-sm font-semibold md:flex">
+            {[["#features", "Features"], ["#how-it-works", "How it works"], ["#faq", "FAQ"]].map(([href, label]) => (
+              <a key={href} href={href} className="rounded-[10px] px-3 py-2 hover:bg-[#f2f4f7]">{label}</a>
+            ))}
+            <a href="https://shulepoa.co.ke" className="rounded-[10px] px-3 py-2 hover:bg-[#f2f4f7]">School system</a>
+          </div>
+          <div className="flex items-center gap-1.5 sm:gap-2.5">
+            <Link href="/login" className="inline-flex h-11 items-center gap-1.5 whitespace-nowrap px-2 text-sm font-bold hover:text-[#15803d] sm:px-2.5">
+              <Lock className="h-4 w-4" /> Sign in
             </Link>
-            <Link
-              href="/register"
-              className="whitespace-nowrap rounded-xl bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-700 sm:px-4"
-            >
-              Get started
+            <Link href="/register" className={`${btn} h-11 rounded-xl bg-[#15803d] px-4 text-sm text-white hover:bg-[#166534] hover:shadow-[0_10px_22px_rgba(21,128,61,.28)] sm:h-[46px] sm:px-5`}>
+              Register
             </Link>
           </div>
         </nav>
       </header>
 
       <main>
-        {/* Hero */}
-        <section
-          className="relative overflow-hidden"
-          style={{ background: "linear-gradient(160deg, #f0fdf4 0%, #ffffff 55%, #f4f6f9 100%)" }}
-        >
-          <div className="pointer-events-none absolute -top-32 -right-24 h-96 w-96 rounded-full bg-green-100 opacity-70" />
-          <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-[1.1fr_1fr] lg:py-24">
-            <div>
-              <p className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-green-800 ring-1 ring-green-200">
-                <Fingerprint className="h-3.5 w-3.5" /> Biometric attendance for Kenyan schools
+        {/* Hero: the photo fills the right and fades into the deep green */}
+        <section className="relative isolate flex items-center overflow-hidden bg-[#0b1a12] text-white lg:min-h-[640px]">
+          <picture className="contents">
+            <source media="(max-width: 767px)" srcSet="/img/school-campus-sm.webp" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/img/school-campus.webp"
+              alt="A school campus with classroom blocks"
+              fetchPriority="high"
+              className="absolute inset-y-0 right-0 -z-20 h-full w-full object-cover object-[50%_45%] lg:w-[64%]"
+            />
+          </picture>
+          <div className="absolute inset-0 -z-10 hidden lg:block" style={{ background: "linear-gradient(90deg, #0b1a12 36%, rgba(11,26,18,.82) 52%, rgba(11,26,18,.1) 78%)" }} />
+          <div className="absolute inset-0 -z-10 lg:hidden" style={{ background: "linear-gradient(180deg, rgba(11,26,18,.8) 0%, rgba(11,26,18,.9) 100%)" }} />
+
+          <div className="mx-auto grid w-full max-w-[1360px] items-end gap-10 px-[clamp(16px,4vw,40px)] py-14 sm:py-20 lg:grid-cols-[minmax(0,1fr)_auto] lg:py-24">
+            <div className="max-w-[720px]">
+              <p className="inline-flex items-center gap-2.5 rounded-full border border-white/30 px-3.5 py-1.5 text-[13px] font-semibold">
+                <span className="h-2 w-2 rounded-full bg-[#4ade80]" /> Fingerprint clock-in for Kenyan schools
               </p>
-              <h1 className="mt-5 text-[36px] font-black leading-[1.05] tracking-tight text-slate-900 sm:text-5xl lg:text-[58px]">
-                Know who&apos;s in school <span className="text-green-600">the second they arrive.</span>
+              <h1 className="mt-5 font-display text-[clamp(2.5rem,6vw,4.5rem)] font-bold leading-[1.04] tracking-[-0.02em]">
+                Know who&apos;s in school <span className="text-[#fbbf24]">the second they arrive.</span>
               </h1>
-              <p className="mt-5 max-w-xl text-[17px] leading-relaxed text-slate-600">
+              <p className="mt-5 max-w-[600px] text-[clamp(1rem,1.5vw,1.2rem)] leading-relaxed text-white/85">
                 Shulepoa Attendance replaces paper registers with fingerprint clock-in. Every learner and teacher is
-                recorded at the gate, parents get an instant SMS, and you get live registers and PDF reports — from any
+                recorded at the gate, parents get an instant SMS, and you get live registers and PDF reports, from any
                 phone or computer.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Link
-                  href="/register"
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-green-600 px-6 py-3.5 text-[15px] font-bold text-white shadow-lg shadow-green-600/25 hover:bg-green-700"
-                >
-                  Register your school <ArrowRight className="h-4 w-4" />
+                <Link href="/register" className={`${btn} h-14 rounded-[14px] bg-[#4ade80] px-7 text-base text-[#052e16] hover:bg-[#86efac]`}>
+                  Register your school <ArrowRight className="h-[18px] w-[18px]" />
                 </Link>
-                <Link
-                  href="/login"
-                  className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3.5 text-[15px] font-bold text-slate-800 ring-1 ring-slate-300 hover:bg-slate-50"
-                >
+                <Link href="/login" className={`${btn} h-14 rounded-[14px] border-[1.5px] border-white/40 px-7 text-base text-white hover:border-white hover:bg-white hover:text-[#101828]`}>
                   Sign in to your school
                 </Link>
               </div>
-              <ul className="mt-8 grid gap-2 text-sm font-medium text-slate-600 sm:grid-cols-2">
-                {["No school server needed", "Works with ZKTeco devices", "SMS alerts to parents", "Students and staff"].map((t) => (
-                  <li key={t} className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600" /> {t}
-                  </li>
-                ))}
-              </ul>
             </div>
-            <HeroPreview />
+            <div className="hidden justify-self-end lg:block"><HeroPreview /></div>
           </div>
         </section>
 
-        {/* Problem */}
-        <section className="border-y border-slate-100 bg-slate-50/60">
-          <div className="mx-auto grid max-w-6xl gap-6 px-4 py-12 sm:px-6 md:grid-cols-3">
+        {/* Band */}
+        <section className="bg-[#15803d] text-white" aria-label="At a glance">
+          <div className="mx-auto grid max-w-[1360px] grid-cols-2 lg:grid-cols-4">
+            {BAND.map(({ icon: Icon, title, text }, i) => (
+              <div
+                key={title}
+                className={`flex items-center gap-3 px-[clamp(16px,3vw,32px)] py-4 ${i ? "lg:border-l lg:border-white/20" : ""} ${i % 2 ? "border-l border-white/20" : ""} ${i > 1 ? "border-t border-white/20 lg:border-t-0" : ""}`}
+              >
+                <Icon className="h-6 w-6 shrink-0" />
+                <p className="min-w-0 leading-tight">
+                  <span className="block font-display text-[15.5px] font-bold sm:text-[17px]">{title}</span>
+                  <span className="block text-[12px] text-white/85 sm:text-[13px]">{text}</span>
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* The problem */}
+        <section className="border-b border-[#e4e7ec]">
+          <div className="mx-auto grid max-w-[1360px] gap-8 px-[clamp(16px,4vw,40px)] py-12 md:grid-cols-3">
             {[
               { icon: Clock3, t: "Roll call wastes lesson time", d: "Calling names every morning eats minutes from every class, every day." },
-              { icon: FileText, t: "Paper registers go missing", d: "Books get lost, smudged or filled in after the fact — and can't be searched." },
+              { icon: FileText, t: "Paper registers go missing", d: "Books get lost, smudged or filled in after the fact, and can't be searched." },
               { icon: BellRing, t: "Parents are left guessing", d: "Without a record at the gate, nobody knows for sure who arrived and when." },
             ].map(({ icon: Icon, t, d }) => (
               <div key={t} className="flex gap-4">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-600 ring-1 ring-rose-100">
-                  <Icon className="h-5 w-5" />
-                </span>
+                <Icon className="mt-0.5 h-6 w-6 shrink-0 text-[#15803d]" />
                 <div>
-                  <h2 className="font-bold text-slate-900">{t}</h2>
-                  <p className="mt-1 text-sm leading-relaxed text-slate-600">{d}</p>
+                  <h2 className="font-display text-[19px] font-bold leading-snug">{t}</h2>
+                  <p className="mt-1 text-[14.5px] leading-relaxed text-[#475467]">{d}</p>
                 </div>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Features */}
-        <section id="features" className="scroll-mt-20">
-          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
-            <div className="mx-auto max-w-2xl text-center">
-              <p className="text-sm font-bold uppercase tracking-wider text-green-700">Features</p>
-              <h2 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">
+        {/* Features: thin rules, not boxed cards */}
+        <section id="features" className="scroll-mt-24">
+          <div className="mx-auto max-w-[1360px] px-[clamp(16px,4vw,40px)] py-16 sm:py-24">
+            <div className="max-w-[760px]">
+              <p className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#15803d]">Features</p>
+              <h2 className="mt-2 font-display text-[clamp(1.9rem,4vw,3rem)] font-bold leading-[1.08] tracking-[-0.02em]">
                 Everything a school needs to take attendance seriously
               </h2>
-              <p className="mt-4 text-slate-600">
-                One system for the gate, the office and the parents — built around the way Kenyan schools actually run.
+              <p className="mt-4 text-[17px] leading-relaxed text-[#475467]">
+                One system for the gate, the office and the parents, built around the way Kenyan schools actually run.
               </p>
             </div>
-            <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-10 grid border-t border-[#e4e7ec] sm:grid-cols-2 lg:grid-cols-3">
               {FEATURES.map(({ icon: Icon, title, text }) => (
-                <article
-                  key={title}
-                  className="rounded-2xl bg-white p-6 ring-1 ring-slate-200 transition-shadow hover:shadow-[0_20px_40px_-20px_rgb(15_23_42/0.25)]"
-                >
-                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-50 text-green-700 ring-1 ring-green-100">
-                    <Icon className="h-5 w-5" />
-                  </span>
-                  <h3 className="mt-4 text-lg font-bold">{title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-600">{text}</p>
+                <article key={title} className="border-b border-[#e4e7ec] py-7 sm:pr-10">
+                  <Icon className="h-7 w-7 text-[#15803d]" />
+                  <h3 className="mt-4 font-display text-[21px] font-bold leading-snug">{title}</h3>
+                  <p className="mt-2 text-[15px] leading-relaxed text-[#475467]">{text}</p>
                 </article>
               ))}
             </div>
@@ -288,18 +303,16 @@ export default function Home() {
         </section>
 
         {/* How it works */}
-        <section id="how-it-works" className="scroll-mt-20 bg-[#0f2a1b] text-white">
-          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
-            <div className="max-w-2xl">
-              <p className="text-sm font-bold uppercase tracking-wider text-green-300">How it works</p>
-              <h2 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">Up and running in a day</h2>
-            </div>
-            <ol className="mt-12 grid gap-6 md:grid-cols-3">
+        <section id="how-it-works" className="scroll-mt-24 bg-[#f7f9fb]">
+          <div className="mx-auto max-w-[1360px] px-[clamp(16px,4vw,40px)] py-16 sm:py-24">
+            <p className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#15803d]">How it works</p>
+            <h2 className="mt-2 font-display text-[clamp(1.9rem,4vw,3rem)] font-bold leading-[1.08] tracking-[-0.02em]">Up and running in a day</h2>
+            <ol className="mt-10 grid gap-8 md:grid-cols-3">
               {STEPS.map((s) => (
-                <li key={s.n} className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/10">
-                  <span className="text-4xl font-black text-green-400">{s.n}</span>
-                  <h3 className="mt-3 text-lg font-bold">{s.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-green-50/75">{s.text}</p>
+                <li key={s.n} className="border-t-2 border-[#15803d] pt-5">
+                  <span className="font-display text-[34px] font-bold leading-none text-[#15803d]">{s.n}</span>
+                  <h3 className="mt-3 font-display text-[21px] font-bold leading-snug">{s.title}</h3>
+                  <p className="mt-2 text-[15px] leading-relaxed text-[#475467]">{s.text}</p>
                 </li>
               ))}
             </ol>
@@ -308,59 +321,55 @@ export default function Home() {
 
         {/* Audience */}
         <section>
-          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
-            <h2 className="text-center text-3xl font-black tracking-tight sm:text-4xl">Made for the whole school</h2>
-            <div className="mt-12 grid gap-5 md:grid-cols-3">
+          <div className="mx-auto max-w-[1360px] px-[clamp(16px,4vw,40px)] py-16 sm:py-24">
+            <h2 className="font-display text-[clamp(1.9rem,4vw,3rem)] font-bold leading-[1.08] tracking-[-0.02em]">Made for the whole school</h2>
+            <div className="mt-10 grid border-t border-[#e4e7ec] md:grid-cols-3">
               {AUDIENCE.map(({ icon: Icon, title, text }) => (
-                <div key={title} className="rounded-2xl bg-gradient-to-b from-green-50 to-white p-6 ring-1 ring-green-100">
-                  <Icon className="h-7 w-7 text-green-700" />
-                  <h3 className="mt-4 text-lg font-bold">{title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-600">{text}</p>
+                <div key={title} className="border-b border-[#e4e7ec] py-7 md:pr-10">
+                  <Icon className="h-7 w-7 text-[#15803d]" />
+                  <h3 className="mt-4 font-display text-[21px] font-bold leading-snug">{title}</h3>
+                  <p className="mt-2 text-[15px] leading-relaxed text-[#475467]">{text}</p>
                 </div>
               ))}
             </div>
+            <ul className="mt-8 grid gap-2.5 text-[14.5px] font-medium text-[#344054] sm:grid-cols-2 lg:grid-cols-4">
+              {["No school server needed", "Works with ZKTeco devices", "SMS alerts to parents", "Students and staff"].map((t) => (
+                <li key={t} className="flex items-center gap-2"><CheckCircle2 className="h-[18px] w-[18px] shrink-0 text-[#15803d]" /> {t}</li>
+              ))}
+            </ul>
           </div>
         </section>
 
         {/* FAQ */}
-        <section id="faq" className="scroll-mt-20 bg-slate-50/70">
-          <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-24">
-            <h2 className="text-center text-3xl font-black tracking-tight sm:text-4xl">Frequently asked questions</h2>
-            <div className="mt-10 space-y-3">
+        <section id="faq" className="scroll-mt-24 bg-[#f7f9fb]">
+          <div className="mx-auto max-w-[900px] px-[clamp(16px,4vw,40px)] py-16 sm:py-24">
+            <h2 className="font-display text-[clamp(1.9rem,4vw,3rem)] font-bold leading-[1.08] tracking-[-0.02em]">Frequently asked questions</h2>
+            <div className="mt-8 border-t border-[#d0d5dd]">
               {FAQ.map(({ q, a }) => (
-                <details key={q} className="group rounded-2xl bg-white p-5 ring-1 ring-slate-200 open:ring-green-200">
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-bold text-slate-900">
-                    <h3>{q}</h3>
-                    <ChevronDown className="h-5 w-5 shrink-0 text-slate-400 transition-transform group-open:rotate-180" />
+                <details key={q} className="group border-b border-[#d0d5dd] py-4">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4">
+                    <h3 className="font-display text-[18px] font-bold leading-snug group-open:text-[#15803d]">{q}</h3>
+                    <ChevronDown className="h-5 w-5 shrink-0 text-[#667085] transition-transform group-open:rotate-180" />
                   </summary>
-                  <p className="mt-3 text-sm leading-relaxed text-slate-600">{a}</p>
+                  <p className="mt-2.5 text-[15px] leading-relaxed text-[#475467]">{a}</p>
                 </details>
               ))}
             </div>
           </div>
         </section>
 
-        {/* CTA */}
-        <section className="px-4 py-16 sm:px-6 sm:py-20">
-          <div
-            className="mx-auto max-w-5xl rounded-3xl px-6 py-12 text-center text-white sm:px-12 sm:py-16"
-            style={{ background: "linear-gradient(135deg, #14532d 0%, #166534 45%, #16a34a 100%)" }}
-          >
-            <h2 className="text-3xl font-black tracking-tight sm:text-4xl">Stop guessing. Start knowing.</h2>
-            <p className="mx-auto mt-4 max-w-xl text-green-50/85">
-              Bring fingerprint attendance, parent alerts and live registers to your school with Shulepoa.
-            </p>
-            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-              <Link
-                href="/register"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3.5 font-bold text-green-800 hover:bg-green-50"
-              >
+        {/* Call to action */}
+        <section className="bg-[#15803d] text-white">
+          <div className="mx-auto flex max-w-[1360px] flex-col gap-6 px-[clamp(16px,4vw,40px)] py-12 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 className="font-display text-[clamp(1.7rem,3.4vw,2.6rem)] font-bold leading-[1.1] tracking-[-0.02em]">Stop guessing. Start knowing.</h2>
+              <p className="mt-2 max-w-[560px] text-white/90">Bring fingerprint attendance, parent alerts and live registers to your school with Shulepoa.</p>
+            </div>
+            <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
+              <Link href="/register" className={`${btn} h-[52px] rounded-xl bg-white px-6 text-[#166534] hover:bg-[#f2f4f7]`}>
                 Register your school <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link
-                href="/login"
-                className="inline-flex items-center justify-center rounded-xl px-6 py-3.5 font-bold text-white ring-1 ring-white/40 hover:bg-white/10"
-              >
+              <Link href="/login" className={`${btn} h-[52px] rounded-xl border-[1.5px] border-white/50 px-6 text-white hover:bg-white hover:text-[#101828]`}>
                 Sign in
               </Link>
             </div>
@@ -368,22 +377,21 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className="border-t border-slate-200">
-        <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 sm:px-6 md:flex-row md:items-center md:justify-between">
+      <footer className="bg-[#0b1a12] text-white/80">
+        <div className="mx-auto flex max-w-[1360px] flex-col gap-6 px-[clamp(16px,4vw,40px)] py-10 md:flex-row md:items-center md:justify-between">
           <div>
-            <Logo />
-            <p className="mt-3 max-w-sm text-sm text-slate-500">
-              Biometric school attendance system for Kenya — fingerprint clock-in, parent SMS and attendance reports.
-            </p>
+            <Logo light />
+            <p className="mt-3 max-w-sm text-sm">Biometric school attendance system for Kenya: fingerprint clock-in, parent SMS and attendance reports.</p>
           </div>
-          <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm font-medium text-slate-600" aria-label="Footer">
-            <a href="https://shulepoa.co.ke" className="hover:text-green-700">shulepoa.co.ke</a>
-            <a href="https://portal.shulepoa.co.ke" className="hover:text-green-700">School ERP portal</a>
-            <Link href="/register" className="hover:text-green-700">Register</Link>
-            <Link href="/login" className="hover:text-green-700">Sign in</Link>
+          <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm font-medium" aria-label="Footer">
+            <a href="https://shulepoa.co.ke" className="hover:text-white">shulepoa.co.ke</a>
+            <a href="https://portal.shulepoa.co.ke" className="hover:text-white">School ERP portal</a>
+            <Link href="/register" className="hover:text-white">Register</Link>
+            <Link href="/login" className="hover:text-white">Sign in</Link>
+            <a href={WHATSAPP} className="hover:text-white">WhatsApp</a>
           </nav>
         </div>
-        <p className="border-t border-slate-100 py-5 text-center text-xs text-slate-500">
+        <p className="border-t border-white/10 py-5 text-center text-xs text-white/60">
           © {new Date().getFullYear()} Shulepoa. All rights reserved.
         </p>
       </footer>

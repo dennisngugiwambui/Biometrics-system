@@ -484,8 +484,8 @@ export default function ReportsPage() {
                   <AreaChart data={chartData}>
                     <defs>
                       <linearGradient id="colorPresent" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#4f46e5" stopOpacity={0} />
+                        <stop offset="5%" stopColor="#15803d" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#15803d" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
@@ -507,7 +507,7 @@ export default function ReportsPage() {
                         return null
                       }}
                     />
-                    <Area type="monotone" dataKey="present" stroke="#4f46e5" strokeWidth={4} fillOpacity={1} fill="url(#colorPresent)" />
+                    <Area type="monotone" dataKey="present" stroke="#15803d" strokeWidth={4} fillOpacity={1} fill="url(#colorPresent)" />
                     <Area type="monotone" dataKey="absent" stroke="#cbd5e1" strokeWidth={2} strokeDasharray="5 5" fill="transparent" />
                   </AreaChart>
                 </ResponsiveContainer>

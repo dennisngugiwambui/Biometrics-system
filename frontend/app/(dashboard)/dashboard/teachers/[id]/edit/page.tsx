@@ -148,7 +148,7 @@ export default function EditTeacherPage() {
 
   if (isLoading || !teacher) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4 sm:p-6 lg:p-8 max-w-2xl mx-auto">
+      <div className="min-h-screen  p-4 sm:p-6 lg:p-8 max-w-2xl mx-auto">
         <Skeleton className="h-10 w-32 mb-6" />
         <Card>
           <CardHeader>
@@ -167,7 +167,7 @@ export default function EditTeacherPage() {
 
   if (error && !teacher) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4 sm:p-6 lg:p-8 max-w-2xl mx-auto">
+      <div className="min-h-screen  p-4 sm:p-6 lg:p-8 max-w-2xl mx-auto">
         <Button variant="ghost" onClick={() => router.push("/dashboard/teachers")} className="mb-6">
           <ArrowLeft className="mr-2 size-4" />
           Back to Teachers
@@ -183,7 +183,7 @@ export default function EditTeacherPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen ">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-indigo-400/20 rounded-full blur-3xl animate-pulse" />
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
@@ -203,11 +203,11 @@ export default function EditTeacherPage() {
           <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 shadow-lg">
             <CardHeader>
               <div className="flex items-center gap-3">
-                <div className="flex size-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white">
+                <div className="flex size-12 items-center justify-center rounded-xl bg-primary text-white">
                   <SaveIcon className="size-6" />
                 </div>
                 <div>
-                  <CardTitle className="text-2xl text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
+                  <CardTitle className="text-2xl text-primary">
                     Edit Teacher
                   </CardTitle>
                   <CardDescription>
@@ -433,7 +433,7 @@ export default function EditTeacherPage() {
                   <Button
                     type="submit"
                     disabled={isSaving || !form.first_name?.trim() || !form.last_name?.trim() || !form.phone?.trim()}
-                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg sm:min-w-[160px]"
+                    className="bg-primary text-white shadow-lg sm:min-w-[160px]"
                   >
                     {isSaving ? (
                       <>

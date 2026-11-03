@@ -120,11 +120,11 @@ export function TeacherFormModal({
           className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-[32px] shadow-premium w-full max-w-xl border border-white/20 dark:border-white/10 overflow-hidden bevel-card"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="h-1.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600" />
+          <div className="bg-primary h-1.5 " />
 
           <div className="p-8 pb-4 flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="size-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-glow">
+              <div className="size-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-glow">
                 <User className="size-6" />
               </div>
               <div>
@@ -295,7 +295,7 @@ export function TeacherFormModal({
             <Button
               onClick={() => onSave(form)}
               disabled={isSaving || !form.first_name || !form.last_name || !form.phone}
-              className="h-12 px-10 rounded-2xl font-black text-xs uppercase tracking-[0.2em] bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-glow hover:shadow-glow-lg transition-all active:scale-95 disabled:opacity-40"
+              className="h-12 px-10 rounded-2xl font-black text-xs uppercase tracking-[0.2em] bg-primary text-white shadow-glow hover:shadow-glow-lg transition-all active:scale-95 disabled:opacity-40"
             >
               {isSaving ? (
                 <motion.div

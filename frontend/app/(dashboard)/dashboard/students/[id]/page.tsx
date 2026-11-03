@@ -175,7 +175,7 @@ export default function StudentDetailPage() {
       animate={{ opacity: 1 }}
       className="relative flex-1 overflow-hidden"
     >
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" />
+      <div className="pointer-events-none absolute inset-0 " />
       <div className="pointer-events-none absolute -right-24 top-20 h-72 w-72 rounded-full bg-blue-400/20 blur-3xl dark:bg-blue-400/10" />
       <div className="pointer-events-none absolute -left-24 bottom-20 h-72 w-72 rounded-full bg-purple-400/20 blur-3xl dark:bg-purple-400/10" />
 
@@ -231,7 +231,7 @@ export default function StudentDetailPage() {
           <Card className="overflow-hidden rounded-2xl border border-gray-200/50 bg-white/80 shadow-lg backdrop-blur-sm dark:border-gray-700/50 dark:bg-gray-800/80">
             <CardHeader className="space-y-6 border-b border-gray-200/50 p-6 dark:border-gray-700/50 sm:p-8">
               <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
-                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-2xl font-bold text-white shadow-lg shadow-blue-500/20 sm:h-24 sm:w-24 sm:text-3xl">
+                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-primary text-2xl font-bold text-white shadow-lg shadow-blue-500/20 sm:h-24 sm:w-24 sm:text-3xl">
                   {student.first_name[0]}
                   {student.last_name[0]}
                 </div>
@@ -240,7 +240,7 @@ export default function StudentDetailPage() {
                   <p className="mt-1 font-mono text-sm font-semibold text-blue-600 dark:text-blue-400">
                     {student.admission_number}
                   </p>
-                  <CardTitle className="mt-3 text-2xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 sm:text-3xl">
+                  <CardTitle className="mt-3 text-2xl font-bold tracking-tight text-primary sm:text-3xl">
                     {student.first_name} {student.last_name}
                   </CardTitle>
                   <div className="mt-4 flex flex-wrap justify-center gap-2 sm:justify-start">

@@ -212,7 +212,7 @@ export default function NotificationsPage() {
       {/* ── Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
+          <h1 className="text-2xl sm:text-3xl font-bold text-primary">
             Notifications
           </h1>
           <div className="flex items-center gap-2 mt-1.5 text-xs text-gray-400">

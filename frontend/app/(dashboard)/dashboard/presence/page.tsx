@@ -250,7 +250,7 @@ export default function PresencePage() {
   if (!hasHydrated) return null
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen  p-4 sm:p-6 lg:p-8">
       <motion.div
         variants={staggerContainer}
         initial="hidden"
@@ -268,7 +268,7 @@ export default function PresencePage() {
                 Real-time
               </Badge>
             </div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 flex items-center gap-3 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-primary flex items-center gap-3 tracking-tight">
               Presence Monitor
             </h1>
             <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
@@ -311,9 +311,9 @@ export default function PresencePage() {
               transition={{ delay: i * 0.1 }}
               className="group relative overflow-hidden rounded-3xl border border-white/50 dark:border-gray-700/50 bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl shadow-xl shadow-indigo-500/5 p-6 transition-all hover:shadow-2xl hover:-translate-y-1 hover:bg-white/80 dark:hover:bg-gray-800/80"
             >
-              <div className={`absolute top-0 right-0 w-32 h-32 -mr-12 -mt-12 rounded-full bg-gradient-to-br ${c.grad} opacity-[0.03] blur-2xl group-hover:opacity-[0.08] transition-opacity`} />
+              <div className={`absolute top-0 right-0 w-32 h-32 -mr-12 -mt-12 rounded-full  bg-primary opacity-[0.03] blur-2xl group-hover:opacity-[0.08] transition-opacity`} />
               <div className="flex items-center justify-between mb-4">
-                <div className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${c.grad} shadow-lg shadow-indigo-500/10 transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}>
+                <div className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl  bg-primary shadow-lg shadow-indigo-500/10 transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}>
                   <c.icon className="h-6 w-6 text-white" />
                 </div>
                 <div className="text-right">
@@ -331,7 +331,7 @@ export default function PresencePage() {
                       initial={{ width: 0 }}
                       animate={{ width: `${(Number(c.value) / Number(c.total)) * 100}%` }}
                       transition={{ duration: 1, ease: "easeOut" }}
-                      className={`h-full bg-gradient-to-r ${c.grad}`}
+                      className={`h-full  bg-primary`}
                     />
                   </div>
                   <span className="text-[10px] font-bold text-muted-foreground/70">
@@ -566,7 +566,7 @@ export default function PresencePage() {
             <Card className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border-white/50 dark:border-gray-700/50 shadow-2xl rounded-3xl overflow-hidden">
                <div className="p-6 pb-2">
                  <div className="flex items-center justify-between mb-2">
-                   <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                   <div className="bg-primary text-white h-12 w-12 rounded-2xl  flex items-center justify-center shadow-lg shadow-blue-500/20">
                      <FileDown className="h-6 w-6 text-white" />
                    </div>
                    <Badge variant="outline" className="border-blue-200 text-blue-600 uppercase font-extrabold text-[9px]">Students</Badge>
@@ -615,7 +615,7 @@ export default function PresencePage() {
                        </p>
                     </div>
                     <Button
-                      className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-xl shadow-blue-500/20 rounded-2xl h-12 font-extrabold uppercase tracking-[0.2em] text-[11px]"
+                      className="w-full bg-primary text-white shadow-xl shadow-blue-500/20 rounded-2xl h-12 font-extrabold uppercase tracking-[0.2em] text-[11px]"
                       onClick={studentRangePdf}
                       disabled={pdfBusy}
                     >
@@ -630,7 +630,7 @@ export default function PresencePage() {
             <Card className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border-white/50 dark:border-gray-700/50 shadow-2xl rounded-3xl overflow-hidden">
                <div className="p-6 pb-2">
                  <div className="flex items-center justify-between mb-2">
-                   <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                   <div className="bg-primary text-white h-12 w-12 rounded-2xl  flex items-center justify-center shadow-lg shadow-indigo-500/20">
                      <FileDown className="h-6 w-6 text-white" />
                    </div>
                    <Badge variant="outline" className="border-indigo-200 text-indigo-600 uppercase font-extrabold text-[9px]">Teachers</Badge>
@@ -679,7 +679,7 @@ export default function PresencePage() {
                        </p>
                     </div>
                     <Button
-                      className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-xl shadow-indigo-500/20 rounded-2xl h-12 font-extrabold uppercase tracking-[0.2em] text-[11px]"
+                      className="w-full bg-primary text-white shadow-xl shadow-indigo-500/20 rounded-2xl h-12 font-extrabold uppercase tracking-[0.2em] text-[11px]"
                       onClick={teacherRangePdf}
                       disabled={pdfBusy}
                     >

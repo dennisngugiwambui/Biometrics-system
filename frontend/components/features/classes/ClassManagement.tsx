@@ -241,7 +241,7 @@ export function ClassManagement() {
         >
           <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50">
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+              <CardTitle className="text-primary">
                 Classes
               </CardTitle>
               <Button
@@ -333,7 +333,7 @@ export function ClassManagement() {
           <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
+                <CardTitle className="text-primary">
                   Streams
                 </CardTitle>
                 {selectedClass && (

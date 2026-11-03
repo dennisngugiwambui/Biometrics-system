@@ -35,7 +35,7 @@ export function DashboardLayout({
   return (
     <TooltipProvider>
       <SidebarProvider defaultOpen={true}>
-        <div className="flex min-h-screen w-full bg-gradient-to-br from-slate-50 via-blue-50/50 to-indigo-50/30 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <div className="flex min-h-screen w-full ">
           <DashboardSidebar
             adminName={adminFullName}
             adminEmail={user.email}

@@ -34,7 +34,7 @@ export function MobileConnectionCard() {
     }
 
     return (
-        <Card className="relative overflow-hidden border-none shadow-lg bg-gradient-to-br from-white to-green-50/40 dark:from-gray-900 dark:to-green-900/10">
+        <Card className="relative overflow-hidden border-none shadow-lg ">
             <div className="absolute top-0 right-0 p-3 opacity-10 pointer-events-none">
                 <Smartphone size={120} className="text-green-600 rotate-12" />
             </div>

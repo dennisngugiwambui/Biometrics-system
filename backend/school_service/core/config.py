@@ -39,6 +39,9 @@ class Settings(BaseSettings):
 
     # Outgoing mail for the /management console (school admin credentials, certificates).
     # Same names as the gateway's, so one .env serves both. Port 465 = SSL, otherwise STARTTLS.
+    # Lets the portal's owner console (portal.shulepoa.co.ke) manage schools and licences.
+    PLATFORM_SERVICE_KEY: str = ""
+
     SMTP_HOST: str = ""
     SMTP_PORT: int = 587
     SMTP_USERNAME: str = ""

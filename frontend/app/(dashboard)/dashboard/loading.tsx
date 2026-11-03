@@ -34,7 +34,7 @@ export default function Loading() {
                 transition={{ delay: 0.2 }}
                 className="mt-6 text-center"
             >
-                <h3 className="text-xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 bg-clip-text text-transparent">
+                <h3 className="text-xl font-bold text-primary">
                     Preparing your dashboard
                 </h3>
                 <p className="text-slate-500 dark:text-slate-400 mt-1 max-w-xs mx-auto animate-pulse">
@@ -47,7 +47,7 @@ export default function Loading() {
                 <motion.div
                     animate={{ x: [-192, 192] }}
                     transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                    className="w-full h-full bg-gradient-to-r from-indigo-500 via-emerald-500 to-indigo-500"
+                    className="bg-primary w-full h-full "
                 />
             </div>
 

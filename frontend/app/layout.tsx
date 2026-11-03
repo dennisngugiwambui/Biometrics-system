@@ -1,10 +1,11 @@
 import type { Metadata, Viewport } from "next"
-import { Inter } from "next/font/google"
+import localFont from "next/font/local"
 import "./globals.css"
 import { AppShell } from "@/components/shared/AppShell"
 import { SITE_DESCRIPTION, SITE_KEYWORDS, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/seo"
 
-const inter = Inter({ subsets: ["latin"] })
+const jakarta = localFont({ src: "./fonts/plus-jakarta-sans.woff2", weight: "200 800", variable: "--font-jakarta", display: "swap" })
+const bricolage = localFont({ src: "./fonts/bricolage-grotesque.woff2", weight: "500 800", variable: "--font-bricolage", display: "swap" })
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -39,7 +40,7 @@ export const metadata: Metadata = {
     : undefined,
 }
 
-export const viewport: Viewport = { themeColor: "#16a34a" }
+export const viewport: Viewport = { themeColor: "#15803d" }
 
 export default function RootLayout({
   children,
@@ -48,7 +49,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className} suppressHydrationWarning>
+      <body className={`${jakarta.variable} ${bricolage.variable} font-sans`} suppressHydrationWarning>
         <AppShell>{children}</AppShell>
       </body>
     </html>

@@ -1,11 +1,13 @@
 import type { ReactNode } from "react"
-import { SchoolIllustration } from "@/components/features/auth/SchoolIllustration"
+import Link from "next/link"
+import { CheckCircle2 } from "lucide-react"
 
 /**
- * The sign-in frame shared by the school login and the /management login, in
- * the portal.shulepoa.co.ke style: the illustration on a soft green panel on
- * one side, the form on the other. On phones the illustration shrinks to a
- * band above the form.
+ * The sign-in frame shared by the school login, registration and the
+ * /management login. The same colours and controls as the portal, but its own
+ * layout: the full page is split in two, with the school photo fading into deep
+ * green on one side and the form on the other. On phones the photo is a band
+ * above the form.
  */
 export function AuthShell({
   badge,
@@ -21,50 +23,50 @@ export function AuthShell({
   children: ReactNode
 }) {
   return (
-    <main
-      className="min-h-screen min-h-[100dvh] flex items-center justify-center px-3 py-5 sm:p-6 lg:p-10"
-      style={{ background: "linear-gradient(160deg, #f0fdf4 0%, #f4f6f9 55%, #eef2f6 100%)" }}
-    >
-      <div className="w-full max-w-[1080px]">
-        <div
-          className="grid overflow-hidden rounded-3xl bg-white lg:grid-cols-[1.08fr_1fr]"
-          style={{ boxShadow: "0 0 0 1px rgb(15 23 42 / 0.05), 0 30px 70px -24px rgb(15 23 42 / 0.22), 0 6px 16px -6px rgb(15 23 42 / 0.08)" }}
-        >
-          {/* Illustration side */}
-          <aside className="relative flex flex-col overflow-hidden bg-[#f5f8f6] lg:min-h-[640px]">
-            <div className="pointer-events-none absolute -top-24 -left-20 h-72 w-72 rounded-full bg-[#dcfce7] opacity-60" />
-            <div className="pointer-events-none absolute -bottom-28 -right-16 h-80 w-80 rounded-full bg-[#dcfce7] opacity-50" />
-
-            <div className="relative flex items-center gap-2.5 px-6 pt-5 lg:px-10 lg:pt-9">
-              <span
-                className="flex h-9 w-9 items-center justify-center rounded-xl text-lg font-black text-white shadow-sm"
-                style={{ background: "linear-gradient(135deg, #16a34a, #166534)" }}
-              >
-                S
-              </span>
-              <span className="text-[19px] font-extrabold tracking-tight text-slate-900">Shulepoa</span>
-              <span className="ml-1 rounded-full bg-white/80 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-green-800 ring-1 ring-green-200">
-                {badge}
-              </span>
-            </div>
-
-            <div className="relative flex flex-1 items-center justify-center px-6 lg:px-8">
-              <SchoolIllustration className="-mb-2 h-auto w-full max-w-[300px] sm:max-w-[360px] lg:mb-0 lg:max-w-[460px]" />
-            </div>
-
-            <div className="relative hidden px-10 pb-10 lg:block">
-              <h2 className="text-[22px] font-extrabold leading-snug tracking-tight text-slate-900">{headline}</h2>
-              <p className="mt-2 max-w-[420px] text-[14px] leading-relaxed text-slate-500">{sub}</p>
-            </div>
-          </aside>
-
-          {/* Form side */}
-          <section className="flex flex-col justify-center px-6 py-7 sm:px-10 sm:py-10 lg:px-14">
-            <div className="mx-auto w-full max-w-[400px]">{children}</div>
-          </section>
+    <main className="grid min-h-screen min-h-[100dvh] bg-white lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
+      {/* Photo side */}
+      <aside className="relative isolate flex min-h-[172px] flex-col overflow-hidden bg-[#0b1a12] px-5 py-5 text-white sm:px-8 lg:min-h-0 lg:px-12 lg:py-10">
+        <div className="absolute inset-0 -z-20">
+          <picture>
+            <source media="(max-width: 1023px)" srcSet="/img/school-courtyard-sm.webp" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/img/school-courtyard.webp" alt="" className="h-full w-full object-cover" />
+          </picture>
         </div>
-        <div className="mt-5 text-center text-[11px] text-slate-500">{footer}</div>
-      </div>
+        <div
+          className="absolute inset-0 -z-10"
+          style={{ background: "linear-gradient(180deg, rgba(11,26,18,.72) 0%, rgba(11,26,18,.5) 38%, rgba(11,26,18,.94) 100%)" }}
+        />
+
+        <Link href="/" className="flex w-fit items-center gap-2.5" aria-label="Shulepoa Attendance home">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/icon.svg" alt="" width={40} height={40} className="h-10 w-10" />
+          <span className="font-display text-[21px] font-bold leading-none tracking-tight">Shulepoa</span>
+          <span className="ml-1 rounded-full bg-white/12 px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wider ring-1 ring-white/25">
+            {badge}
+          </span>
+        </Link>
+
+        <div className="mt-auto hidden max-w-[520px] pt-6 lg:block">
+          <h2 className="font-display text-[clamp(2rem,3.2vw,3.1rem)] font-bold leading-[1.06] tracking-tight">{headline}</h2>
+          <p className="mt-3 text-[15px] leading-relaxed text-white/80">{sub}</p>
+          <ul className="mt-6 grid gap-2.5 text-sm font-medium text-white/90">
+            {["Fingerprint clock-in at the gate", "Instant SMS to parents", "Live registers and PDF reports"].map((t) => (
+              <li key={t} className="flex items-center gap-2.5">
+                <CheckCircle2 className="h-[18px] w-[18px] shrink-0 text-[#4ade80]" /> {t}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </aside>
+
+      {/* Form side */}
+      <section className="flex flex-col px-5 py-7 sm:px-10 lg:px-14 lg:py-10">
+        <div className="flex flex-1 items-center justify-center">
+          <div className="w-full max-w-[420px]">{children}</div>
+        </div>
+        <div className="mt-6 text-center text-[11.5px] text-slate-500">{footer}</div>
+      </section>
     </main>
   )
 }

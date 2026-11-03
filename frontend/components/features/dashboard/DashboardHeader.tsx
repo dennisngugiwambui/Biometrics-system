@@ -16,9 +16,10 @@ import {
 } from "@/components/ui/dropdown-menu"
 import {
   Bell, Menu, Settings, LogOut, Activity, UserPlus,
-  CheckCheck, ExternalLink, User, CalendarDays, AlertCircle,
+  CheckCheck, ExternalLink, User, CalendarDays, AlertCircle, ChevronRight, Home, Maximize2,
 } from "lucide-react"
 import { CalendarModal } from "./CalendarModal"
+import { QuickOpen } from "./QuickOpen"
 import Link from "next/link"
 import { listNotifications, markAllAsRead, Notification } from "@/lib/api/notifications"
 
@@ -83,7 +84,7 @@ function NotificationDropdown({ token, count }: { token: string; count: number }
         <Button variant="ghost" size="icon" className="relative h-8 w-8 text-muted-foreground hover:text-foreground">
           <Bell className="h-4 w-4" />
           {count > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-600 px-1 text-[9px] font-bold text-white">
+            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-bold text-white">
               {count > 99 ? "99+" : count}
             </span>
           )}
@@ -197,15 +198,27 @@ export function DashboardHeader({
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-30 flex h-14 items-center gap-2 border-b border-border bg-white dark:bg-card px-3 sm:px-5 md:sticky md:inset-x-auto md:top-0 shadow-[0_1px_0_0_rgba(0,0,0,0.05)]">
+      <header className="fixed inset-x-0 top-0 z-30 flex h-14 items-center gap-2 border-b border-border bg-white px-3 sm:px-5 md:sticky md:inset-x-auto md:h-[60px] md:top-0 print:hidden">
 
         <SidebarToggleButton />
-        <Separator orientation="vertical" className="h-5 mx-1" />
+        <button
+          onClick={() => { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen?.().catch(() => {}) }}
+          className="hidden h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground md:flex"
+          aria-label="Full screen"
+          title="Full screen"
+        >
+          <Maximize2 className="h-4 w-4" />
+        </button>
+        <QuickOpen />
 
-        {/* Page title */}
-        <div className="flex-1 min-w-0">
-          <h1 className="text-[15px] font-semibold tracking-tight text-foreground truncate">{title}</h1>
-        </div>
+        {/* Where you are */}
+        <nav aria-label="Breadcrumb" className="ml-1 flex min-w-0 flex-1 items-center gap-1.5 text-[13px]">
+          <Link href="/dashboard" className="hidden text-slate-400 transition-colors hover:text-primary sm:block" aria-label="Dashboard">
+            <Home className="h-3.5 w-3.5" />
+          </Link>
+          <ChevronRight className="hidden h-3 w-3 shrink-0 text-slate-300 sm:block" />
+          <h1 className="truncate text-[14px] font-semibold text-slate-800">{title}</h1>
+        </nav>
 
         {/* Right actions */}
         <div className="flex items-center gap-1 shrink-0">
@@ -229,11 +242,14 @@ export function DashboardHeader({
               <button className="flex items-center gap-2 rounded-lg px-2 py-1 hover:bg-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                 <Avatar className="h-7 w-7">
                   <AvatarImage src={adminAvatar || undefined} />
-                  <AvatarFallback className="bg-blue-600 text-white text-xs font-semibold">
+                  <AvatarFallback className="bg-primary text-white text-xs font-bold">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
-                <span className="hidden sm:block text-sm font-medium text-foreground">{adminName}</span>
+                <span className="hidden text-left leading-tight sm:block">
+                  <span className="block text-[13px] font-semibold text-foreground">{adminName}</span>
+                  <span className="block text-[11px] text-muted-foreground">Administrator</span>
+                </span>
               </button>
             </DropdownMenuTrigger>
 
@@ -241,7 +257,7 @@ export function DashboardHeader({
               <div className="flex items-center gap-3 px-3 py-2.5 border-b border-border">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={adminAvatar || undefined} />
-                  <AvatarFallback className="bg-blue-600 text-white text-xs font-semibold">{initials}</AvatarFallback>
+                  <AvatarFallback className="bg-primary text-white text-xs font-bold">{initials}</AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col min-w-0">
                   <p className="text-sm font-semibold truncate">{adminName}</p>

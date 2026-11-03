@@ -64,20 +64,11 @@ export function StudentList({
         variants={fadeInUp}
         initial="hidden"
         animate="visible"
-        className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+        className="flex justify-end"
       >
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 sm:text-4xl">
-            Students
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground font-medium">
-            Central repository for student enrollment and biometric status.
-          </p>
-        </div>
         <Button
           onClick={onAddStudent}
           className="bg-blue-600 hover:bg-blue-700 text-white"
-          size="lg"
         >
           <UserPlus className="mr-2 h-4 w-4" />
           Add Student

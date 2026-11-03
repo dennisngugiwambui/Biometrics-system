@@ -61,7 +61,7 @@ export default function NewDeviceGroupPage() {
 
   if (!token) {
     return (
-      <div className="flex-1 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="flex-1 ">
         <div className="relative z-10 container mx-auto px-4 py-8">
           <p className="text-muted-foreground">Please log in to continue.</p>
         </div>
@@ -70,7 +70,7 @@ export default function NewDeviceGroupPage() {
   }
 
   return (
-    <div className="flex-1 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="flex-1 ">
       {/* Animated background shapes */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400/20 rounded-full blur-3xl animate-pulse" />
@@ -109,7 +109,7 @@ export default function NewDeviceGroupPage() {
           variants={fadeInUp}
           className="mb-8"
         >
-          <h1 className="text-3xl md:text-4xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+          <h1 className="text-3xl md:text-4xl font-bold mb-2 text-primary">
             Create Device Group
           </h1>
           <p className="text-muted-foreground">

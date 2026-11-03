@@ -110,10 +110,10 @@ function TeacherCard({ teacher }: { teacher: TeacherRow }) {
             className="group bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-3xl border border-white/50 dark:border-gray-700/50 shadow-xl p-6 cursor-pointer relative overflow-hidden"
             onClick={() => router.push(`/dashboard/teachers/${teacher.id}`)}
         >
-            <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${gradient} opacity-5 -mr-8 -mt-8 rounded-full blur-2xl group-hover:opacity-20 transition-opacity`} />
+            <div className={`absolute top-0 right-0 w-24 h-24  bg-primary opacity-5 -mr-8 -mt-8 rounded-full blur-2xl group-hover:opacity-20 transition-opacity`} />
             
             <div className="flex items-start gap-4 mb-5">
-                <div className={`h-14 w-14 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white text-lg font-extrabold shadow-lg shadow-blue-500/20 transform group-hover:scale-110 group-hover:rotate-3 transition-transform`}>
+                <div className={`h-14 w-14 rounded-2xl bg-primary bg-primary flex items-center justify-center text-white text-lg font-extrabold shadow-lg shadow-blue-500/20 transform group-hover:scale-110 group-hover:rotate-3 transition-transform`}>
                     {initials}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -180,7 +180,7 @@ function BulkUploadModal({ open, onClose, onImport, isImporting, importResult, u
                 <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
                     className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg border border-gray-200/70 dark:border-gray-700/70"
                     onClick={(e) => e.stopPropagation()}>
-                    <div className="h-1 bg-gradient-to-r from-violet-500 to-purple-600 rounded-t-2xl" />
+                    <div className="h-1  rounded-t-2xl" />
                     <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                         <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Bulk Import Teachers</h3>
                         <button onClick={onClose} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 transition-colors"><X className="size-5" /></button>
@@ -239,7 +239,7 @@ function BulkUploadModal({ open, onClose, onImport, isImporting, importResult, u
                                             initial={false}
                                             animate={{ width: `${uploadProgress}%` }}
                                             transition={{ duration: 0.2 }}
-                                            className="h-full bg-gradient-to-r from-violet-500 to-purple-600 rounded-full"
+                                            className="bg-primary h-full  rounded-full"
                                         />
                                     </div>
                                     <span className="text-sm font-extrabold tabular-nums text-violet-700 dark:text-violet-300">{uploadProgress}%</span>
@@ -306,7 +306,7 @@ function BulkUploadModal({ open, onClose, onImport, isImporting, importResult, u
                             <button
                                 disabled={!pickedFile}
                                 onClick={() => pickedFile && onImport(pickedFile)}
-                                className="flex-1 px-6 py-4 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold rounded-2xl shadow-xl shadow-violet-500/20 disabled:opacity-50 disabled:shadow-none transition-all flex items-center justify-center gap-2"
+                                className="flex-1 px-6 py-4 bg-primary text-white font-bold rounded-2xl shadow-xl shadow-violet-500/20 disabled:opacity-50 disabled:shadow-none transition-all flex items-center justify-center gap-2"
                             >
                                 <Upload className="size-5" />
                                 Upload Teachers
@@ -496,7 +496,7 @@ export default function TeachersPage() {
                         <div className="h-10 w-10 rounded-2xl bg-violet-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
                             <Users className="h-5 w-5 text-white" />
                         </div>
-                        <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-indigo-600 tracking-tight sm:text-4xl">
+                        <h1 className="text-3xl font-bold text-primary tracking-tight sm:text-4xl">
                             Staff Management
                         </h1>
                     </div>
@@ -526,7 +526,7 @@ export default function TeachersPage() {
                     <Button
                       size="lg"
                       onClick={() => router.push("/dashboard/teachers/new")}
-                      className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white rounded-2xl h-14 px-8 font-extrabold uppercase tracking-widest text-[11px] shadow-2xl shadow-violet-500/30 transition-all active:scale-95 border-0"
+                      className="bg-primary text-white rounded-2xl h-14 px-8 font-extrabold uppercase tracking-widest text-[11px] shadow-2xl shadow-violet-500/30 transition-all active:scale-95 border-0"
                     >
                       <Plus className="size-5 mr-3" />
                       Enroll Teacher
@@ -545,7 +545,7 @@ export default function TeachersPage() {
                     <motion.div key={label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
                         className="group relative overflow-hidden rounded-3xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/50 dark:border-gray-700/50 shadow-2xl p-6"
                     >
-                        <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${gradient} opacity-[0.03] -mr-12 -mt-12 rounded-full blur-3xl`} />
+                        <div className={`absolute top-0 right-0 w-32 h-32  bg-primary opacity-[0.03] -mr-12 -mt-12 rounded-full blur-3xl`} />
                         <div className="flex items-start justify-between">
                             <div>
                                 <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-muted-foreground/60 mb-2">{label}</p>
@@ -553,11 +553,11 @@ export default function TeachersPage() {
                                     {statsLoading && value === 0 ? <Loader2 className="h-8 w-8 animate-spin text-gray-200" /> : value}
                                 </h3>
                                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-2 flex items-center gap-2">
-                                    <div className={`h-1.5 w-1.5 rounded-full bg-gradient-to-r ${gradient}`} />
+                                    <div className={`h-1.5 w-1.5 rounded-full  bg-primary`} />
                                     {sub}
                                 </p>
                             </div>
-                            <div className={`h-12 w-12 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-lg transform group-hover:scale-110 group-hover:rotate-6 transition-transform shadow-${gradient.split('-')[1]}-500/20`}>
+                            <div className={`h-12 w-12 rounded-2xl  bg-primary flex items-center justify-center shadow-lg transform group-hover:scale-110 group-hover:rotate-6 transition-transform shadow-${gradient.split('-')[1]}-500/20`}>
                                 <Icon className="h-6 w-6 text-white" />
                             </div>
                         </div>
@@ -647,7 +647,7 @@ export default function TeachersPage() {
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="flex items-center gap-3">
-                                                        <div className={`h-10 w-10 rounded-2xl bg-gradient-to-br ${AVATAR_GRADIENTS[t.id % AVATAR_GRADIENTS.length]} flex items-center justify-center text-white text-xs font-extrabold shadow-lg transform group-hover:scale-110 group-hover:rotate-3 transition-all`}>
+                                                        <div className={`h-10 w-10 rounded-2xl bg-primary ${AVATAR_GRADIENTS[t.id % AVATAR_GRADIENTS.length]} flex items-center justify-center text-white text-xs font-extrabold shadow-lg transform group-hover:scale-110 group-hover:rotate-3 transition-all`}>
                                                             {t.first_name[0]}{t.last_name[0]}
                                                         </div>
                                                         <div>

@@ -419,7 +419,7 @@ export default function DeviceDetailPage() {
         variants={pageTransition}
         initial="initial"
         animate="animate"
-        className="flex-1 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
+        className="flex-1 "
       >
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400/20 rounded-full blur-3xl animate-pulse" />
@@ -448,7 +448,7 @@ export default function DeviceDetailPage() {
         variants={pageTransition}
         initial="initial"
         animate="animate"
-        className="flex-1 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
+        className="flex-1 "
       >
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400/20 rounded-full blur-3xl animate-pulse" />
@@ -481,7 +481,7 @@ export default function DeviceDetailPage() {
       variants={pageTransition}
       initial="initial"
       animate="animate"
-      className="flex-1 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
+      className="flex-1 "
     >
       {/* Animated background shapes */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -509,7 +509,7 @@ export default function DeviceDetailPage() {
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+                <h1 className="text-3xl md:text-4xl font-bold text-primary">
                   {device.name}
                 </h1>
                 {wsConnected && (

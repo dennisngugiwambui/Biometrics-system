@@ -382,7 +382,7 @@ export function StudentWizard({ mode, studentId }: StudentWizardProps) {
             </div>
             <h1 className="text-4xl lg:text-5xl font-black tracking-tight text-gray-900 dark:text-white leading-[1.1]">
               {mode === "add" ? "Student" : "Edit"} <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
+              <span className="text-primary">
                 {mode === "add" ? "Deployment" : "Update"}
               </span>
             </h1>
@@ -396,7 +396,7 @@ export function StudentWizard({ mode, studentId }: StudentWizardProps) {
           </div>
 
           {/* Desktop specific context card */}
-          <div className="hidden lg:block p-6 rounded-[2rem] bg-gradient-to-br from-indigo-500/5 to-purple-500/5 border border-indigo-200/20 dark:border-indigo-800/20 backdrop-blur-sm">
+          <div className="hidden lg:block p-6 rounded-2xl  border border-indigo-200/20 dark:border-indigo-800/20 backdrop-blur-sm">
             <div className="flex items-center gap-3 mb-3">
               <div className="size-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-600">
                 <AlertCircle className="size-4" />
@@ -413,9 +413,9 @@ export function StudentWizard({ mode, studentId }: StudentWizardProps) {
         <div className="lg:col-span-8">
           <div className="relative group/card">
             {/* Background Glows */}
-            <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-[2.5rem] opacity-5 blur group-hover/card:opacity-10 transition-opacity duration-500" />
+            <div className="absolute -inset-1  rounded-2xl opacity-5 blur group-hover/card:opacity-10 transition-opacity duration-500" />
 
-            <div className="relative overflow-hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 rounded-[2.5rem] shadow-premium bevel-card ring-1 ring-black/5 dark:ring-white/5 min-h-[520px] lg:min-h-[580px] flex flex-col">
+            <div className="relative overflow-hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 rounded-2xl shadow-premium bevel-card ring-1 ring-black/5 dark:ring-white/5 min-h-[520px] lg:min-h-[580px] flex flex-col">
               {/* Top Progress Bar */}
               <div className="absolute top-0 left-0 right-0 h-1.5 flex transition-all duration-700">
                 {STEPS.map((s, idx) => (
@@ -424,7 +424,7 @@ export function StudentWizard({ mode, studentId }: StudentWizardProps) {
                     className={cn(
                       "h-full transition-all duration-700",
                       currentStep > s.id ? "bg-blue-600 w-full" :
-                        currentStep === s.id ? "bg-gradient-to-r from-blue-600 to-indigo-600 w-full" :
+                        currentStep === s.id ? " w-full" :
                           "bg-muted/10 w-full"
                     )}
                   />
@@ -440,7 +440,7 @@ export function StudentWizard({ mode, studentId }: StudentWizardProps) {
               <div className="relative p-8 sm:p-12 flex flex-col flex-1">
                 <div className="flex items-start justify-between gap-6 pb-8 border-b border-black/5 dark:border-white/5">
                   <div className="flex items-center gap-5">
-                    <div className="size-16 rounded-3xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-glow-lg bevel-sm ring-4 ring-blue-500/10">
+                    <div className="size-16 rounded-3xl bg-primary text-white flex items-center justify-center shadow-glow-lg bevel-sm ring-4 ring-blue-500/10">
                       <currentStepDef.icon className="size-7" />
                     </div>
                     <div className="space-y-1">

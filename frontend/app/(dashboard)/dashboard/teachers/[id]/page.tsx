@@ -444,11 +444,11 @@ export default function TeacherDetailPage() {
           animate="visible"
           transition={{ delay: 0.1 }}
         >
-          <Card className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border-white/50 dark:border-gray-700/50 shadow-2xl rounded-[2.5rem] overflow-hidden">
+          <Card className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border-white/50 dark:border-gray-700/50 shadow-2xl rounded-2xl overflow-hidden">
             <CardHeader className="p-6 sm:p-10 border-b border-gray-100/50 dark:border-gray-800/50 relative">
               <div className="absolute top-0 right-0 w-64 h-64 bg-violet-500/5 rounded-full blur-3xl -mr-32 -mt-32" />
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 relative">
-                <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-violet-600 to-purple-600 text-white text-3xl font-bold shadow-xl shadow-violet-600/20 shrink-0 transform -rotate-3">
+                <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-primary text-white text-3xl font-bold shadow-xl shadow-violet-600/20 shrink-0 transform -rotate-3">
                   {initials || "T"}
                 </div>
                 <div className="text-center sm:text-left pt-2">
@@ -477,7 +477,7 @@ export default function TeacherDetailPage() {
 
             <CardContent className="p-8 sm:p-10 space-y-10">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="rounded-[2rem] border border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-900/20 p-6">
+                <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-900/20 p-6">
                   <div className="flex items-center gap-3 text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4">
                     <User className="h-4 w-4 text-violet-600" />
                     Personnel Identity
@@ -501,7 +501,7 @@ export default function TeacherDetailPage() {
                   </div>
                 </div>
 
-                <div className="rounded-[2rem] border border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-900/20 p-6">
+                <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-900/20 p-6">
                   <div className="flex items-center gap-3 text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4">
                     <Phone className="h-4 w-4 text-indigo-600" />
                     Communication Vector
@@ -522,7 +522,7 @@ export default function TeacherDetailPage() {
                   </div>
                 </div>
 
-                <div className="rounded-[2rem] border border-violet-100 dark:border-violet-900/30 bg-gradient-to-br from-violet-50/50 to-white dark:from-violet-900/10 dark:to-gray-900/10 p-6 shadow-sm">
+                <div className="bg-white rounded-2xl border border-violet-100 dark:border-violet-900/30  p-6 shadow-sm">
                   <div className="flex items-center gap-3 text-[10px] font-bold text-violet-700 dark:text-violet-400 uppercase tracking-widest mb-4">
                     <BookOpen className="h-4 w-4" />
                     Academic Portfolio
@@ -581,7 +581,7 @@ export default function TeacherDetailPage() {
           animate="visible"
           transition={{ delay: 0.15 }}
         >
-          <Card className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border-white/50 dark:border-gray-700/50 shadow-2xl rounded-[2.5rem] overflow-hidden">
+          <Card className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border-white/50 dark:border-gray-700/50 shadow-2xl rounded-2xl overflow-hidden">
             <CardHeader className="p-8 pb-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -603,7 +603,7 @@ export default function TeacherDetailPage() {
               </div>
             </CardHeader>
             <CardContent className="p-8 pt-4 space-y-6">
-               <div className="p-6 rounded-[2rem] bg-indigo-50/50 dark:bg-indigo-900/10 border border-indigo-100/50 dark:border-indigo-800/50">
+               <div className="p-6 rounded-2xl bg-indigo-50/50 dark:bg-indigo-900/10 border border-indigo-100/50 dark:border-indigo-800/50">
                   <p className="text-xs font-medium text-indigo-800/90 dark:text-indigo-200/90 leading-relaxed">
                     Sync this teacher to devices so they can clock in and out at the gate terminals.
                   </p>
@@ -643,7 +643,7 @@ export default function TeacherDetailPage() {
           transition={{ delay: 0.2 }}
           className="space-y-4"
         >
-          <Card className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border-white/50 dark:border-gray-700/50 shadow-2xl rounded-[2.5rem] overflow-hidden">
+          <Card className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border-white/50 dark:border-gray-700/50 shadow-2xl rounded-2xl overflow-hidden">
             <CardHeader className="p-8 border-b border-gray-100/50 dark:border-gray-800/50">
               <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -785,7 +785,7 @@ export default function TeacherDetailPage() {
                 })}
               </div>
 
-              <div className="rounded-2xl border border-gray-200/50 bg-white/80 p-5 shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/40 sm:rounded-[2rem] sm:p-8">
+              <div className="rounded-2xl border border-gray-200/50 bg-white/80 p-5 shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/40 sm:rounded-2xl sm:p-8">
                 <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm font-bold text-gray-900 dark:text-white">Presence by day</p>
@@ -807,8 +807,8 @@ export default function TeacherDetailPage() {
                     <BarChart data={trendData} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
                       <defs>
                         <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#8b5cf6" stopOpacity={1}/>
-                          <stop offset="100%" stopColor="#6366f1" stopOpacity={0.8}/>
+                          <stop offset="0%" stopColor="#475569" stopOpacity={1}/>
+                          <stop offset="100%" stopColor="#15803d" stopOpacity={0.8}/>
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="#000" opacity={0.05} vertical={false} />

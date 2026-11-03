@@ -133,7 +133,7 @@ export function DeviceList({
         className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
       >
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+          <h2 className="text-2xl font-bold tracking-tight text-primary">
             Devices
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">

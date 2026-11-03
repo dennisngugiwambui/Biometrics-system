@@ -321,7 +321,7 @@ export function EnrollmentWizard({ mode = "student", onStartEnrollment }: Enroll
 
       {/* Selected Items Display */}
       {currentStep > 1 && (
-        <div className="mb-4 p-3 bg-gradient-to-r from-blue-50/50 via-indigo-50/50 to-purple-50/50 dark:from-gray-800/50 dark:via-gray-800/50 dark:to-gray-800/50 rounded-xl border border-blue-200/50 dark:border-gray-700">
+        <div className="mb-4 p-3  rounded-xl border border-blue-200/50 dark:border-gray-700">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide mr-1">Selected:</span>
 
@@ -596,7 +596,7 @@ export function EnrollmentWizard({ mode = "student", onStartEnrollment }: Enroll
           {/* Step Header */}
           {currentStep < 4 && (
             <div className="mb-6">
-              <h2 className="text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">{STEPS[currentStep - 1].name}</h2>
+              <h2 className="text-2xl font-semibold text-primary">{STEPS[currentStep - 1].name}</h2>
               <p className="text-gray-600 dark:text-gray-400 mt-1">{STEPS[currentStep - 1].description}</p>
             </div>
           )}
@@ -701,13 +701,13 @@ export function EnrollmentWizard({ mode = "student", onStartEnrollment }: Enroll
 
         {/* Navigation Footer */}
         {currentStep < 4 && (
-          <div className="flex items-center justify-between px-6 sm:px-8 py-4 bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-gray-800/30 dark:to-gray-800/30 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between px-6 sm:px-8 py-4  border-t border-gray-200 dark:border-gray-700">
             <Button variant="ghost" onClick={handlePrevious} disabled={currentStep === 1} className="gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
               <ChevronLeft className="size-4" />
               Back
             </Button>
 
-            <Button onClick={handleNext} disabled={!canProceed() || isStartingEnrollment} className="gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all">
+            <Button onClick={handleNext} disabled={!canProceed() || isStartingEnrollment} className="gap-2 bg-primary text-white shadow-lg hover:shadow-xl transition-all">
               {isStartingEnrollment ? (
                 <>
                   Starting Enrollment...

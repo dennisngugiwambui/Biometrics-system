@@ -78,7 +78,7 @@ export default function SupportPage() {
                 </div>
 
                 {/* Hero */}
-                <div className="relative overflow-hidden rounded-[2rem] bg-slate-900 px-8 py-12 text-white shadow-2xl">
+                <div className="relative overflow-hidden rounded-2xl bg-slate-900 px-8 py-12 text-white shadow-2xl">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600/20 blur-[100px] -mr-32 -mt-32" />
                     <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
                         <div className="space-y-4">
@@ -130,7 +130,7 @@ export default function SupportPage() {
 
                     {/* Side Resources */}
                     <div className="space-y-6">
-                        <Card className="rounded-[1.5rem] bg-indigo-600 text-white border-none shadow-xl shadow-indigo-500/20 overflow-hidden relative">
+                        <Card className="rounded-2xl bg-indigo-600 text-white border-none shadow-xl shadow-indigo-500/20 overflow-hidden relative">
                             <div className="absolute top-0 right-0 p-4 opacity-10">
                                 <ShieldCheck className="h-16 w-16" />
                             </div>

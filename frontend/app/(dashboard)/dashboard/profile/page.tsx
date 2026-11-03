@@ -66,7 +66,7 @@ export default function ProfilePage() {
   ] as const
 
   return (
-    <div className="min-h-full w-full bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-full w-full ">
       <motion.main
         variants={fadeInUp}
         initial="hidden"
@@ -75,7 +75,7 @@ export default function ProfilePage() {
       >
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
           <div className="min-w-0 space-y-1">
-            <h1 className="text-2xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 sm:text-3xl">
+            <h1 className="text-2xl font-bold tracking-tight text-primary sm:text-3xl">
               Full profile
             </h1>
             <p className="text-sm text-muted-foreground">Your account information</p>
@@ -99,7 +99,7 @@ export default function ProfilePage() {
             <div className="flex flex-col items-center gap-4 rounded-2xl border border-gray-200/50 bg-white/60 p-4 dark:border-gray-700/50 dark:bg-gray-900/30 sm:flex-row sm:items-center sm:p-5">
               <Avatar className="h-20 w-20 border-2 border-blue-200 dark:border-blue-800 sm:h-24 sm:w-24">
                 <AvatarImage src={u?.avatar_url || undefined} />
-                <AvatarFallback className="text-lg font-bold bg-gradient-to-br from-blue-600 to-indigo-600 text-white sm:text-xl">
+                <AvatarFallback className="text-lg font-bold bg-primary text-white sm:text-xl">
                   {initials}
                 </AvatarFallback>
               </Avatar>

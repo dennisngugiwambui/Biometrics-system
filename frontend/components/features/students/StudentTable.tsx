@@ -56,7 +56,7 @@ export function StudentTable({ students, onStudentClick }: StudentTableProps) {
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-extrabold shadow-lg shadow-blue-500/20 transform group-hover:scale-110 group-hover:rotate-3 transition-transform">
+                    <div className="h-10 w-10 rounded-2xl bg-primary flex items-center justify-center text-white text-xs font-extrabold shadow-lg shadow-blue-500/20 transform group-hover:scale-110 group-hover:rotate-3 transition-transform">
                       {student.first_name[0]}{student.last_name[0]}
                     </div>
                     <div>

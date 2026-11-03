@@ -15,31 +15,15 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
-  LayoutDashboard, Users, Smartphone, ClipboardCheck, UserPlus,
-  Bell, Settings, School, HelpCircle, LogOut, ChevronUp,
-  LucideIcon, GraduationCap, UserCheck, X, FileText, DoorOpen,
-} from "lucide-react"
+import { Fingerprint, KeyRound, LogOut, PanelLeftClose, Search, X } from "lucide-react"
 import Link from "next/link"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useAuthStore } from "@/lib/store/authStore"
 import { getUnreadCount } from "@/lib/api/notifications"
+import { NAV_SECTIONS, isNavActive, type NavigationItem } from "./navigation"
 
-export interface NavigationItem {
-  name: string
-  icon: LucideIcon
-  href: string
-  badge?: number
-}
+export type { NavigationItem } from "./navigation"
 
 export interface DashboardSidebarProps {
   adminName: string
@@ -52,34 +36,15 @@ export interface DashboardSidebarProps {
   logoDataUrl?: string | null
 }
 
-const coreNavigation: NavigationItem[] = [
-  { name: "Dashboard",  icon: LayoutDashboard, href: "/dashboard" },
-  { name: "Students",   icon: Users,           href: "/dashboard/students" },
-  { name: "Classes",    icon: GraduationCap,   href: "/dashboard/classes" },
-  { name: "Devices",    icon: Smartphone,      href: "/dashboard/devices" },
-  { name: "Attendance", icon: ClipboardCheck,  href: "/dashboard/attendance" },
-  { name: "Presence",   icon: DoorOpen,        href: "/dashboard/presence" },
-  { name: "Teachers",   icon: UserCheck,       href: "/dashboard/teachers" },
-  { name: "Enrollment", icon: UserPlus,        href: "/dashboard/enrollment" },
-  { name: "Reports",    icon: FileText,        href: "/dashboard/reports" },
-]
-
-const systemNavigation: NavigationItem[] = [
-  { name: "Notifications", icon: Bell,        href: "/dashboard/notifications" },
-  { name: "Settings",      icon: Settings,    href: "/dashboard/settings" },
-  { name: "Help & Support",icon: HelpCircle,  href: "/dashboard/help" },
-]
-
-function MobileCloseButton() {
-  const { isMobile, setOpenMobile } = useSidebar()
-  if (!isMobile) return null
+function HeaderToggle() {
+  const { isMobile, setOpenMobile, toggleSidebar } = useSidebar()
   return (
     <button
-      onClick={() => setOpenMobile(false)}
-      className="absolute top-3.5 right-3.5 z-50 flex h-7 w-7 items-center justify-center rounded-md bg-sidebar-accent/60 hover:bg-sidebar-accent text-sidebar-foreground/60 hover:text-sidebar-foreground transition-colors"
-      aria-label="Close menu"
+      onClick={() => (isMobile ? setOpenMobile(false) : toggleSidebar())}
+      className="ml-auto flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-white group-data-[collapsible=icon]:hidden"
+      aria-label={isMobile ? "Close menu" : "Collapse menu"}
     >
-      <X className="h-3.5 w-3.5" />
+      {isMobile ? <X className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
     </button>
   )
 }
@@ -96,6 +61,8 @@ export function DashboardSidebar({
 }: DashboardSidebarProps) {
   const { token } = useAuthStore()
   const [unreadCount, setUnreadCount] = useState(0)
+  const [filter, setFilter] = useState("")
+  const filterRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (!token) return
@@ -115,44 +82,57 @@ export function DashboardSidebar({
     return () => clearInterval(id)
   }, [token])
 
-  const initials = adminName
-    .split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+  // "/" jumps to the menu search, unless someone is typing elsewhere.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement
+      if (e.key !== "/" || el.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(el.tagName)) return
+      e.preventDefault()
+      filterRef.current?.focus()
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [])
 
-  const navItem = (item: NavigationItem, badge = 0) => {
-    const isActive =
-      currentPath === item.href ||
-      (item.href !== "/dashboard" && currentPath?.startsWith(item.href))
+  const sections = useMemo(() => {
+    const q = filter.trim().toLowerCase()
+    if (!q) return NAV_SECTIONS
+    return NAV_SECTIONS
+      .map((s) => ({ ...s, items: s.items.filter((i) => `${i.name} ${i.hint ?? ""}`.toLowerCase().includes(q)) }))
+      .filter((s) => s.items.length)
+  }, [filter])
 
+  const initials = adminName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+
+  const navItem = (item: NavigationItem) => {
+    const active = isNavActive(item.href, currentPath)
+    const badge = item.name === "Notifications" ? unreadCount : (item.badge ?? 0)
     return (
-      <SidebarMenuItem key={item.name}>
+      <SidebarMenuItem key={item.href}>
         <SidebarMenuButton
           asChild
-          isActive={isActive}
+          isActive={active}
           tooltip={item.name}
           className={[
-            "relative h-9 rounded-xl transition-all duration-150",
-            "group-data-[collapsible=icon]:justify-center",
-            isActive
-              ? "bg-blue-600 text-white shadow-sm"
-              : "text-sidebar-foreground/55 hover:bg-white/8 hover:text-sidebar-accent-foreground",
+            "relative h-10 rounded-[10px] border transition-colors duration-150 group-data-[collapsible=icon]:justify-center",
+            active
+              ? "border-white/20 bg-white/12 font-semibold text-white hover:bg-white/15 hover:text-white data-[active=true]:bg-white/12 data-[active=true]:text-white"
+              : "border-transparent text-sidebar-foreground hover:bg-sidebar-accent hover:text-white",
           ].join(" ")}
         >
           <Link
             href={item.href}
-            className="flex items-center gap-2.5 pl-3 group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:justify-center"
+            onClick={() => setFilter("")}
+            className="flex items-center gap-2.5 px-1.5 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:px-0"
           >
-            <item.icon className={`h-4 w-4 shrink-0 ${isActive ? "text-white" : ""}`} />
-            <span className={`text-sm group-data-[collapsible=icon]:hidden ${isActive ? "font-semibold" : "font-medium"}`}>
-              {item.name}
-            </span>
+            <span className="side-tile"><item.icon className="h-[15px] w-[15px]" /></span>
+            <span className="truncate text-[13.5px] group-data-[collapsible=icon]:hidden">{item.name}</span>
             {badge > 0 && (
-              <Badge
-                variant="destructive"
-                className="ml-auto mr-2 h-4 min-w-4 rounded-full px-1 text-[10px] font-bold group-data-[collapsible=icon]:absolute group-data-[collapsible=icon]:-top-1 group-data-[collapsible=icon]:-right-1"
-              >
-                {badge}
-              </Badge>
+              <span className="ml-auto flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#fbbf24] px-1 text-[10px] font-bold text-[#422006] group-data-[collapsible=icon]:absolute group-data-[collapsible=icon]:-right-0.5 group-data-[collapsible=icon]:-top-0.5">
+                {badge > 99 ? "99+" : badge}
+              </span>
             )}
+            {active && !badge && <span className="ml-auto mr-1 h-1.5 w-1.5 rounded-full bg-white group-data-[collapsible=icon]:hidden" />}
           </Link>
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -160,129 +140,87 @@ export function DashboardSidebar({
   }
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-sidebar-border/20 transition-all duration-200">
-
-      {/* ── Header ── */}
-      <SidebarHeader className="relative border-b border-sidebar-border/20 px-3 py-4">
-        <MobileCloseButton />
-        <div className="flex items-center gap-3 overflow-hidden pr-8 md:pr-0">
-          <div
-            className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl shadow-sm"
-            style={{ background: "linear-gradient(135deg,#2563eb,#1d4ed8)" }}
-          >
+    <Sidebar collapsible="icon" className="border-r-0">
+      {/* School */}
+      <SidebarHeader className="border-b border-sidebar-border px-3 py-3">
+        <div className="flex items-center gap-2.5 overflow-hidden group-data-[collapsible=icon]:justify-center">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white shadow-sm">
             {logoDataUrl
-              ? <img src={logoDataUrl} alt="Logo" className="h-full w-full object-cover" />
-              : <School className="h-5 w-5 text-white" />
-            }
+              // eslint-disable-next-line @next/next/no-img-element
+              ? <img src={logoDataUrl} alt="" className="h-full w-full object-contain" />
+              : <Fingerprint className="h-5 w-5 text-[#15803d]" />}
           </div>
-          <div className="flex min-w-0 flex-col leading-none group-data-[collapsible=icon]:hidden">
-            <span className="max-w-36 truncate text-sm font-bold text-sidebar-accent-foreground">
-              {schoolName}
-            </span>
-            <span className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.18em] text-sidebar-foreground/35">
-              Administration
-            </span>
+          <div className="flex min-w-0 flex-col leading-tight group-data-[collapsible=icon]:hidden">
+            <span className="truncate text-[14px] font-bold text-white">{schoolName}</span>
+            <span className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#fbbf24]">Attendance</span>
           </div>
+          <HeaderToggle />
         </div>
       </SidebarHeader>
 
-      {/* ── Content ── */}
       <SidebarContent className="bg-transparent">
+        {/* Menu search */}
+        <div className="px-3 pt-3 group-data-[collapsible=icon]:hidden">
+          <label className="relative block">
+            <span className="sr-only">Search the menu</span>
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/55" />
+            <input
+              ref={filterRef}
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Escape") { setFilter(""); e.currentTarget.blur() } }}
+              placeholder="Search the menu…"
+              className="h-9 w-full rounded-[10px] border border-white/15 bg-white/8 pl-8 pr-8 text-[13px] text-white outline-none transition-colors placeholder:text-white/55 focus:border-white/40 focus:bg-white/12"
+            />
+            <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded border border-white/20 px-1.5 text-[10px] text-white/55">/</kbd>
+          </label>
+        </div>
+
         <ScrollArea className="h-full">
-
-          {/* Core nav */}
-          <SidebarGroup className="px-2 pt-4">
-            <SidebarGroupLabel className="px-3 pb-1.5 text-[9px] font-bold uppercase tracking-[0.18em] text-sidebar-foreground/30">
-              Menu
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu className="gap-0.5">
-                {coreNavigation.map((item) => navItem(item))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-
-          {/* Separator */}
-          <div className="mx-3 my-3 border-t border-sidebar-border/20 group-data-[collapsible=icon]:mx-2" />
-
-          {/* System nav */}
-          <SidebarGroup className="px-2">
-            <SidebarGroupLabel className="px-3 pb-1.5 text-[9px] font-bold uppercase tracking-[0.18em] text-sidebar-foreground/30 group-data-[collapsible=icon]:hidden">
-              System
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu className="gap-0.5">
-                {systemNavigation.map((item) => {
-                  const badge = item.name === "Notifications" ? unreadCount : (item.badge ?? 0)
-                  return navItem(item, badge)
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-
+          {sections.map((section) => (
+            <SidebarGroup key={section.label} className="px-2 pt-3 pb-0">
+              <SidebarGroupLabel className="h-6 px-2.5 text-[10px] font-bold uppercase tracking-[0.14em] text-white/50">
+                {section.label}
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu className="gap-0.5">{section.items.map(navItem)}</SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          ))}
+          {sections.length === 0 && (
+            <p className="px-5 py-6 text-center text-[13px] text-white/60">Nothing in the menu matches “{filter}”.</p>
+          )}
         </ScrollArea>
       </SidebarContent>
 
-      {/* ── Footer ── */}
-      <SidebarFooter className="border-t border-sidebar-border/20 p-2">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton
-                  size="lg"
-                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground h-11"
-                >
-                  <Avatar className="h-7 w-7 shrink-0">
-                    <AvatarImage src={adminAvatar || undefined} />
-                    <AvatarFallback className="bg-blue-600 text-white text-xs font-semibold">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden min-w-0">
-                    <span className="truncate font-semibold text-sidebar-accent-foreground text-sm">{adminName}</span>
-                    <span className="truncate text-[11px] text-sidebar-foreground/50">{adminEmail}</span>
-                  </div>
-                  <ChevronUp className="ml-auto h-3.5 w-3.5 text-sidebar-foreground/40 group-data-[collapsible=icon]:hidden" />
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-
-              <DropdownMenuContent
-                className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg shadow-xl border border-border"
-                side="top"
-                align="end"
-                sideOffset={6}
-              >
-                <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-border">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-blue-600 text-white text-xs font-semibold">{initials}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-sm font-semibold truncate">{adminName}</span>
-                    <span className="text-xs text-muted-foreground truncate">{adminEmail}</span>
-                  </div>
-                </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={onSettings} className="cursor-pointer">
-                  <Settings className="mr-2 h-4 w-4" />
-                  Account Settings
-                </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer">
-                  <HelpCircle className="mr-2 h-4 w-4" />
-                  Help & Support
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className="text-destructive focus:text-destructive cursor-pointer"
-                  onClick={onLogout}
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Sign Out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarMenuItem>
-        </SidebarMenu>
+      {/* Signed-in user */}
+      <SidebarFooter className="border-t border-sidebar-border p-2.5">
+        <div className="flex items-center gap-2.5 rounded-xl bg-white/8 p-2 ring-1 ring-white/10 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:ring-0">
+          <Avatar className="h-8 w-8 shrink-0">
+            <AvatarImage src={adminAvatar || undefined} />
+            <AvatarFallback className="bg-white text-xs font-bold text-[#14532d]">{initials}</AvatarFallback>
+          </Avatar>
+          <div className="min-w-0 flex-1 leading-tight group-data-[collapsible=icon]:hidden">
+            <p className="truncate text-[13px] font-semibold text-white">{adminName}</p>
+            <p className="truncate text-[11px] text-white/65">{adminEmail}</p>
+          </div>
+          <button
+            onClick={onSettings}
+            aria-label="Account settings"
+            title="Account settings"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-white/70 transition-colors hover:bg-white/12 hover:text-white group-data-[collapsible=icon]:hidden"
+          >
+            <KeyRound className="h-3.5 w-3.5" />
+          </button>
+          <button
+            onClick={onLogout}
+            aria-label="Sign out"
+            title="Sign out"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-white/70 transition-colors hover:bg-white/12 hover:text-white group-data-[collapsible=icon]:hidden"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+          </button>
+        </div>
       </SidebarFooter>
 
       <SidebarRail />

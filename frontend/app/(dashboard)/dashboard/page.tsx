@@ -105,7 +105,7 @@ function CustomTooltip({ active, payload, label }: TooltipProps) {
   )
 }
 
-const BLUE   = "#2563eb"
+const BLUE   = "#15803d"
 const ABSENT = "#e2e8f0"
 const PIE_COLORS = [BLUE, ABSENT]
 
@@ -314,14 +314,14 @@ export default function DashboardPage() {
             label="Total Students"
             value={stats.totalStudents}
             icon={Users}
-            accent="#2563eb"
+            accent="#15803d"
             sub="Registered students"
           />
           <StatCard
             label="Present Today"
             value={stats.presentToday}
             icon={Activity}
-            accent="#10b981"
+            accent="#16a34a"
             sub={`${Math.round(stats.presentRate)}% attendance rate`}
             trend="up"
           />
@@ -329,7 +329,7 @@ export default function DashboardPage() {
             label="Teachers"
             value={stats.totalTeachers}
             icon={GraduationCap}
-            accent="#8b5cf6"
+            accent="#475569"
             sub="Staff members"
           />
           <StatCard
@@ -440,7 +440,7 @@ export default function DashboardPage() {
                       (viewMode === "student" ? stats.totalStudents : stats.totalTeachers)
                     : 0,
                 },
-                { label: "Total Events", value: stats.totalToday, color: "#10b981", pct: 1 },
+                { label: "Total Events", value: stats.totalToday, color: "#16a34a", pct: 1 },
               ].map(({ label, value, color, pct }) => (
                 <div key={label} className="rounded-xl bg-gray-50 px-4 py-3 dark:bg-gray-900/50">
                   <div className="mb-2 flex items-center justify-between">
@@ -494,7 +494,7 @@ export default function DashboardPage() {
               title: "Register Student",
               description: "Add a new student with biometric enrollment to the directory.",
               action: () => router.push("/dashboard/students/new"),
-              accent: "#2563eb",
+              accent: "#15803d",
               linkLabel: "Go to Students",
             },
             {
@@ -502,7 +502,7 @@ export default function DashboardPage() {
               title: "Manage Teachers",
               description: "View teacher profiles, track attendance, and manage staff records.",
               action: () => router.push("/dashboard/teachers"),
-              accent: "#8b5cf6",
+              accent: "#475569",
               linkLabel: "Go to Teachers",
             },
             {
@@ -510,7 +510,7 @@ export default function DashboardPage() {
               title: "Start Enrollment",
               description: "Enroll students or staff with fingerprint data for accurate tracking.",
               action: () => router.push("/dashboard/enrollment"),
-              accent: "#10b981",
+              accent: "#16a34a",
               linkLabel: "Begin Enrollment",
             },
           ].map(({ icon: Icon, title, description, action, accent, linkLabel }) => (

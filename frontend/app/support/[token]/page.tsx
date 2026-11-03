@@ -103,11 +103,11 @@ export default function GuestTicketPage() {
     }
 
     if (loading) return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="min-h-screen flex items-center justify-center ">
             <div className="flex flex-col items-center gap-3">
                 <div className="relative">
                     <div className="absolute inset-0 rounded-full bg-blue-400/20 animate-ping" />
-                    <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg">
+                    <div className="bg-primary/10 relative flex h-16 w-16 items-center justify-center rounded-full  shadow-lg">
                         <Loader2 className="h-7 w-7 animate-spin text-white" />
                     </div>
                 </div>
@@ -117,7 +117,7 @@ export default function GuestTicketPage() {
     )
 
     if (error || !ticket) return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 p-6">
+        <div className="min-h-screen flex items-center justify-center  p-6">
             <div className="max-w-md w-full text-center space-y-4">
                 <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 mx-auto">
                     <AlertCircle className="h-8 w-8 text-red-500" />
@@ -129,7 +129,7 @@ export default function GuestTicketPage() {
     )
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50 py-8 px-4">
+        <div className="min-h-screen  py-8 px-4">
             <div className="mx-auto max-w-2xl space-y-5">
 
                 {/* Brand header */}
@@ -141,7 +141,7 @@ export default function GuestTicketPage() {
 
                 {/* Ticket info card */}
                 <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl border border-white/60 bg-white/90 backdrop-blur-sm shadow-sm overflow-hidden">
-                    <div className="h-1.5 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+                    <div className="bg-primary h-1.5 " />
                     <div className="p-5 space-y-3">
                         <div className="flex flex-wrap items-start justify-between gap-3">
                             <div className="min-w-0">
@@ -197,7 +197,7 @@ export default function GuestTicketPage() {
                                 <div className={`rounded-2xl px-5 py-3.5 max-w-[85%] shadow-sm
                   ${msg.is_admin_reply
                                         ? "bg-white border border-gray-200 rounded-tl-sm"
-                                        : "bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-tr-sm"
+                                        : "bg-primary text-white rounded-tr-sm"
                                     }`}
                                 >
                                     <p className={`text-xs font-semibold mb-1.5 ${msg.is_admin_reply ? "text-gray-400" : "text-blue-100"}`}>

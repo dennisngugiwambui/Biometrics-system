@@ -6,6 +6,8 @@ import { motion } from "framer-motion"
 import { SidebarProvider, SidebarInset, useSidebar } from "@/components/ui/sidebar"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { DashboardSidebar, DashboardHeader } from "@/components/features/dashboard"
+import { MobileTabBar } from "@/components/features/dashboard/MobileTabBar"
+import { ALL_NAV_ITEMS, isNavActive } from "@/components/features/dashboard/navigation"
 import { useAuthStore } from "@/lib/store/authStore"
 import { useSessionCheck } from "@/lib/hooks/useSessionCheck"
 import { isTokenExpired } from "@/lib/utils/jwt"
@@ -144,7 +146,7 @@ export default function DashboardLayout({
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 0.9, repeat: Infinity, ease: "linear" }}
-            className="h-7 w-7 rounded-full border-[3px] border-blue-200 border-t-blue-600"
+            className="h-7 w-7 rounded-full border-[3px] border-primary/20 border-t-primary"
           />
           <p className="text-xs font-medium text-gray-400 tracking-wide">Loading</p>
         </motion.div>
@@ -162,7 +164,7 @@ export default function DashboardLayout({
     <TooltipProvider>
       <SidebarProvider defaultOpen={sidebarDefaultOpen}>
         <SidebarCloser />
-        <div className="flex min-h-screen w-full bg-slate-50 dark:bg-gray-900">
+        <div className="flex min-h-screen w-full bg-background">
           <DashboardSidebar
             adminName={adminFullName}
             adminEmail={user.email}
@@ -174,9 +176,9 @@ export default function DashboardLayout({
             logoDataUrl={logoDataUrl}
           />
 
-          <SidebarInset className="flex flex-col bg-slate-50 dark:bg-gray-950">
+          <SidebarInset className="flex min-w-0 flex-col bg-background">
             <DashboardHeader
-              title={title}
+              title={ALL_NAV_ITEMS.find((i) => isNavActive(i.href, pathname))?.name ?? title}
               adminName={adminFullName}
               adminAvatar={user.avatar}
               notificationCount={unreadCount}
@@ -185,7 +187,7 @@ export default function DashboardLayout({
               onSettings={handleSettings}
             />
 
-            <main className="relative flex-1 overflow-y-auto pt-14 md:pt-0">
+            <main className="has-tabbar relative flex-1 overflow-y-auto pt-14 md:pt-0">
               <Suspense fallback={null}>
                 <NavigationProgress />
               </Suspense>
@@ -209,6 +211,7 @@ export default function DashboardLayout({
                 </motion.div>
               </Suspense>
             </main>
+            <MobileTabBar currentPath={pathname} />
           </SidebarInset>
         </div>
       </SidebarProvider>

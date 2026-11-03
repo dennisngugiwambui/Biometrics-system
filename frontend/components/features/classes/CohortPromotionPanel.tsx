@@ -124,7 +124,7 @@ export function CohortPromotionPanel({ classes, selectedClassId, onRefresh }: Pr
     <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
       <Card className="border border-gray-200/50 bg-white/80 shadow-lg backdrop-blur-sm dark:border-gray-700/50 dark:bg-gray-800/80">
         <CardHeader>
-          <CardTitle className="flex flex-wrap items-center gap-2 text-lg text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+          <CardTitle className="flex flex-wrap items-center gap-2 text-lg text-primary">
             <GraduationCap className="h-5 w-5 text-indigo-600" />
             Promotion &amp; leavers
           </CardTitle>

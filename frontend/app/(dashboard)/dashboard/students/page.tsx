@@ -161,9 +161,9 @@ function StatCard({
 
   const inner = (
     <>
-      <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${gradient}`} />
+      <div className={`absolute top-0 left-0 right-0 h-1  bg-primary`} />
       <div className="flex items-center gap-3">
-        <div className={`flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br ${gradient} shadow-sm`}>
+        <div className={`flex h-9 w-9 items-center justify-center rounded-xl  bg-primary shadow-sm`}>
           <Icon className="h-4.5 w-4.5 text-white" />
         </div>
         <div>
@@ -286,7 +286,7 @@ function BulkUploadModal({
                 initial={false}
                 animate={{ width: `${uploadProgress}%` }}
                 transition={{ duration: 0.2 }}
-                className="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-500"
+                className="bg-primary h-full "
               />
             )}
             {result && !isUploading && (
@@ -716,7 +716,7 @@ export default function StudentsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
         <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 sm:text-4xl uppercase">
+          <h1 className="text-3xl font-bold tracking-tight text-primary sm:text-4xl uppercase">
             Student Management
           </h1>
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mt-1">
@@ -827,7 +827,7 @@ export default function StudentsPage() {
         </div>
         <Button
           type="button"
-          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg shadow-blue-500/20"
+          className="bg-primary text-white shadow-lg shadow-blue-500/20"
           onClick={() => setSyncModalOpen(true)}
         >
           <Cpu className="h-4 w-4 mr-2" />
@@ -836,13 +836,13 @@ export default function StudentsPage() {
       </motion.section>
 
       <Dialog open={syncModalOpen} onOpenChange={setSyncModalOpen}>
-        <DialogContent className="flex h-[min(92dvh,920px)] max-h-[92dvh] w-full max-w-none flex-col gap-0 overflow-hidden rounded-none border-gray-200/50 bg-white/98 p-0 shadow-[0_0_50px_-12px_rgba(0,0,0,0.25)] backdrop-blur-2xl dark:border-gray-800/50 dark:bg-gray-950/98 sm:h-[min(92dvh,920px)] sm:max-h-[92dvh] sm:w-[min(96vw,1680px)] sm:max-w-[min(96vw,1680px)] sm:rounded-[2rem] max-sm:h-[100dvh] max-sm:max-h-[100dvh]">
-          <div className="absolute top-0 left-0 w-full h-1.5 sm:h-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600" />
+        <DialogContent className="flex h-[min(92dvh,920px)] max-h-[92dvh] w-full max-w-none flex-col gap-0 overflow-hidden rounded-none border-gray-200/50 bg-white/98 p-0 shadow-[0_0_50px_-12px_rgba(0,0,0,0.25)] backdrop-blur-2xl dark:border-gray-800/50 dark:bg-gray-950/98 sm:h-[min(92dvh,920px)] sm:max-h-[92dvh] sm:w-[min(96vw,1680px)] sm:max-w-[min(96vw,1680px)] sm:rounded-2xl max-sm:h-[100dvh] max-sm:max-h-[100dvh]">
+          <div className="bg-primary absolute top-0 left-0 w-full h-1.5 sm:h-2 " />
 
           <DialogHeader className="p-4 sm:p-6 lg:p-8 pb-4 shrink-0 text-left">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="space-y-2 min-w-0 pr-8">
-                <DialogTitle className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 tracking-tight leading-tight">
+                <DialogTitle className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-primary tracking-tight leading-tight">
                   Hardware synchronization workspace
                 </DialogTitle>
                 <DialogDescription className="text-xs font-medium text-muted-foreground sm:text-sm">
@@ -864,7 +864,7 @@ export default function StudentsPage() {
 
           <div className="px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6 lg:pb-8 space-y-4 sm:space-y-6 min-h-0 flex-1 flex flex-col overflow-hidden">
             {/* Control Bar */}
-            <div className="grid grid-cols-1 gap-4 rounded-2xl border border-gray-100 bg-gray-50/80 p-4 shadow-sm dark:border-gray-800/50 dark:bg-gray-900/40 sm:p-6 sm:rounded-[2rem] xl:grid-cols-12">
+            <div className="grid grid-cols-1 gap-4 rounded-2xl border border-gray-100 bg-gray-50/80 p-4 shadow-sm dark:border-gray-800/50 dark:bg-gray-900/40 sm:p-6 sm:rounded-2xl xl:grid-cols-12">
               <div className="min-w-0 space-y-2 xl:col-span-4">
                 <label className="block px-1 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                   Target biometric node
@@ -922,7 +922,7 @@ export default function StudentsPage() {
               <motion.div
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="flex items-center gap-4 rounded-[1.5rem] border border-blue-100 bg-blue-50/80 p-5 text-sm font-semibold text-blue-800 shadow-sm dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-200"
+                className="flex items-center gap-4 rounded-2xl border border-blue-100 bg-blue-50/80 p-5 text-sm font-semibold text-blue-800 shadow-sm dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-200"
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-800/40">
                   {syncListLoading ? (
@@ -961,7 +961,7 @@ export default function StudentsPage() {
                 </TabsList>
 
                 <TabsContent value="students" className="mt-0 flex min-h-0 flex-1 flex-col overflow-hidden">
-                  <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-lg dark:border-gray-800 dark:bg-gray-950 sm:rounded-[2rem]">
+                  <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-lg dark:border-gray-800 dark:bg-gray-950 sm:rounded-2xl">
                     <div className="flex flex-col gap-3 border-b border-gray-100 p-4 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between sm:p-6">
                       <div>
                         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-700 dark:text-blue-400">
@@ -988,7 +988,7 @@ export default function StudentsPage() {
                       <div className="min-h-[200px] flex-1 overflow-auto rounded-2xl border border-gray-100 dark:border-gray-800">
                         <Table>
                           <TableHeader>
-                            <TableRow className="border-0 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:bg-transparent">
+                            <TableRow className="border-0  hover:bg-transparent">
                               <TableHead className="min-w-[200px] text-[10px] font-bold uppercase tracking-wider text-white">
                                 Student
                               </TableHead>
@@ -1043,7 +1043,7 @@ export default function StudentsPage() {
                 </TabsContent>
 
                 <TabsContent value="teachers" className="mt-0 flex min-h-0 flex-1 flex-col overflow-hidden">
-                  <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-lg dark:border-gray-800 dark:bg-gray-950 sm:rounded-[2rem]">
+                  <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-lg dark:border-gray-800 dark:bg-gray-950 sm:rounded-2xl">
                     <div className="flex flex-col gap-3 border-b border-gray-100 p-4 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between sm:p-6">
                       <div>
                         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-700 dark:text-indigo-400">
@@ -1070,7 +1070,7 @@ export default function StudentsPage() {
                       <div className="min-h-[200px] flex-1 overflow-auto rounded-2xl border border-gray-100 dark:border-gray-800">
                         <Table>
                           <TableHeader>
-                            <TableRow className="border-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 hover:bg-transparent">
+                            <TableRow className="border-0  hover:bg-transparent">
                               <TableHead className="min-w-[220px] text-[10px] font-bold uppercase tracking-wider text-white">
                                 Name
                               </TableHead>
@@ -1119,7 +1119,7 @@ export default function StudentsPage() {
                 </TabsContent>
               </Tabs>
             ) : (
-              <div className="flex-1 flex flex-col items-center justify-center py-20 bg-gray-50/30 dark:bg-gray-900/20 rounded-[3rem] border-2 border-dashed border-gray-100 dark:border-gray-800">
+              <div className="flex-1 flex flex-col items-center justify-center py-20 bg-gray-50/30 dark:bg-gray-900/20 rounded-2xl border-2 border-dashed border-gray-100 dark:border-gray-800">
                 <div className="h-24 w-24 rounded-full bg-white dark:bg-gray-800 shadow-2xl flex items-center justify-center mb-8 relative">
                   <div className="absolute inset-0 rounded-full bg-emerald-500 animate-ping opacity-10" />
                   <CheckCircle2 className="h-12 w-12 text-emerald-500 relative z-10" />

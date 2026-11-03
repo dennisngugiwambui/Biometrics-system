@@ -53,7 +53,7 @@ function PhonePreview({ content, title, schoolName }: { content: string; title: 
     .replace(/{{percentage}}/g, "100")
 
   return (
-    <div className="relative mx-auto h-[440px] w-[220px] rounded-[2.5rem] border-[6px] border-gray-900 bg-gray-900 shadow-xl overflow-hidden ring-4 ring-offset-2 ring-blue-500/10">
+    <div className="relative mx-auto h-[440px] w-[220px] rounded-2xl border-[6px] border-gray-900 bg-gray-900 shadow-xl overflow-hidden ring-4 ring-offset-2 ring-blue-500/10">
       {/* Notch */}
       <div className="absolute top-0 left-1/2 h-5 w-24 -translate-x-1/2 rounded-b-xl bg-gray-900 z-20" />
 
@@ -241,7 +241,7 @@ export default function SettingsNotificationsPage() {
     <div className="relative min-h-screen pb-20">
       {/* Background Decor */}
       <div className="fixed inset-0 pointer-events-none -z-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-50/50 via-white to-purple-50/50 dark:from-slate-900 dark:via-slate-950 dark:to-indigo-950/20" />
-      <div className="fixed top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[800px] h-[800px] rounded-full bg-gradient-to-br from-blue-500/10 to-transparent blur-[120px] pointer-events-none -z-10" />
+      <div className="fixed top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[800px] h-[800px] rounded-full  blur-[120px] pointer-events-none -z-10" />
 
       <motion.div
         className="space-y-8 p-4 sm:p-6 lg:p-8"
@@ -538,7 +538,7 @@ export default function SettingsNotificationsPage() {
           <div className="lg:col-span-7 space-y-8">
             <motion.div variants={staggerItem} className="h-full">
               <Card className="glass-panel h-full border-white/20 shadow-premium flex flex-col overflow-hidden">
-                <div className="h-1.5 w-full bg-gradient-to-r from-blue-500 to-purple-500" />
+                <div className="bg-primary h-1.5 w-full " />
                 <CardHeader className="flex flex-row items-center justify-between p-5 pb-2">
                   <div className="space-y-0.5">
                     <CardTitle className="text-base font-bold">Content Architect</CardTitle>
@@ -622,7 +622,7 @@ export default function SettingsNotificationsPage() {
                   </div>
 
                   {/* Visual Preview Side */}
-                  <div className="shrink-0 flex flex-col items-center justify-center p-6 bg-slate-50 dark:bg-slate-900/20 rounded-[2rem] border border-slate-100 dark:border-white/5">
+                  <div className="shrink-0 flex flex-col items-center justify-center p-6 bg-slate-50 dark:bg-slate-900/20 rounded-2xl border border-slate-100 dark:border-white/5">
                     <span className="text-[9px] uppercase tracking-wider font-bold text-indigo-400 mb-4 opacity-70">Live View</span>
                     <PhonePreview
                       content={ns.templates?.[activeTemplate] ?? ""}

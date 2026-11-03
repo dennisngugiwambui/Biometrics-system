@@ -13,7 +13,7 @@ import { toast } from "sonner"
 import { AuthShell, authIconCls as iconCls, authInputCls as inputCls, authLabelCls as labelCls } from "@/components/features/auth/AuthShell"
 
 // Shulepoa green, as on portal.shulepoa.co.ke
-const ACCENT = "#16a34a"
+const ACCENT = "#15803d"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -105,7 +105,7 @@ export default function LoginPage() {
         ) : (
           <div
             className="flex h-20 w-20 items-center justify-center rounded-2xl"
-            style={{ background: "linear-gradient(135deg,#22c55e,#15803d)", boxShadow: "0 6px 20px rgba(22,163,74,.4)" }}
+            style={{ background: "#15803d" }}
           >
             <Fingerprint className="h-9 w-9 text-white" />
           </div>

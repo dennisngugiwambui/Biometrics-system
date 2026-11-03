@@ -11,7 +11,7 @@
  */
 
 import { useEffect } from "react"
-import { useSchoolBrandingStore } from "@/lib/store/schoolBrandingStore"
+import { DEFAULT_SCHOOL_COLORS, useSchoolBrandingStore } from "@/lib/store/schoolBrandingStore"
 
 // ---------------------------------------------------------------------------
 // Color utility helpers
@@ -168,7 +168,10 @@ export function SchoolThemeProvider({ children }: SchoolThemeProviderProps) {
             styleEl.id = styleId
             document.head.appendChild(styleEl)
         }
-        styleEl.textContent = buildCssVariables(colors)
+        // No colours of the school's own (or the old blue default still saved in
+        // this browser): the Shulepoa green in globals.css stands.
+        const first = (colors[0] || "").toLowerCase()
+        styleEl.textContent = !first || first === "#2563eb" || first === DEFAULT_SCHOOL_COLORS[0] ? "" : buildCssVariables(colors)
     }, [colors])
 
     // Update document title with school name — always set if name is non-empty

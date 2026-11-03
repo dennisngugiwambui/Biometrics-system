@@ -398,7 +398,7 @@ export function CalendarModal({ open, onOpenChange }: CalendarModalProps) {
               {/* RIGHT — Day detail */}
               <div className="flex-1 flex flex-col overflow-hidden bg-background">
                 {/* Day header with stats */}
-                <div className="px-6 py-6 border-b border-border/50 bg-gradient-to-b from-primary/5 to-transparent">
+                <div className="px-6 py-6 border-b border-border/50 ">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">

@@ -45,7 +45,7 @@ export default function ManagementLoginPage() {
       <div className="mb-7 flex flex-col items-center text-center">
         <div
           className="flex h-20 w-20 items-center justify-center rounded-2xl"
-          style={{ background: "linear-gradient(135deg,#22c55e,#15803d)", boxShadow: "0 6px 20px rgba(22,163,74,.4)" }}
+          style={{ background: "#15803d" }}
         >
           <ShieldCheck className="h-9 w-9 text-white" />
         </div>

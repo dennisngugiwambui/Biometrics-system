@@ -126,14 +126,14 @@ export default function AddTeacherPage() {
         </Button>
 
         <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 shadow-premium hover-lift overflow-hidden">
-          <div className="h-1 bg-gradient-to-r from-violet-500 via-indigo-500 to-purple-500" />
+          <div className="h-1 " />
           <CardHeader className="pb-4">
             <div className="flex items-center gap-3">
-              <div className="flex size-12 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-500/20">
+              <div className="flex size-12 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-violet-500/20">
                 <UserPlus className="size-6" />
               </div>
               <div>
-                <CardTitle className="text-2xl text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-purple-600">
+                <CardTitle className="text-2xl text-primary">
                   Add Teacher
                 </CardTitle>
                 <CardDescription>
@@ -358,7 +358,7 @@ export default function AddTeacherPage() {
                 <Button
                   type="submit"
                   disabled={isSaving || !form.first_name?.trim() || !form.last_name?.trim() || !form.phone?.trim()}
-                  className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white shadow-lg shadow-violet-500/20 sm:min-w-[160px]"
+                  className="bg-primary text-white shadow-lg shadow-violet-500/20 sm:min-w-[160px]"
                 >
                   {isSaving ? (
                     <>

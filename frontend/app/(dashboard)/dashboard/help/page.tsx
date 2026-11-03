@@ -196,7 +196,7 @@ function TicketDetail({
             <div className={`rounded-2xl px-4 py-3 max-w-[85%] shadow-sm text-sm
               ${msg.is_admin_reply
                 ? "bg-white dark:bg-gray-800 border border-border/50 rounded-tl-sm"
-                : "bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-tr-sm"
+                : "bg-primary text-white rounded-tr-sm"
               }`}
             >
               <p className={`text-xs font-medium mb-1 ${msg.is_admin_reply ? "text-muted-foreground" : "text-blue-100"}`}>
@@ -326,7 +326,7 @@ export default function HelpPage() {
 
       {/* ── Hero header */}
       <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 px-6 py-8 text-white shadow-xl">
+        <div className="relative overflow-hidden rounded-2xl bg-primary px-6 py-8 text-white shadow-xl">
           {/* Decorative blobs */}
           <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
           <div className="absolute -bottom-16 -left-16 h-56 w-56 rounded-full bg-blue-300/20 blur-2xl" />
@@ -442,7 +442,7 @@ export default function HelpPage() {
 
             {!loadingTickets && !ticketError && tickets.length === 0 && (
               <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30">
+                <div className="bg-primary/10 flex h-16 w-16 items-center justify-center rounded-2xl ">
                   <Ticket className="h-8 w-8 text-blue-500" />
                 </div>
                 <div>
@@ -497,7 +497,7 @@ export default function HelpPage() {
               <div className="lg:col-span-3">
                 <div className="rounded-2xl border border-border/50 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-sm overflow-hidden">
                   {/* Gradient top bar */}
-                  <div className="h-1.5 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+                  <div className="bg-primary h-1.5 " />
                   <div className="p-6 space-y-5">
                     <div>
                       <h2 className="text-lg font-bold">File a New Ticket</h2>
@@ -599,7 +599,7 @@ export default function HelpPage() {
                         type="submit"
                         disabled={submitting || !form.subject.trim() || !form.message.trim()}
                         size="lg"
-                        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white gap-2"
+                        className="w-full bg-primary text-white gap-2"
                       >
                         {submitting
                           ? <><Loader2 className="h-4 w-4 animate-spin" /> Creating Ticket…</>
@@ -637,7 +637,7 @@ export default function HelpPage() {
                 </div>
 
                 {/* Tips */}
-                <div className="rounded-2xl border border-border/50 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 p-5 shadow-sm">
+                <div className="bg-white rounded-2xl border border-border/50  p-5 shadow-sm">
                   <h3 className="font-semibold mb-3 flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-indigo-500" />
                     Before You Submit

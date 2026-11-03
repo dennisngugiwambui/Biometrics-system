@@ -222,7 +222,7 @@ export function AdminEnrollment() {
         <div className="p-6 sm:p-8">
           {currentStep < 4 && (
             <div className="mb-6">
-              <h2 className="text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-orange-600">
+              <h2 className="text-2xl font-semibold text-primary">
                 {STEPS[currentStep - 1].name}
               </h2>
               <p className="text-gray-600 dark:text-gray-400 mt-1">{STEPS[currentStep - 1].description}</p>
@@ -428,7 +428,7 @@ export function AdminEnrollment() {
 
         {/* Footer */}
         {currentStep < 4 && (
-          <div className="flex items-center justify-between px-6 sm:px-8 py-4 bg-gradient-to-r from-amber-50/50 to-orange-50/50 dark:from-gray-800/30 dark:to-gray-800/30 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between px-6 sm:px-8 py-4  border-t border-gray-200 dark:border-gray-700">
             <Button
               variant="ghost"
               onClick={handlePrevious}
@@ -441,7 +441,7 @@ export function AdminEnrollment() {
             <Button
               onClick={handleNext}
               disabled={!canProceed() || isSubmitting}
-              className="gap-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white shadow-lg"
+              className="gap-2 bg-primary text-white shadow-lg"
             >
               {isSubmitting ? (
                 <>

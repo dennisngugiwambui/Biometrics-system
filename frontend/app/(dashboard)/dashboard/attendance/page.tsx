@@ -594,7 +594,7 @@ function HistoryTab({
         <div className="overflow-x-auto rounded-xl border border-gray-200/50 dark:border-gray-700/50">
           <table className="w-full text-sm min-w-[640px]">
             <thead>
-              <tr className="text-left border-b border-indigo-200/40 dark:border-indigo-900/50 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
+              <tr className="text-left border-b border-indigo-200/40 dark:border-indigo-900/50 ">
                 <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-wider text-white whitespace-nowrap">Time</th>
                 <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-wider text-white">{audience === "teachers" ? "Teacher" : "Student"}</th>
                 <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-wider text-white hidden sm:table-cell whitespace-nowrap">
@@ -927,7 +927,7 @@ function PresenceStatusTab({
           <div className="overflow-x-auto">
               <table className="w-full text-sm">
               <thead>
-                <tr className="text-left border-b border-indigo-200/40 dark:border-indigo-900/50 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 shadow-md">
+                <tr className="text-left border-b border-indigo-200/40 dark:border-indigo-900/50  shadow-md">
                   <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-wider text-white">{audience === "teachers" ? "Teacher" : "Student"}</th>
                   <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-wider text-white">{audience === "teachers" ? "Employee #" : "Adm No."}</th>
                   <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-wider text-white">
@@ -1319,11 +1319,11 @@ export default function AttendancePage() {
         {/* Header */}
         <div className="relative mb-6">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-linear-to-br from-indigo-500 to-violet-600 rounded-2xl shadow-lg shadow-indigo-500/25 text-white">
+            <div className="p-3 bg-primary rounded-2xl shadow-lg shadow-indigo-500/25 text-white">
               <ClipboardCheck className="size-6" />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-transparent bg-clip-text bg-linear-to-r from-indigo-600 to-violet-600 dark:from-indigo-400 dark:to-violet-400">
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-primary">
                 Attendance Terminal
               </h1>
               <p className="text-xs text-muted-foreground mt-0.5 font-medium">Real-time biometric event capture</p>
@@ -1631,7 +1631,7 @@ export default function AttendancePage() {
                       initial={{ width: 0 }}
                       animate={{ width: `${stats?.total_users ? Math.min(100, (stats.checked_in * 100) / stats.total_users) : 0}%` }}
                       transition={{ duration: 1, ease: "easeOut" }}
-                      className="h-full bg-gradient-to-r from-green-400 to-emerald-600 shadow-glow"
+                      className="bg-primary h-full  shadow-glow"
                     />
                   </div>
                 </div>
@@ -1648,7 +1648,7 @@ export default function AttendancePage() {
                       initial={{ width: 0 }}
                       animate={{ width: `${stats?.total_users ? Math.min(100, (stats.checked_out * 100) / stats.total_users) : 0}%` }}
                       transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
-                      className="h-full bg-gradient-to-r from-amber-400 to-orange-600 shadow-glow"
+                      className="bg-primary h-full  shadow-glow"
                     />
                   </div>
                 </div>

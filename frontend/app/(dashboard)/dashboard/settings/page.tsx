@@ -519,11 +519,11 @@ export default function SettingsPage() {
       <div className="w-full space-y-8">
         {/* Page Header */}
         <motion.div variants={fadeInUp} className="flex items-center gap-4">
-          <div className="p-3 rounded-2xl bg-linear-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/25 text-white shrink-0">
+          <div className="p-3 rounded-2xl bg-primary shadow-lg shadow-indigo-500/25 text-white shrink-0">
             <School className="h-6 w-6" />
           </div>
           <div className="space-y-0.5">
-            <h2 className="text-2xl font-bold tracking-tight text-transparent bg-clip-text bg-linear-to-r from-indigo-600 to-violet-600 dark:from-indigo-400 dark:to-violet-400 sm:text-3xl">School Settings</h2>
+            <h2 className="text-2xl font-bold tracking-tight text-primary sm:text-3xl">School Settings</h2>
             <p className="text-muted-foreground text-sm">Manage your school's information, colours, and branding</p>
           </div>
         </motion.div>
@@ -558,13 +558,13 @@ export default function SettingsPage() {
         {school && (
           <motion.div variants={staggerContainer} initial="initial" animate="animate">
             <Card className="glass-panel shadow-premium bevel-card border-white/10 overflow-hidden">
-              <div className="h-1.5 w-full bg-gradient-to-r from-primary/40 via-primary to-primary/40" />
+              <div className="bg-primary h-1.5 w-full " />
               <CardHeader>
                 <CardTitle className="flex items-center gap-3 text-lg font-bold">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-inner-bevel">
                     <School className="h-5 w-5" />
                   </div>
-                  <span className="bg-clip-text text-transparent bg-gradient-to-br from-foreground to-foreground/70">
+                  <span className="text-primary">
                     School Information
                   </span>
                 </CardTitle>
@@ -802,16 +802,16 @@ export default function SettingsPage() {
         {school && (
           <motion.div variants={staggerContainer} initial="initial" animate="animate">
             <Card className="glass-panel shadow-premium bevel-card border-none overflow-hidden group">
-              <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-600 opacity-80 group-hover:opacity-100 transition-opacity" />
+              <div className="bg-primary h-1.5 w-full  opacity-80 group-hover:opacity-100 transition-opacity" />
               <CardContent className="p-6">
                 <div className="flex flex-col md:flex-row items-center gap-6">
-                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 text-indigo-600 dark:text-indigo-400 ring-1 ring-indigo-500/20 shadow-inner-bevel">
+                  <div className="bg-primary/10 flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl  text-indigo-600 dark:text-indigo-400 ring-1 ring-indigo-500/20 shadow-inner-bevel">
                     <MessageSquare className="h-8 w-8" />
                   </div>
 
                   <div className="flex-1 text-center md:text-left space-y-2">
                     <h3 className="text-xl font-bold tracking-tight">
-                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
+                      <span className="text-primary">
                         Notifications (SMS / WhatsApp)
                       </span>
                     </h3>
@@ -822,7 +822,7 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="flex flex-col w-full md:w-auto gap-3 shrink-0">
-                    <Button asChild className="rounded-xl px-8 h-12 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold shadow-lg shadow-indigo-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                    <Button asChild className="rounded-xl px-8 h-12 bg-primary text-white font-bold shadow-lg shadow-indigo-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]">
                       <Link href="/dashboard/settings/notifications" className="inline-flex items-center gap-2">
                         Configure Now
                         <ArrowRight className="h-5 w-5" />
@@ -840,7 +840,7 @@ export default function SettingsPage() {
         {school && (
           <motion.div variants={fadeInUp} initial="initial" animate="animate" transition={{ delay: 0.1 }}>
             <Card className="glass-panel shadow-premium bevel-card border-white/10 overflow-hidden">
-              <div className="h-1.5 w-full bg-gradient-to-r from-emerald-500/40 via-emerald-500 to-emerald-500/40" />
+              <div className="bg-primary h-1.5 w-full " />
               <CardHeader>
                 <CardTitle className="flex items-center gap-3 text-lg font-bold">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500 shadow-inner-bevel">
@@ -1055,7 +1055,7 @@ export default function SettingsPage() {
         {/* ------------------------------------------------------------------ */}
         <motion.div variants={fadeInUp} initial="initial" animate="animate" transition={{ delay: 0.1 }}>
           <Card className="glass-panel shadow-premium bevel-card border-white/10 overflow-hidden">
-            <div className="h-1.5 w-full bg-gradient-to-r from-blue-500/40 via-blue-500 to-blue-500/40" />
+            <div className="bg-primary h-1.5 w-full " />
             <CardHeader>
               <CardTitle className="flex items-center gap-3 text-lg font-bold">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500 shadow-inner-bevel">
@@ -1150,7 +1150,7 @@ export default function SettingsPage() {
         {/* ------------------------------------------------------------------ */}
         <motion.div variants={fadeInUp} initial="initial" animate="animate" transition={{ delay: 0.15 }}>
           <Card className="glass-panel shadow-premium bevel-card border-white/10 overflow-hidden">
-            <div className="h-1.5 w-full bg-gradient-to-r from-purple-500/40 via-purple-500 to-purple-500/40" />
+            <div className="bg-primary h-1.5 w-full " />
             <CardHeader>
               <CardTitle className="flex items-center gap-3 text-lg font-bold">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/10 text-purple-500 shadow-inner-bevel">
@@ -1230,7 +1230,7 @@ export default function SettingsPage() {
         {/* ------------------------------------------------------------------ */}
         <motion.div variants={fadeInUp} initial="initial" animate="animate" transition={{ delay: 0.2 }}>
           <Card className="glass-panel shadow-premium bevel-card border-white/10 overflow-hidden">
-            <div className="h-1.5 w-full bg-gradient-to-r from-amber-500/40 via-amber-500 to-amber-500/40" />
+            <div className="bg-primary h-1.5 w-full " />
             <CardHeader>
               <CardTitle className="flex items-center gap-3 text-lg font-bold">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500 shadow-inner-bevel">
@@ -1358,7 +1358,7 @@ export default function SettingsPage() {
         {/* ------------------------------------------------------------------ */}
         <motion.div variants={fadeInUp} initial="initial" animate="animate" transition={{ delay: 0.25 }}>
           <Card className="border-2 border-red-300 dark:border-red-900/60 overflow-hidden">
-            <div className="h-1.5 w-full bg-gradient-to-r from-red-500/40 via-red-600 to-red-500/40" />
+            <div className="bg-primary h-1.5 w-full " />
             <CardHeader>
               <CardTitle className="flex items-center gap-3 text-lg font-bold">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-500/10 text-red-600 dark:text-red-400">

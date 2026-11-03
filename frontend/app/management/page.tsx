@@ -121,7 +121,7 @@ export default function ManagementPage() {
       <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-lg font-black text-white"
-            style={{ background: "linear-gradient(135deg, #16a34a, #166534)" }}>S</span>
+            style={{ background: "#15803d" }}>S</span>
           <div className="min-w-0 leading-tight">
             <p className="font-extrabold tracking-tight text-slate-900">Shulepoa</p>
             <p className="text-[11px] font-semibold uppercase tracking-wider text-green-700">Management</p>

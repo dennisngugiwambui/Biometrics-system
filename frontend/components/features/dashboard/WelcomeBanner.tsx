@@ -15,7 +15,7 @@ export interface WelcomeBannerProps {
 export function WelcomeBanner({ schoolCode, adminFirstName, isSetupComplete = true }: WelcomeBannerProps) {
   return (
     <motion.div variants={fadeInUp} initial="hidden" animate="visible">
-      <Card className="overflow-hidden border-none bg-gradient-to-br from-primary via-primary to-indigo-600 text-primary-foreground shadow-lg">
+      <Card className="overflow-hidden border-none bg-primary text-primary-foreground shadow-lg">
         <CardContent className="p-6 sm:p-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-2">

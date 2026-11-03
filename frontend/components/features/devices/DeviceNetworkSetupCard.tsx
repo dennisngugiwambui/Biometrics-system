@@ -61,7 +61,7 @@ export function DeviceNetworkSetupCard({ token, setValue }: DeviceNetworkSetupCa
       animate="visible"
       className="relative overflow-hidden rounded-2xl border border-gray-200/50 dark:border-gray-700/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg shadow-blue-500/5"
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 pointer-events-none" />
+      <div className="absolute inset-0  pointer-events-none" />
       <div className="relative p-5 sm:p-6 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div className="space-y-1">
@@ -70,7 +70,7 @@ export function DeviceNetworkSetupCard({ token, setValue }: DeviceNetworkSetupCa
                 <Network className="h-4 w-4" />
               </div>
               <div>
-                <h3 className="text-base font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+                <h3 className="text-base font-semibold text-primary">
                   Network setup assistant
                 </h3>
                 <p className="text-xs text-muted-foreground max-w-xl">
@@ -199,7 +199,7 @@ export function DeviceNetworkSetupCard({ token, setValue }: DeviceNetworkSetupCa
                   {hints.subnets.map((row) => (
                     <div
                       key={`${row.your_pc_or_server_ip}-${row.suggested_k40_ip}`}
-                      className="rounded-xl border border-gray-200/50 dark:border-gray-700/50 p-4 bg-gradient-to-r from-gray-50/80 to-blue-50/30 dark:from-gray-900/40 dark:to-blue-950/20"
+                      className="rounded-xl border border-gray-200/50 dark:border-gray-700/50 p-4 "
                     >
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
                         <div className="space-y-1">

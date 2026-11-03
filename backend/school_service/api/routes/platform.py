@@ -12,7 +12,7 @@ import string
 from datetime import date, datetime, timedelta, timezone
 from typing import Literal, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import Response
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
@@ -31,7 +31,7 @@ from school_service.services.platform_mail import mail_configured, send_credenti
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/platform", tags=["platform"])
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/platform/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/platform/auth/login", auto_error=False)
 
 PLATFORM_TOKEN_HOURS = 8
 
@@ -54,8 +54,25 @@ def _platform_token(admin: PlatformAdmin) -> str:
     )
 
 
-async def get_platform_admin(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)) -> PlatformAdmin:
+async def get_platform_admin(request: Request, token: Optional[str] = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)) -> PlatformAdmin:
     denied = HTTPException(status.HTTP_401_UNAUTHORIZED, "Sign in to the management console", headers={"WWW-Authenticate": "Bearer"})
+    # The portal's owner console calls these same endpoints with a shared key.
+    # The signed-in owner there is named only for the log.
+    service_key = request.headers.get("x-platform-service-key")
+    if service_key is not None:
+        expected = settings.PLATFORM_SERVICE_KEY or ""
+        if len(expected) < 32 or not secrets.compare_digest(service_key.encode(), expected.encode()):
+            raise denied
+        admin = (await db.execute(
+            select(PlatformAdmin).where(PlatformAdmin.is_active.is_(True)).order_by(PlatformAdmin.id)
+        )).scalars().first()
+        if not admin:
+            raise denied
+        acting = re.sub(r"[^\w@.+-]", "", request.headers.get("x-acting-as", ""))[:120]
+        logger.info("Portal owner console: %s %s by %s", request.method, request.url.path, acting or "unknown")
+        return admin
+    if not token:
+        raise denied
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
     except JWTError:
@@ -335,22 +352,31 @@ def _add_months(day: date, months: int) -> date:
     return date(y, m, min(day.day, last)) - timedelta(days=1)
 
 
-@router.post("/schools/{school_id}/licenses", status_code=201)
-async def issue_license(school_id: int, body: LicenseIssue, admin: PlatformAdmin = Depends(get_platform_admin), db: AsyncSession = Depends(get_db)):
-    school = await _school_or_404(db, school_id)
-    starts = body.starts_on or date.today()
-    year = starts.year
+async def _new_license(
+    db: AsyncSession, admin: PlatformAdmin, school: School, *, plan: str, starts: date, months: int,
+    max_students: Optional[int], max_devices: Optional[int], notes: Optional[str],
+) -> SchoolLicense:
     count = await db.scalar(select(func.count()).select_from(SchoolLicense)) or 0
     lic = SchoolLicense(
-        school_id=school.id, license_key=_key("SPA"), certificate_no=f"SPA/{year}/{count + 1:05d}",
-        plan=body.plan, max_students=body.max_students, max_devices=body.max_devices,
-        starts_on=starts, expires_on=_add_months(starts, body.months), status="active",
-        notes=body.notes, issued_by=admin.id,
+        school_id=school.id, license_key=_key("SPA"), certificate_no=f"SPA/{starts.year}/{count + 1:05d}",
+        plan=plan, max_students=max_students, max_devices=max_devices,
+        starts_on=starts, expires_on=_add_months(starts, months), status="active",
+        notes=notes, issued_by=admin.id,
     )
     db.add(lic)
     await db.commit()
     await db.refresh(lic)
     logger.info("Platform %s issued licence %s to %s", admin.email, lic.certificate_no, school.code)
+    return lic
+
+
+@router.post("/schools/{school_id}/licenses", status_code=201)
+async def issue_license(school_id: int, body: LicenseIssue, admin: PlatformAdmin = Depends(get_platform_admin), db: AsyncSession = Depends(get_db)):
+    school = await _school_or_404(db, school_id)
+    lic = await _new_license(
+        db, admin, school, plan=body.plan, starts=body.starts_on or date.today(), months=body.months,
+        max_students=body.max_students, max_devices=body.max_devices, notes=body.notes,
+    )
     result = {"license": _license_view(lic, date.today())}
     if body.send_credentials:
         result["credentials"] = await _issue_credentials(db, school, lic)
@@ -398,3 +424,43 @@ async def license_certificate(school_id: int, license_id: int, admin: PlatformAd
     name = lic.certificate_no.replace("/", "-")
     return Response(_certificate_pdf(school, lic), media_type="application/pdf",
                     headers={"Content-Disposition": f'attachment; filename="licence-{name}.pdf"'})
+
+
+class LicenseRenew(BaseModel):
+    months: int = Field(default=12, ge=1, le=60)
+    plan: Optional[Literal["trial", "standard", "premium"]] = None
+    notes: Optional[str] = None
+
+
+@router.post("/schools/{school_id}/licenses/renew", status_code=201)
+async def renew_license(school_id: int, body: LicenseRenew, admin: PlatformAdmin = Depends(get_platform_admin), db: AsyncSession = Depends(get_db)):
+    """The next period, straight after the current one. The school keeps its plan, limits and password."""
+    school = await _school_or_404(db, school_id)
+    lics = (await db.execute(
+        select(SchoolLicense).where(SchoolLicense.school_id == school_id, SchoolLicense.status != "revoked")
+    )).scalars().all()
+    if not lics:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "This school has no licence to renew. Grant one first.")
+    last = max(lics, key=lambda l: l.expires_on)
+    today = date.today()
+    starts = last.expires_on + timedelta(days=1) if last.expires_on >= today else today
+    lic = await _new_license(
+        db, admin, school, plan=body.plan or last.plan, starts=starts, months=body.months,
+        max_students=last.max_students, max_devices=last.max_devices, notes=body.notes,
+    )
+    return {"license": _license_view(lic, today), "school": await _school_view(db, school, today)}
+
+
+@router.post("/schools/{school_id}/decline", status_code=204)
+async def decline_application(school_id: int, admin: PlatformAdmin = Depends(get_platform_admin), db: AsyncSession = Depends(get_db)):
+    """Remove a school that registered but was never licensed. Licensed schools cannot be declined."""
+    school = await _school_or_404(db, school_id)
+    held = await db.scalar(select(func.count()).select_from(SchoolLicense).where(SchoolLicense.school_id == school_id))
+    if held:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "This school has held a licence. Suspend or revoke it instead.")
+    school.is_deleted = True
+    for user in (await db.execute(select(User).where(User.school_id == school_id))).scalars().all():
+        user.is_active = False
+        user.is_deleted = True
+    await db.commit()
+    logger.info("Platform %s declined the application from %s", admin.email, school.code)
