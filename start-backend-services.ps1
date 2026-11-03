@@ -5,8 +5,20 @@ Write-Host "Starting Backend Services..." -ForegroundColor Green
 Write-Host "This will open 5 separate terminal windows, one for each service." -ForegroundColor Yellow
 Write-Host ""
 
-$backendPath = "C:\Users\Denno\Desktop\school-biometric-system\backend"
-$pythonPath = "$backendPath\venv\Scripts\python.exe"
+$backendPath = Join-Path $PSScriptRoot "backend"
+
+# Every service reads its settings from backend\.env.
+$envFile = Join-Path $backendPath ".env"
+if (-not (Test-Path $envFile)) {
+    Write-Host "backend\.env is missing. Copy backend\.env.example to backend\.env and fill it in." -ForegroundColor Red
+    exit 1
+}
+foreach ($line in Get-Content $envFile) {
+    if ($line -match '^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$') {
+        Set-Item -Path "Env:$($Matches[1])" -Value $Matches[2].Trim().Trim('"').Trim("'")
+    }
+}
+$pythonPath = "$backendPath\.venv\Scripts\python.exe"
 
 # Start API Gateway (Port 8000)
 Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$backendPath\api_gateway'; & '$pythonPath' -m uvicorn main:app --reload --port 8000"

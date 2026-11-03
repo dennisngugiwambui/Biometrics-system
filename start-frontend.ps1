@@ -3,7 +3,7 @@
 
 Write-Host "Starting Frontend Development Server..." -ForegroundColor Green
 
-$frontendPath = "C:\Users\Denno\Desktop\school-biometric-system\frontend"
+$frontendPath = Join-Path $PSScriptRoot "frontend"
 
 Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$frontendPath'; npm run dev"
 
