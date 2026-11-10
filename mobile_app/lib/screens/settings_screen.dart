@@ -5,7 +5,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 import 'package:school_biometric_mobile/core/auth_provider.dart';
-import 'package:school_biometric_mobile/screens/setup_screen.dart';
+import 'package:school_biometric_mobile/screens/login_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -98,7 +98,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await Provider.of<AuthProvider>(context, listen: false).resetSetup();
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (_) => const SetupScreen()),
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
         (_) => false,
       );
     }
@@ -211,7 +211,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       color: Colors.redAccent,
                       title: 'Logout',
                       subtitle: 'End current session',
-                      onTap: () => auth.logout(),
+                      onTap: () async {
+                        await auth.logout();
+                        if (!context.mounted) return;
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(builder: (_) => const LoginScreen()),
+                          (_) => false,
+                        );
+                      },
                     ),
                   ]),
                 ),

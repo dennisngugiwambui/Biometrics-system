@@ -32,6 +32,21 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     ALGORITHM: str = "HS256"
 
+    # Password reset ("Forgot password?")
+    # The emailed link points at APP_BASE_URL/reset-password and works for this long.
+    APP_BASE_URL: str = "http://localhost:3000"
+    PASSWORD_RESET_EXPIRE_MINUTES: int = 30
+
+    # SMTP for password-reset emails. When SMTP_HOST is empty no email is sent;
+    # with DEBUG=true the reset link is written to the service log instead, so the
+    # flow can still be tested locally.
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 587
+    SMTP_USERNAME: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM_EMAIL: str = ""
+    SMTP_USE_TLS: bool = True
+
     # CORS
     ALLOWED_ORIGINS: List[str] = [
         "http://localhost:3000",
