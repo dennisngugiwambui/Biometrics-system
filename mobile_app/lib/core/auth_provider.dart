@@ -20,6 +20,12 @@ class AuthProvider extends ChangeNotifier {
   Map<String, dynamic>? get teacherData => _teacherData;
   Map<String, dynamic>? get schoolConfig => _schoolConfig;
 
+  /// The school code this device was last connected with, if any.
+  String? get schoolCode => _prefs.getString('school_code');
+
+  /// The server address the user saved, or null if none was ever entered.
+  String? get savedServerUrl => _prefs.getString('server_url');
+
   /// Returns the persisted server base URL, trailing-slash-free.
   String get baseUrl =>
       (_prefs.getString('server_url') ?? 'http://localhost:8000')

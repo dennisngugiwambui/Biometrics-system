@@ -6,12 +6,14 @@
  * Reads the school branding store and:
  * 1. Derives CSS custom property overrides from the chosen colors
  * 2. Injects them as a <style> tag into :root
- * 3. Updates the document title to the school name
+ * 3. Sets the browser-tab title for the current page ("<Page> · <School>")
  * 4. Updates the favicon to the school logo
  */
 
 import { useEffect } from "react"
+import { usePathname } from "next/navigation"
 import { DEFAULT_SCHOOL_COLORS, useSchoolBrandingStore } from "@/lib/store/schoolBrandingStore"
+import { pageTitle } from "./pageTitle"
 
 // ---------------------------------------------------------------------------
 // Color utility helpers
@@ -126,7 +128,8 @@ function buildCssVariables(colors: string[]): string {
 function updateFavicon(dataUrl: string) {
     if (typeof document === "undefined") return
     // Remove all existing icon links
-    const existing = document.querySelectorAll<HTMLLinkElement>("link[rel*='icon']")
+    // Only the tab icons — keep the apple-touch-icon (home-screen) link intact.
+    const existing = document.querySelectorAll<HTMLLinkElement>("link[rel='icon'], link[rel='shortcut icon']")
     existing.forEach((el) => el.parentNode?.removeChild(el))
     // Insert fresh favicon link
     const link = document.createElement("link")
@@ -136,15 +139,20 @@ function updateFavicon(dataUrl: string) {
     document.head.appendChild(link)
 }
 
-/** Reset favicon to default */
+/** Reset favicon to the default School Biometric mark (SVG, with .ico fallback) */
 function resetFavicon() {
     if (typeof document === "undefined") return
-    const existing = document.querySelectorAll<HTMLLinkElement>("link[rel*='icon']")
+    const existing = document.querySelectorAll<HTMLLinkElement>("link[rel='icon'], link[rel='shortcut icon']")
     existing.forEach((el) => el.parentNode?.removeChild(el))
-    const link = document.createElement("link")
-    link.rel = "icon"
-    link.href = "/favicon.ico"
-    document.head.appendChild(link)
+    const svg = document.createElement("link")
+    svg.rel = "icon"
+    svg.type = "image/svg+xml"
+    svg.href = "/favicon.svg"
+    const ico = document.createElement("link")
+    ico.rel = "icon"
+    ico.setAttribute("sizes", "any")
+    ico.href = "/favicon.ico"
+    document.head.append(svg, ico)
 }
 
 // ---------------------------------------------------------------------------
@@ -157,6 +165,7 @@ interface SchoolThemeProviderProps {
 
 export function SchoolThemeProvider({ children }: SchoolThemeProviderProps) {
     const { colors, schoolName, logoDataUrl } = useSchoolBrandingStore()
+    const pathname = usePathname()
 
     // Inject CSS variables whenever colors change
     useEffect(() => {
@@ -174,14 +183,12 @@ export function SchoolThemeProvider({ children }: SchoolThemeProviderProps) {
         styleEl.textContent = !first || first === "#2563eb" || first === DEFAULT_SCHOOL_COLORS[0] ? "" : buildCssVariables(colors)
     }, [colors])
 
-    // Update document title with school name — always set if name is non-empty
+    // Browser-tab title for the current page, e.g. "Attendance · Olkalou School"
     useEffect(() => {
         if (typeof document === "undefined") return
-        const name = schoolName && schoolName !== "SchoolAdmin" ? schoolName : null
-        if (name) {
-            document.title = `${name} – Biometric System`
-        }
-    }, [schoolName])
+        const title = pageTitle(pathname, schoolName)
+        if (title) document.title = title
+    }, [pathname, schoolName])
 
     // Update favicon with school logo — run after mount so DOM is ready
     useEffect(() => {

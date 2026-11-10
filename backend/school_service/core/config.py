@@ -42,6 +42,13 @@ class Settings(BaseSettings):
     # Lets the portal's owner console (portal.shulepoa.co.ke) manage schools and licences.
     PLATFORM_SERVICE_KEY: str = ""
 
+    # Password reset ("Forgot password?")
+    # The emailed link points at APP_BASE_URL/reset-password and works for this long.
+    PASSWORD_RESET_EXPIRE_MINUTES: int = 30
+
+    # SMTP for password-reset emails. When SMTP_HOST is empty no email is sent;
+    # with DEBUG=true the reset link is written to the service log instead, so the
+    # flow can still be tested locally.
     SMTP_HOST: str = ""
     SMTP_PORT: int = 587
     SMTP_USERNAME: str = ""

@@ -415,3 +415,87 @@ async def register(
             detail=error_detail,
         )
 
+
+
+# ── Forgot password ────────────────────────────────────────────────────────
+# See school_service/services/password_reset_service.py for the full algorithm.
+
+from fastapi import BackgroundTasks, Request
+from pydantic import EmailStr, Field
+
+from school_service.services.password_reset_service import (
+    GENERIC_REQUEST_MESSAGE,
+    PasswordResetService,
+    ResetLinkInvalid,
+    ip_limiter,
+    send_reset_email,
+)
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetTokenBody(BaseModel):
+    token: str = Field(..., min_length=10, max_length=2048)
+
+
+class ResetPasswordRequest(ResetTokenBody):
+    new_password: str = Field(..., min_length=1, max_length=200)
+
+
+def _client_ip(request: Request) -> str:
+    forwarded = request.headers.get("x-forwarded-for", "")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
+
+@router.post(
+    "/forgot-password",
+    summary="Email a password reset link",
+    description="Always returns the same message, whether or not the email has an account.",
+)
+async def forgot_password(
+    body: ForgotPasswordRequest,
+    request: Request,
+    background: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+):
+    if not ip_limiter.allow(_client_ip(request)):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many requests. Please wait a few minutes and try again.",
+        )
+    to_send = await PasswordResetService(db).request_reset(body.email)
+    if to_send:
+        # Sent after the response, so timing does not reveal whether the account exists.
+        background.add_task(send_reset_email, *to_send)
+    return {"message": GENERIC_REQUEST_MESSAGE}
+
+
+@router.post(
+    "/reset-password/verify",
+    summary="Check a password reset link",
+    description="Returns the (masked) account email when the link can still be used.",
+)
+async def verify_reset_link(body: ResetTokenBody, db: AsyncSession = Depends(get_db)):
+    try:
+        email = await PasswordResetService(db).check_token(body.token)
+    except ResetLinkInvalid as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    return {"valid": True, "email": email}
+
+
+@router.post(
+    "/reset-password",
+    summary="Set a new password using a reset link",
+)
+async def reset_password(body: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
+    try:
+        await PasswordResetService(db).reset_password(body.token, body.new_password)
+    except ResetLinkInvalid as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
+    return {"message": "Your password has been changed. You can now sign in."}

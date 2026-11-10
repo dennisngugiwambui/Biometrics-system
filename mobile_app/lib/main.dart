@@ -8,7 +8,7 @@ import 'package:school_biometric_mobile/core/api_service.dart';
 import 'package:school_biometric_mobile/core/notification_service.dart';
 import 'package:school_biometric_mobile/screens/login_screen.dart';
 import 'package:school_biometric_mobile/screens/dashboard_screen.dart';
-import 'package:school_biometric_mobile/screens/setup_screen.dart';
+import 'package:school_biometric_mobile/widgets/school_illustration.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -98,54 +98,50 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
     if (!mounted) return;
 
-    if (!auth.isSetup) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const SetupScreen()),
-      );
-    } else if (auth.isAuthenticated) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const DashboardScreen()),
-      );
-    } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-      );
-    }
+    // The app always opens on sign-in unless a session is already saved. The
+    // login screen also connects a fresh device to its school.
+    final Widget next = auth.isSetup && auth.isAuthenticated
+        ? const DashboardScreen()
+        : const LoginScreen();
+    Navigator.pushReplacement(
+      context,
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 400),
+        pageBuilder: (_, __, ___) => next,
+        transitionsBuilder: (_, a, __, child) =>
+            FadeTransition(opacity: a, child: child),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF020617),
+    // Launch splash, in the sign-in colours so the hand-off to login is seamless.
+    return const Scaffold(
+      backgroundColor: AuthColors.g50,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF3b82f6), Color(0xFF6366f1)],
+            SizedBox(
+              width: 72,
+              height: 72,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: AuthColors.g600,
+                  borderRadius: BorderRadius.all(Radius.circular(22)),
+                  boxShadow: [
+                    BoxShadow(color: Color(0x6616A34A), blurRadius: 24, offset: Offset(0, 10)),
+                  ],
                 ),
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF3b82f6).withOpacity(0.4),
-                    blurRadius: 30,
-                    spreadRadius: 4,
-                  )
-                ],
+                child: Icon(Icons.fingerprint_rounded, color: Colors.white, size: 40),
               ),
-              child: const Icon(Icons.school_rounded,
-                  color: Colors.white, size: 48),
             ),
-            const SizedBox(height: 28),
-            const CircularProgressIndicator(
-              color: Color(0xFF3b82f6),
-              strokeWidth: 2,
+            SizedBox(height: 28),
+            SizedBox(
+              width: 22,
+              height: 22,
+              child: CircularProgressIndicator(color: AuthColors.g600, strokeWidth: 2.4),
             ),
           ],
         ),

@@ -74,9 +74,12 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
     # Use bcrypt directly for verification (consistent with hash_password)
     # Bcrypt automatically handles password truncation during verification
+    # hash_password() strips surrounding whitespace before hashing, so do the
+    # same here; otherwise a password typed with a stray space never matches.
+    plain_password = str(plain_password).strip()
     try:
         return bcrypt.checkpw(
-            plain_password.encode('utf-8'),
+            plain_password.encode('utf-8')[:72],
             hashed_password.encode('utf-8')
         )
     except Exception:
@@ -213,3 +216,40 @@ def validate_password_strength(password: str) -> tuple[bool, str]:
     
     return True, ""
 
+
+
+# ── Password reset tokens ──────────────────────────────────────────────────
+#
+# A reset link carries a signed, short-lived JWT (typ="pwd_reset"). Besides the
+# user id it holds a fingerprint of the user's *current* password hash. Once the
+# password changes the fingerprint no longer matches, so every link is single
+# use and any older link dies too — without storing tokens in the database.
+
+def password_fingerprint(hashed_password: str) -> str:
+    """Short, non-reversible fingerprint of a stored password hash."""
+    import hashlib
+    return hashlib.sha256(hashed_password.encode("utf-8")).hexdigest()[:24]
+
+
+def create_password_reset_token(user_id: int, hashed_password: str) -> str:
+    """Create a signed reset token valid for PASSWORD_RESET_EXPIRE_MINUTES."""
+    now = datetime.utcnow()
+    payload = {
+        "sub": str(user_id),
+        "typ": "pwd_reset",
+        "fp": password_fingerprint(hashed_password),
+        "iat": now,
+        "exp": now + timedelta(minutes=settings.PASSWORD_RESET_EXPIRE_MINUTES),
+    }
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+
+
+def decode_password_reset_token(token: str) -> Optional[dict]:
+    """Return the payload of a valid, unexpired reset token, else None."""
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+    except JWTError:
+        return None
+    if payload.get("typ") != "pwd_reset" or not payload.get("sub") or not payload.get("fp"):
+        return None
+    return payload
