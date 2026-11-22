@@ -14,6 +14,7 @@ import {
   RefreshCw, Search, ShieldCheck, Users, X,
 } from "lucide-react"
 import { toast } from "sonner"
+import { confirmDialog } from "@/components/shared/FeedbackDialogs"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import {
@@ -313,7 +314,7 @@ function SchoolPanel({
   }
   const setStatus = (lic: PlatformLicense, status: "active" | "suspended" | "revoked") =>
     run(`${status}-${lic.id}`, async () => {
-      if (status === "revoked" && !window.confirm(`Revoke ${lic.certificate_no}? This cannot be undone.`)) return
+      if (status === "revoked" && !(await confirmDialog({ title: "Revoke this licence?", message: `${lic.certificate_no} stops working at once. This cannot be undone.`, confirmLabel: "Revoke", tone: "danger" }))) return
       onChange(await platformApi.setLicenseStatus(token, school.id, lic.id, status))
       toast.success(`Licence ${status === "active" ? "reinstated" : status}`)
     })
@@ -332,7 +333,7 @@ function SchoolPanel({
             <button className={primaryBtn} onClick={onIssue}><Award className="h-4 w-4" />{school.current_license ? "Renew licence" : "Grant licence"}</button>
             <button className={secondaryBtn} disabled={!school.current_license || busy === "resend"}
               onClick={() => run("resend", async () => {
-                if (!window.confirm(`Reset ${school.admin?.email}'s password and send new sign-in details?`)) return
+                if (!(await confirmDialog({ title: "Resend sign-in details?", message: `A new password is created for ${school.admin?.email} and emailed to them. The old one stops working.`, confirmLabel: "Resend" }))) return
                 onCredentials(await platformApi.resendCredentials(token, school.id))
               })}>
               {busy === "resend" ? <Spinner /> : <KeyRound className="h-4 w-4" />}Resend login

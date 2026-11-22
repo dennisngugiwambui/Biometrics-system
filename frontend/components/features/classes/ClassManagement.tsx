@@ -1,5 +1,7 @@
 "use client"
 
+
+import { OrbitLoader } from "@/components/shared/OrbitLoader"
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -211,7 +213,7 @@ export function ClassManagement() {
   if (isLoading && classes.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        <OrbitLoader size={56} />
       </div>
     )
   }

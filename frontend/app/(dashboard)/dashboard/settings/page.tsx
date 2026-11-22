@@ -1,6 +1,7 @@
 "use client"
 
 import { PageHeader } from "@/components/shared/PageHeader"
+import { toast } from "sonner"
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
@@ -401,11 +402,11 @@ export default function SettingsPage() {
     const file = e.target.files?.[0]
     if (!file) return
     if (!file.type.startsWith("image/")) {
-      alert("Please select a valid image file.")
+      toast.error("Please select a valid image file.")
       return
     }
     if (file.size > 2 * 1024 * 1024) {
-      alert("Image must be smaller than 2 MB.")
+      toast.error("Image must be smaller than 2 MB.")
       return
     }
     const reader = new FileReader()
@@ -425,11 +426,11 @@ export default function SettingsPage() {
     const file = e.target.files?.[0]
     if (!file) return
     if (!file.type.startsWith("image/")) {
-      alert("Please select a valid image file.")
+      toast.error("Please select a valid image file.")
       return
     }
     if (file.size > 4 * 1024 * 1024) {
-      alert("Image must be smaller than 4 MB.")
+      toast.error("Image must be smaller than 4 MB.")
       return
     }
     const reader = new FileReader()
@@ -872,7 +873,7 @@ export default function SettingsPage() {
                       size="icon"
                       onClick={() => {
                         navigator.clipboard.writeText(getApiBaseUrlOrFallback());
-                        alert("Server address copied. Paste it in the mobile app under \"Server Address\" when connecting.");
+                        toast.success("Server address copied. Paste it in the mobile app under \"Server Address\" when connecting.");
                       }}
                     >
                       <Copy className="h-4 w-4" />
@@ -939,7 +940,7 @@ export default function SettingsPage() {
                                     className="h-8 w-8 p-0"
                                     onClick={() => {
                                       navigator.clipboard.writeText(url)
-                                      alert("Copied! Paste this in the mobile app as Server Address.")
+                                      toast.success("Copied! Paste this in the mobile app as Server Address.")
                                     }}
                                   >
                                     <Copy className="h-4 w-4" />
@@ -980,7 +981,7 @@ export default function SettingsPage() {
                           if (res.status === 200) {
                             const blob = await res.blob()
                             if (blob.size < 1000) {
-                              alert("Downloaded file is too small and may be invalid. The app may still be building or the build failed. Try again in a few minutes.")
+                              toast.error("Downloaded file is too small and may be invalid. The app may still be building or the build failed. Try again in a few minutes.")
                               return
                             }
                             const u = URL.createObjectURL(blob)
@@ -993,9 +994,9 @@ export default function SettingsPage() {
                           }
                           const data = await res.json().catch(() => ({}))
                           const msg = data?.detail ?? (res.status === 202 ? "App is being built. Try again in a few minutes." : "Download unavailable.")
-                          alert(msg)
+                          toast.error(msg)
                         } catch {
-                          alert("Could not reach the server. Try again later.")
+                          toast.error("Could not reach the server. Try again later.")
                         }
                       }}
                     >
@@ -1020,7 +1021,7 @@ export default function SettingsPage() {
                         size="icon"
                         onClick={() => {
                           navigator.clipboard.writeText(school.code);
-                          alert("School code copied to clipboard!");
+                          toast.success("School code copied to clipboard!");
                         }}
                       >
                         <Copy className="h-4 w-4" />

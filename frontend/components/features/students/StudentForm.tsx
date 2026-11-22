@@ -1,5 +1,7 @@
 "use client"
 
+
+import { OrbitLoader } from "@/components/shared/OrbitLoader"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
@@ -207,7 +209,7 @@ export function StudentForm({ studentId, onSuccess }: StudentFormProps) {
   if (isFetching) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        <OrbitLoader size={56} />
       </div>
     )
   }

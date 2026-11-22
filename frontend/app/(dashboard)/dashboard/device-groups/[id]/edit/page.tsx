@@ -1,5 +1,7 @@
 "use client"
 
+
+import { OrbitLoader } from "@/components/shared/OrbitLoader"
 import { useState, useEffect } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { motion } from "framer-motion"
@@ -82,7 +84,7 @@ export default function EditDeviceGroupPage() {
       <div className="min-h-screen">
         <div className="relative z-10 container mx-auto px-4 py-8">
           <div className="flex items-center justify-center min-h-[400px]">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            <OrbitLoader size={56} />
           </div>
         </div>
       </div>

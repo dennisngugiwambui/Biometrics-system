@@ -1,5 +1,7 @@
 "use client"
 
+
+import { OrbitLoader } from "@/components/shared/OrbitLoader"
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
@@ -265,7 +267,7 @@ function StudentRosterSessionPageInner() {
           <div className="px-2 sm:px-4 pb-4 max-h-[min(70vh,1200px)] overflow-auto print:max-h-none">
             {loading ? (
               <div className="flex justify-center py-20">
-                <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
+                <OrbitLoader size={56} />
               </div>
             ) : kind === "on-site" ? (
               <Table>
@@ -335,7 +337,7 @@ export default function StudentRosterSessionPage() {
     <Suspense
       fallback={
         <div className="min-h-[40vh] flex items-center justify-center">
-          <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
+          <OrbitLoader size={56} />
         </div>
       }
     >

@@ -17,7 +17,7 @@ from fastapi.responses import Response
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from pydantic import BaseModel, EmailStr, Field
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from school_service.core.config import settings
@@ -203,17 +203,64 @@ async def overview(admin: PlatformAdmin = Depends(get_platform_admin), db: Async
     schools = (await db.execute(select(School).where(School.is_deleted.is_(False)).order_by(School.name))).scalars().all()
     views = [await _school_view(db, s, today) for s in schools]
     soon = today + timedelta(days=30)
+    totals = {
+        "schools": len(views),
+        "licensed": sum(1 for v in views if v["license_state"] == "active"),
+        "unlicensed": sum(1 for v in views if v["license_state"] in ("unlicensed", "expired", "revoked", "suspended")),
+        "expiring_30d": sum(1 for v in views if v["current_license"] and date.fromisoformat(v["current_license"]["expires_on"]) <= soon),
+        "students": sum(v["students"] for v in views),
+    }
+    totals.update(await _hardware_counts(db))
+    security = _security_concerns(views, totals, admin, soon)
     return {
         "mail_configured": mail_configured(),
-        "totals": {
-            "schools": len(views),
-            "licensed": sum(1 for v in views if v["license_state"] == "active"),
-            "unlicensed": sum(1 for v in views if v["license_state"] in ("unlicensed", "expired", "revoked", "suspended")),
-            "expiring_30d": sum(1 for v in views if v["current_license"] and date.fromisoformat(v["current_license"]["expires_on"]) <= soon),
-            "students": sum(v["students"] for v in views),
-        },
+        "totals": totals,
+        "security": security,
         "schools": views,
     }
+
+
+async def _count(db: AsyncSession, sql: str) -> Optional[int]:
+    """One number, or None when the query cannot run: a missing table must not blank the console."""
+    try:
+        return int((await db.execute(text(sql))).scalar() or 0)
+    except Exception:
+        await db.rollback()
+        return None
+
+
+async def _hardware_counts(db: AsyncSession) -> dict:
+    return {
+        "teachers": await _count(db, "SELECT count(*) FROM teachers WHERE is_deleted = false"),
+        "devices": await _count(db, "SELECT count(*) FROM devices WHERE is_deleted = false"),
+        "devices_online": await _count(db, "SELECT count(*) FROM devices WHERE is_deleted = false AND status::text = 'online'"),
+        "devices_silent_24h": await _count(
+            db, "SELECT count(*) FROM devices WHERE is_deleted = false AND (last_seen IS NULL OR last_seen < now() - interval '24 hours')"),
+        "events_today": await _count(db, "SELECT count(*) FROM attendance_records WHERE occurred_at >= date_trunc('day', now())"),
+    }
+
+
+def _security_concerns(views: list, totals: dict, admin: PlatformAdmin, soon: date) -> list:
+    out = []
+    def add(level, title, detail=""):
+        out.append({"level": level, "title": title, "detail": detail})
+    names = lambda vs: ", ".join(v["name"] for v in vs[:3])
+    expired = [v for v in views if v["license_state"] in ("expired", "revoked", "suspended") and v["admin"] and v["admin"]["is_active"]]
+    if expired:
+        add("danger", f"{len(expired)} school(s) have a switched-on admin but no valid licence", names(expired))
+    ending = [v for v in views if v["current_license"] and date.fromisoformat(v["current_license"]["expires_on"]) <= soon]
+    if ending:
+        add("warning", f"{len(ending)} licence(s) end within 30 days", names(ending))
+    waiting = [v for v in views if v["license_state"] == "unlicensed" and v["admin"] and not v["admin"]["is_active"]]
+    if waiting:
+        add("info", f"{len(waiting)} school(s) registered and waiting for a licence", names(waiting))
+    if totals.get("devices_silent_24h"):
+        add("warning", f"{totals['devices_silent_24h']} device(s) have not been heard from in 24 hours", "Offline devices miss taps: check power and network.")
+    if not mail_configured():
+        add("warning", "Outgoing email is not set up", "Licence certificates and passwords cannot be emailed until it is.")
+    if admin.must_change_password:
+        add("danger", "The owner account still has its starting password", "Change it under Settings.")
+    return out
 
 
 class SchoolCreate(BaseModel):

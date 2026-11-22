@@ -1,5 +1,7 @@
 "use client"
 
+
+import { OrbitLoader } from "@/components/shared/OrbitLoader"
 import { useState, useEffect, useCallback, useMemo } from "react"
 import { motion } from "framer-motion"
 import { format } from "date-fns"
@@ -395,7 +397,7 @@ export default function PresencePage() {
                 {liveLoading ? (
                   <div className="absolute inset-0 flex items-center justify-center bg-white z-20">
                     <div className="flex flex-col items-center gap-4">
-                      <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
+                      <OrbitLoader size={56} />
                       <p className="text-sm font-bold text-blue-600 animate-pulse">Loading attendance…</p>
                     </div>
                   </div>

@@ -1,5 +1,7 @@
 "use client"
 
+
+import { OrbitLoader } from "@/components/shared/OrbitLoader"
 import { useState, useEffect, useMemo, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
@@ -551,7 +553,7 @@ export default function ReportsPage() {
                 />
              ) : (
                 <div className="flex flex-col items-center gap-4">
-                   <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                   <OrbitLoader size={56} />
                    <p className="text-sm font-semibold text-slate-500">Preparing PDF…</p>
                 </div>
              )}

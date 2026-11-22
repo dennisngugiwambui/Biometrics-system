@@ -1,5 +1,7 @@
 "use client"
 
+
+import { OrbitLoader } from "@/components/shared/OrbitLoader"
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { PageHeader } from "@/components/shared/PageHeader"
@@ -418,7 +420,7 @@ export default function HelpPage() {
 
             {loadingTickets && (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+                <OrbitLoader size={56} />
               </div>
             )}
 

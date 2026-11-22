@@ -16,6 +16,7 @@ import { getMySchool } from "@/lib/api/schools"
 import { getUnreadCount } from "@/lib/api/notifications"
 import { endAllSessions, pingSession } from "@/lib/api/auth"
 import { FullPageLoader, PageLoader } from "@/components/shared/OrbitLoader"
+import { confirmDialog } from "@/components/shared/FeedbackDialogs"
 import Loading from "./dashboard/loading"
 import { NavigationProgress } from "@/components/shared/NavigationProgress"
 
@@ -130,6 +131,12 @@ export default function DashboardLayout({
 
   const [signingOut, setSigningOut] = useState(false)
   const handleLogout = async () => {
+    const ok = await confirmDialog({
+      title: "Sign out?",
+      message: "This signs this account out on every device where it is open.",
+      confirmLabel: "Sign out",
+    })
+    if (!ok) return
     setSigningOut(true)
     // Ends the session on every device, not just this one.
     try { await endAllSessions() } catch { /* offline: still sign out here */ }

@@ -11,6 +11,17 @@ from api_gateway.core.config import settings
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    """Provide a DB session for direct (non-proxy) gateway routes like support tickets."""
+    from school_service.core.database import AsyncSessionLocal
+    async with AsyncSessionLocal() as session:
+        try:
+            yield session
+        except Exception:
+            await session.rollback()
+            raise
+
+
 async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)) -> UserResponse:
     """
     Dependency to get current authenticated user from JWT token.
@@ -61,14 +72,3 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
         )
     except JWTError:
         raise credentials_exception
-
-
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    """Provide a DB session for direct (non-proxy) gateway routes like support tickets."""
-    from school_service.core.database import AsyncSessionLocal
-    async with AsyncSessionLocal() as session:
-        try:
-            yield session
-        except Exception:
-            await session.rollback()
-            raise
