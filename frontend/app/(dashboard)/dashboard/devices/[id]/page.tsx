@@ -419,7 +419,7 @@ export default function DeviceDetailPage() {
         variants={pageTransition}
         initial="initial"
         animate="animate"
-        className="flex-1 "
+        className="flex-1"
       >
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400/20 rounded-full blur-3xl animate-pulse" />
@@ -429,7 +429,7 @@ export default function DeviceDetailPage() {
         <div className="relative z-10 container mx-auto px-4 py-8 max-w-5xl">
           <div className="space-y-6">
             <Skeleton className="h-10 w-32" />
-            <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+            <Card className="bg-white">
               <CardContent className="p-6 space-y-4">
                 <Skeleton className="h-8 w-48" />
                 <Skeleton className="h-4 w-full" />
@@ -448,7 +448,7 @@ export default function DeviceDetailPage() {
         variants={pageTransition}
         initial="initial"
         animate="animate"
-        className="flex-1 "
+        className="flex-1"
       >
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400/20 rounded-full blur-3xl animate-pulse" />
@@ -481,7 +481,7 @@ export default function DeviceDetailPage() {
       variants={pageTransition}
       initial="initial"
       animate="animate"
-      className="flex-1 "
+      className="flex-1"
     >
       {/* Animated background shapes */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -509,7 +509,7 @@ export default function DeviceDetailPage() {
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl md:text-4xl font-bold text-primary">
+                <h1 className="text-xl sm:text-[22px] font-bold leading-tight tracking-tight text-slate-900">
                   {device.name}
                 </h1>
                 {wsConnected && (
@@ -587,7 +587,7 @@ export default function DeviceDetailPage() {
             variants={fadeInUp}
             transition={{ delay: 0.1 }}
           >
-            <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50">
+            <Card className="bg-white border border-gray-200/50 dark:border-gray-700/50">
               <CardHeader>
                 <CardTitle className="text-blue-700 dark:text-blue-400 flex items-center gap-2">
                   <Info className="h-5 w-5" />
@@ -686,7 +686,7 @@ export default function DeviceDetailPage() {
             variants={fadeInUp}
             transition={{ delay: 0.2 }}
           >
-            <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50">
+            <Card className="bg-white border border-gray-200/50 dark:border-gray-700/50">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-purple-700 dark:text-purple-400 flex items-center gap-2">
@@ -869,7 +869,7 @@ export default function DeviceDetailPage() {
               transition={{ delay: 0.3 }}
               className="md:col-span-2"
             >
-              <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50">
+              <Card className="bg-white border border-gray-200/50 dark:border-gray-700/50">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-indigo-700 dark:text-indigo-400 flex items-center gap-2">
@@ -947,7 +947,7 @@ export default function DeviceDetailPage() {
             transition={{ delay: 0.35 }}
             className="md:col-span-2"
           >
-            <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-red-200/40 dark:border-red-900/40 shadow-lg">
+            <Card className="bg-white border border-red-200/40 dark:border-red-900/40 shadow-[var(--shadow-card)]">
               <CardHeader>
                 <CardTitle className="text-red-600 dark:text-red-400 flex items-center gap-2">
                   <Database className="h-5 w-5" />

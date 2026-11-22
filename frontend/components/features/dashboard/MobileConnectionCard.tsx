@@ -51,7 +51,7 @@ export function MobileConnectionCard() {
 
             <CardContent className="space-y-4">
                 <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-200">
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Open on the phone</p>
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-[0.08em] mb-2">Open on the phone</p>
                     <div className="flex items-center justify-between gap-3">
                         <code className="min-w-0 truncate text-sm font-bold text-green-700 dark:text-green-400 select-all">
                             {origin || "…"}

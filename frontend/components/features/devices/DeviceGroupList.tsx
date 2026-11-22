@@ -83,7 +83,7 @@ export function DeviceGroupList({
 
       {/* Loading State */}
       {isLoading && (
-        <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50">
+        <Card className="bg-white border border-gray-200/50 dark:border-gray-700/50">
           <div className="p-6">
             <div className="space-y-4">
               {[1, 2, 3].map((i) => (
@@ -100,7 +100,7 @@ export function DeviceGroupList({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50">
+          <Card className="bg-white border border-gray-200/50 dark:border-gray-700/50">
             <div className="p-12 text-center">
               <Inbox className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-semibold mb-2">No device groups yet</h3>
@@ -126,7 +126,7 @@ export function DeviceGroupList({
           initial="hidden"
           animate="visible"
         >
-          <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50">
+          <Card className="bg-white border border-gray-200/50 dark:border-gray-700/50">
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -161,7 +161,7 @@ export function DeviceGroupList({
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
-          <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50">
+          <Card className="bg-white border border-gray-200/50 dark:border-gray-700/50">
             <div className="p-4">
               <DeviceListPagination
                 page={page}

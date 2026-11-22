@@ -268,7 +268,7 @@ export function EnrollmentCapture({
       </div>
 
       {/* Enrollment Info Card */}
-      <div className="w-full max-w-md p-4 rounded-xl  border border-gray-200/50 dark:border-gray-700/50">
+      <div className="w-full max-w-md p-4 rounded-xl border border-gray-200/50 dark:border-gray-700/50">
         <div className="grid grid-cols-3 gap-4 text-sm">
           <div>
             <p className="text-gray-600 dark:text-gray-400">{personLabel ?? "Student"}</p>

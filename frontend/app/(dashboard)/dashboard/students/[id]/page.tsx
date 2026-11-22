@@ -175,7 +175,7 @@ export default function StudentDetailPage() {
       animate={{ opacity: 1 }}
       className="relative flex-1 overflow-hidden"
     >
-      <div className="pointer-events-none absolute inset-0 " />
+      <div className="pointer-events-none absolute inset-0" />
       <div className="pointer-events-none absolute -right-24 top-20 h-72 w-72 rounded-full bg-blue-400/20 blur-3xl dark:bg-blue-400/10" />
       <div className="pointer-events-none absolute -left-24 bottom-20 h-72 w-72 rounded-full bg-purple-400/20 blur-3xl dark:bg-purple-400/10" />
 
@@ -196,7 +196,7 @@ export default function StudentDetailPage() {
           initial="hidden"
           animate="visible"
           transition={{ delay: 0.05 }}
-          className="rounded-2xl border border-gray-200/50 bg-white/80 p-4 shadow-lg backdrop-blur-sm dark:border-gray-700/50 dark:bg-gray-800/80"
+          className="rounded-2xl border border-gray-200/50 bg-white p-4 shadow-[var(--shadow-card)] dark:border-gray-700/50"
         >
           <p className="mb-3 text-xs text-muted-foreground sm:hidden">Actions</p>
           <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
@@ -228,10 +228,10 @@ export default function StudentDetailPage() {
         </motion.div>
 
         <motion.div variants={fadeInUp} initial="hidden" animate="visible" transition={{ delay: 0.1 }}>
-          <Card className="overflow-hidden rounded-2xl border border-gray-200/50 bg-white/80 shadow-lg backdrop-blur-sm dark:border-gray-700/50 dark:bg-gray-800/80">
+          <Card className="overflow-hidden rounded-2xl border border-gray-200/50 bg-white shadow-[var(--shadow-card)] dark:border-gray-700/50">
             <CardHeader className="space-y-6 border-b border-gray-200/50 p-6 dark:border-gray-700/50 sm:p-8">
               <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
-                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-primary text-2xl font-bold text-white shadow-lg shadow-blue-500/20 sm:h-24 sm:w-24 sm:text-3xl">
+                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-primary text-2xl font-bold text-white shadow-[var(--shadow-card)] sm:h-24 sm:w-24 sm:text-3xl">
                   {student.first_name[0]}
                   {student.last_name[0]}
                 </div>

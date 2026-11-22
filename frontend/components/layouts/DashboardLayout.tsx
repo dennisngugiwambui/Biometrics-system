@@ -35,7 +35,7 @@ export function DashboardLayout({
   return (
     <TooltipProvider>
       <SidebarProvider defaultOpen={true}>
-        <div className="flex min-h-screen w-full ">
+        <div className="flex min-h-screen w-full">
           <DashboardSidebar
             adminName={adminFullName}
             adminEmail={user.email}

@@ -239,7 +239,7 @@ export function ClassManagement() {
           animate="visible"
           variants={fadeInUp}
         >
-          <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50">
+          <Card className="bg-white border border-gray-200/50 dark:border-gray-700/50">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-primary">
                 Classes
@@ -274,7 +274,7 @@ export function ClassManagement() {
                         className={`p-4 rounded-lg border cursor-pointer transition-all ${
                           selectedClassId === classItem.id
                             ? "bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-700"
-                            : "bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700"
+                            : "bg-gray-50  border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700"
                         }`}
                         onClick={() => setSelectedClassId(classItem.id)}
                       >
@@ -330,7 +330,7 @@ export function ClassManagement() {
           variants={fadeInUp}
           transition={{ delay: 0.1 }}
         >
-          <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50">
+          <Card className="bg-white border border-gray-200/50 dark:border-gray-700/50">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle className="text-primary">
@@ -374,7 +374,7 @@ export function ClassManagement() {
                         variants={cardHover}
                         initial="rest"
                         whileHover="hover"
-                        className="p-4 rounded-lg border bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all"
+                        className="p-4 rounded-lg border bg-gray-50 border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all"
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex-1">

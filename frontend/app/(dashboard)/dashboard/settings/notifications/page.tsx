@@ -53,7 +53,7 @@ function PhonePreview({ content, title, schoolName }: { content: string; title: 
     .replace(/{{percentage}}/g, "100")
 
   return (
-    <div className="relative mx-auto h-[440px] w-[220px] rounded-2xl border-[6px] border-gray-900 bg-gray-900 shadow-xl overflow-hidden ring-4 ring-offset-2 ring-blue-500/10">
+    <div className="relative mx-auto h-[440px] w-[220px] rounded-2xl border-[6px] border-gray-900 bg-gray-900 shadow-[var(--shadow-card-md)] overflow-hidden ring-4 ring-offset-2 ring-blue-500/10">
       {/* Notch */}
       <div className="absolute top-0 left-1/2 h-5 w-24 -translate-x-1/2 rounded-b-xl bg-gray-900 z-20" />
 
@@ -241,7 +241,7 @@ export default function SettingsNotificationsPage() {
     <div className="relative min-h-screen pb-20">
       {/* Background Decor */}
       <div className="fixed inset-0 pointer-events-none -z-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-50/50 via-white to-purple-50/50 dark:from-slate-900 dark:via-slate-950 dark:to-indigo-950/20" />
-      <div className="fixed top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[800px] h-[800px] rounded-full  blur-[120px] pointer-events-none -z-10" />
+      <div className="fixed top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[800px] h-[800px] rounded-full blur-[120px] pointer-events-none -z-10" />
 
       <motion.div
         className="space-y-8 p-4 sm:p-6 lg:p-8"
@@ -254,12 +254,12 @@ export default function SettingsNotificationsPage() {
           <div className="flex items-center gap-4">
             <Link
               href="/dashboard/settings"
-              className="group flex h-10 w-10 items-center justify-center rounded-xl border border-white/20 bg-white/40 shadow-sm backdrop-blur-md transition-all hover:bg-white/60 hover:scale-105 active:scale-95 dark:bg-slate-800/40"
+              className="group flex h-10 w-10 items-center justify-center rounded-xl border border-white/20 bg-white shadow-sm transition-all hover:bg-white hover:scale-105 active:scale-95 dark:bg-slate-800/40"
             >
               <ArrowLeft className="h-4 w-4 text-indigo-600" />
             </Link>
             <div>
-              <h1 className="text-xl font-bold tracking-tight">
+              <h1 className="text-xl sm:text-[22px] font-bold leading-tight tracking-tight text-slate-900">
                 <span className="text-slate-900 dark:text-white">
                   Communication Settings
                 </span>
@@ -285,13 +285,13 @@ export default function SettingsNotificationsPage() {
               className="overflow-hidden"
             >
               {error && (
-                <div className="flex items-center gap-3 rounded-2xl border border-red-200/50 bg-red-50/50 p-4 text-sm text-red-700 backdrop-blur-sm dark:border-red-800/50 dark:bg-red-950/20 dark:text-red-300 mb-4">
+                <div className="flex items-center gap-3 rounded-2xl border border-red-200/50 bg-red-50/50 p-4 text-sm text-red-700 dark:border-red-800/50 dark:bg-red-950/20 dark:text-red-300 mb-4">
                   <ShieldCheck className="h-5 w-5 text-red-500" />
                   {error}
                 </div>
               )}
               {success && (
-                <div className="flex items-center gap-3 rounded-2xl border border-emerald-200/50 bg-emerald-50/50 p-4 text-sm text-emerald-700 backdrop-blur-sm dark:border-emerald-800/50 dark:bg-emerald-950/20 dark:text-emerald-300 mb-4 font-semibold">
+                <div className="flex items-center gap-3 rounded-2xl border border-emerald-200/50 bg-emerald-50/50 p-4 text-sm text-emerald-700 dark:border-emerald-800/50 dark:bg-emerald-950/20 dark:text-emerald-300 mb-4 font-semibold">
                   <CheckCircle2 className="h-5 w-5 text-emerald-500" />
                   Configurations pushed successfully!
                 </div>
@@ -306,7 +306,7 @@ export default function SettingsNotificationsPage() {
           {/* Left Column: Config (Api & environment) - span 4 / 5 */}
           <div className="lg:col-span-5 space-y-8">
             <motion.div variants={staggerItem}>
-              <Card className="glass-panel overflow-hidden border-white/10 shadow-sm transition-shadow hover:shadow-md">
+              <Card className="glass-panel overflow-hidden border-white/10 shadow-sm transition-shadow hover:shadow-[var(--shadow-card)]">
                 <CardHeader className="p-5">
                   <CardTitle className="flex items-center gap-3 text-base font-bold">
                     <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 dark:bg-slate-900 text-indigo-600">
@@ -322,7 +322,7 @@ export default function SettingsNotificationsPage() {
                       value={(ns.parent_delivery as string) || "sms"}
                       onValueChange={(v) => updateNs("parent_delivery", v as "sms" | "whatsapp" | "both")}
                     >
-                      <SelectTrigger className="h-10 rounded-xl border-slate-200/60 bg-white/50 dark:bg-slate-900/50 text-xs">
+                      <SelectTrigger className="h-10 rounded-xl border-slate-200/60 bg-white dark:bg-slate-900/50 text-xs">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl border-slate-200/60">
@@ -523,7 +523,7 @@ export default function SettingsNotificationsPage() {
                     <Button
                       onClick={handleSave}
                       disabled={saving}
-                      className="w-full rounded-xl h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-xl shadow-indigo-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                      className="w-full rounded-xl h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-[var(--shadow-card-md)] transition-all hover:scale-[1.02] active:scale-[0.98]"
                     >
                       {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                       Save All Settings
@@ -538,7 +538,7 @@ export default function SettingsNotificationsPage() {
           <div className="lg:col-span-7 space-y-8">
             <motion.div variants={staggerItem} className="h-full">
               <Card className="glass-panel h-full border-white/20 shadow-premium flex flex-col overflow-hidden">
-                <div className="bg-primary h-1.5 w-full " />
+                <div className="bg-primary h-1.5 w-full" />
                 <CardHeader className="flex flex-row items-center justify-between p-5 pb-2">
                   <div className="space-y-0.5">
                     <CardTitle className="text-base font-bold">Content Architect</CardTitle>
@@ -569,7 +569,7 @@ export default function SettingsNotificationsPage() {
                           key={tab.id}
                           onClick={() => setActiveTemplate(tab.id)}
                           className={`px-4 py-1.5 rounded-lg text-[10px] font-bold transition-all ${activeTemplate === tab.id
-                            ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/20"
+                            ? "bg-indigo-600 text-white shadow-[var(--shadow-card)] "
                             : "bg-slate-100/50 hover:bg-slate-200/50 text-slate-600 border border-slate-200/50 dark:bg-slate-900/40 dark:text-slate-300 dark:border-white/5"
                             }`}
                         >
@@ -592,7 +592,7 @@ export default function SettingsNotificationsPage() {
                           })
                         }
                         placeholder={PLACEHOLDERS[activeTemplate]}
-                        className="min-h-[160px] rounded-2xl border-slate-200/60 bg-white/50 dark:bg-slate-950/50 p-5 text-xs leading-relaxed focus:bg-white dark:focus:bg-slate-950 resize-none shadow-sm"
+                        className="min-h-[160px] rounded-2xl border-slate-200/60 bg-white dark:bg-slate-950/50 p-5 text-xs leading-relaxed focus:bg-white dark:focus:bg-slate-950 resize-none shadow-sm"
                       />
 
                       <div className="flex flex-wrap gap-1.5">

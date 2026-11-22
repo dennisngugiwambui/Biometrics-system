@@ -195,7 +195,7 @@ export default function DashboardLayout({
                 <div className="flex min-h-96 w-full items-center justify-center">
                   <div className="flex flex-col items-center gap-4">
                     <div className="h-10 w-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest animate-pulse">Loading</p>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.08em] animate-pulse">Loading</p>
                   </div>
                 </div>
               }>

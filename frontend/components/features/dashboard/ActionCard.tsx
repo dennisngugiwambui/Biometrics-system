@@ -33,7 +33,7 @@ export function ActionCard({
       transition={{ delay: index * 0.1 }}
     >
       <motion.div variants={cardHover} initial="rest" whileHover="hover" animate="rest">
-        <Card className="h-full border-none bg-card shadow-sm transition-shadow hover:shadow-md">
+        <Card className="h-full border-none bg-card shadow-sm transition-shadow hover:shadow-[var(--shadow-card)]">
           <CardContent className="flex h-full flex-col p-6">
             <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-xl ${colorClass}`}>
               <Icon className="h-6 w-6" />

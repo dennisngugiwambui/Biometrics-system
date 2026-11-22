@@ -92,7 +92,7 @@ function NotificationDropdown({ token, count }: { token: string; count: number }
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" className="w-80 rounded-xl p-0 shadow-xl border border-border" sideOffset={8}>
+      <DropdownMenuContent align="end" className="w-80 rounded-xl p-0 shadow-[var(--shadow-card-md)] border border-border" sideOffset={8}>
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-border">
           <div className="flex items-center gap-2">
@@ -253,7 +253,7 @@ export function DashboardHeader({
               </button>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent className="w-56 rounded-xl shadow-xl border border-border" align="end" sideOffset={6}>
+            <DropdownMenuContent className="w-56 rounded-xl shadow-[var(--shadow-card-md)] border border-border" align="end" sideOffset={6}>
               <div className="flex items-center gap-3 px-3 py-2.5 border-b border-border">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={adminAvatar || undefined} />

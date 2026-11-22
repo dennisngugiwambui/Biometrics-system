@@ -92,7 +92,7 @@ function SyncLedgerPagination({
 
   return (
     <div
-      className={`flex flex-col gap-3 rounded-2xl border ${barBorder} bg-white/80 p-3 backdrop-blur-sm dark:bg-gray-900/60 sm:flex-row sm:items-center sm:justify-between`}
+      className={`flex flex-col gap-3 rounded-2xl border ${barBorder} bg-white p-3   sm:flex-row sm:items-center sm:justify-between`}
     >
       <p className="text-center text-xs text-muted-foreground sm:text-left">
         <span className="font-semibold text-gray-900 dark:text-gray-100">
@@ -244,12 +244,12 @@ function BulkUploadModal({
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
+        className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 sm:p-6"
         onClick={onClose}
       >
         <motion.div
           initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }}
-          className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden border border-gray-200 dark:border-gray-800"
+          className="bg-white dark:bg-gray-900 rounded-2xl shadow-[var(--shadow-card-md)] w-full max-w-xl overflow-hidden border border-gray-200 dark:border-gray-800"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Progress Bar Header - real upload progress */}
@@ -259,7 +259,7 @@ function BulkUploadModal({
                 initial={false}
                 animate={{ width: `${uploadProgress}%` }}
                 transition={{ duration: 0.2 }}
-                className="bg-primary h-full "
+                className="bg-primary h-full"
               />
             )}
             {result && !isUploading && (
@@ -282,11 +282,11 @@ function BulkUploadModal({
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
                   <div className="p-3 rounded-2xl bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30">
-                    <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-1">Required</p>
+                    <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-[0.08em] mb-1">Required</p>
                     <p className="text-xs font-semibold leading-relaxed">Admission #, Name</p>
                   </div>
                   <div className="p-3 rounded-2xl bg-gray-50/50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800">
-                    <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">Optional</p>
+                    <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.08em] mb-1">Optional</p>
                     <p className="text-xs font-semibold leading-relaxed">Parent Email, Phone</p>
                   </div>
                 </div>
@@ -296,7 +296,7 @@ function BulkUploadModal({
                   onDragLeave={() => setDragOver(false)}
                   onDrop={(e) => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files?.[0]) setFile(e.dataTransfer.files[0]) }}
                   onClick={() => !file && document.getElementById("student-csv")?.click()}
-                  className={`relative border-2 border-dashed rounded-3xl p-10 text-center transition-all duration-300 group
+                  className={`relative border-2 border-dashed rounded-2xl p-10 text-center transition-all duration-300 group
                     ${dragOver ? "border-blue-500 bg-blue-50/50 dark:bg-blue-900/10 scale-[0.99] shadow-inner" : "border-gray-200 dark:border-gray-800 hover:border-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800/50"}
                     ${file ? "border-green-500/50 bg-green-50/10 dark:bg-green-900/5" : ""}
                   `}
@@ -338,7 +338,7 @@ function BulkUploadModal({
                     className="absolute inset-0 border-4 border-blue-600 border-t-transparent rounded-full"
                   />
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-sm font-extrabold tabular-nums text-blue-700 dark:text-blue-300">
+                    <span className="text-sm font-bold tabular-nums text-blue-700 dark:text-blue-300">
                       {uploadProgress}%
                     </span>
                   </div>
@@ -348,7 +348,7 @@ function BulkUploadModal({
               </div>
             ) : result && (
               <div className="space-y-4">
-                <div className={`rounded-3xl p-6 border-2 ${result.errors.length > 0 ? "bg-amber-50/50 border-amber-200 dark:bg-amber-900/10 dark:border-amber-900/30" : "bg-green-50/50 border-green-200 dark:bg-green-900/10 dark:border-green-900/30"}`}>
+                <div className={`rounded-2xl p-6 border-2 ${result.errors.length > 0 ? "bg-amber-50/50 border-amber-200 dark:bg-amber-900/10 dark:border-amber-900/30" : "bg-green-50/50 border-green-200 dark:bg-green-900/10 dark:border-green-900/30"}`}>
                   <div className="flex items-start gap-4">
                     <div className={`p-3 rounded-2xl shadow-sm ${result.errors.length > 0 ? "bg-amber-500 text-white" : "bg-green-500 text-white"}`}>
                       {result.errors.length > 0 ? <AlertCircle className="size-6" /> : <CheckCircle2 className="size-6" />}
@@ -375,8 +375,8 @@ function BulkUploadModal({
                   </div>
 
                   {result.errors.length > 0 && (
-                    <div className="mt-5 bg-white/50 dark:bg-black/20 rounded-2xl p-4 border border-black/5 dark:border-white/5">
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Error Logs</p>
+                    <div className="mt-5 bg-white dark:bg-black/20 rounded-2xl p-4 border border-black/5 dark:border-white/5">
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.08em] mb-2">Error Logs</p>
                       <div className="max-h-40 overflow-y-auto pr-2 custom-scrollbar">
                         {result.errors.map((err, i) => (
                           <div key={i} className="flex gap-2 py-1.5 border-b border-black/5 dark:border-white/5 last:border-0">
@@ -406,7 +406,7 @@ function BulkUploadModal({
               <button
                 onClick={handleUpload}
                 disabled={!file}
-                className="flex-1 px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl shadow-xl shadow-blue-500/20 disabled:opacity-50 disabled:shadow-none transition-all flex items-center justify-center gap-2"
+                className="flex-1 px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl shadow-[var(--shadow-card-md)] disabled:opacity-50 disabled:shadow-none transition-all flex items-center justify-center gap-2"
               >
                 <Upload className="size-5" />
                 Upload Student Roster
@@ -732,8 +732,8 @@ export default function StudentsPage() {
       </div>
 
       <Dialog open={syncModalOpen} onOpenChange={setSyncModalOpen}>
-        <DialogContent className="flex h-[min(92dvh,920px)] max-h-[92dvh] w-full max-w-none flex-col gap-0 overflow-hidden rounded-none border-gray-200/50 bg-white/98 p-0 shadow-[0_0_50px_-12px_rgba(0,0,0,0.25)] backdrop-blur-2xl dark:border-gray-800/50 dark:bg-gray-950/98 sm:h-[min(92dvh,920px)] sm:max-h-[92dvh] sm:w-[min(96vw,1680px)] sm:max-w-[min(96vw,1680px)] sm:rounded-2xl max-sm:h-[100dvh] max-sm:max-h-[100dvh]">
-          <div className="bg-primary absolute top-0 left-0 w-full h-1.5 sm:h-2 " />
+        <DialogContent className="flex h-[min(92dvh,920px)] max-h-[92dvh] w-full max-w-none flex-col gap-0 overflow-hidden rounded-none border-gray-200/50 bg-white/98 p-0 shadow-[0_0_50px_-12px_rgba(0,0,0,0.25)] dark:border-gray-800/50 dark:bg-gray-950/98 sm:h-[min(92dvh,920px)] sm:max-h-[92dvh] sm:w-[min(96vw,1680px)] sm:max-w-[min(96vw,1680px)] sm:rounded-2xl max-sm:h-[100dvh] max-sm:max-h-[100dvh]">
+          <div className="bg-primary absolute top-0 left-0 w-full h-1.5 sm:h-2" />
 
           <DialogHeader className="p-4 sm:p-6 lg:p-8 pb-4 shrink-0 text-left">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -749,20 +749,20 @@ export default function StudentsPage() {
               <div className="hidden lg:flex flex-col items-end gap-2 shrink-0">
                 <Badge
                   variant="outline"
-                  className="bg-blue-50/50 dark:bg-blue-900/10 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800 py-1.5 px-4 rounded-xl font-bold uppercase tracking-[0.2em] text-[10px]"
+                  className="bg-blue-50/50 dark:bg-blue-900/10 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800 py-1.5 px-4 rounded-xl font-bold uppercase tracking-[0.08em] text-[10px]"
                 >
                   Node sync
                 </Badge>
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Encrypted channel</p>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.08em]">Encrypted channel</p>
               </div>
             </div>
           </DialogHeader>
 
           <div className="px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6 lg:pb-8 space-y-4 sm:space-y-6 min-h-0 flex-1 flex flex-col overflow-hidden">
             {/* Control Bar */}
-            <div className="grid grid-cols-1 gap-4 rounded-2xl border border-gray-100 bg-gray-50/80 p-4 shadow-sm dark:border-gray-800/50 dark:bg-gray-900/40 sm:p-6 sm:rounded-2xl xl:grid-cols-12">
+            <div className="grid grid-cols-1 gap-4 rounded-2xl border border-gray-100 bg-gray-50/80 p-4 shadow-sm dark:border-gray-800/50 sm:p-6 sm:rounded-2xl xl:grid-cols-12">
               <div className="min-w-0 space-y-2 xl:col-span-4">
-                <label className="block px-1 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                <label className="block px-1 text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
                   Target biometric node
                 </label>
                 <select
@@ -794,7 +794,7 @@ export default function StudentsPage() {
                 <Button
                   type="button"
                   size="lg"
-                  className="flex-1 min-w-[140px] min-h-12 sm:min-h-14 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold uppercase tracking-[0.15em] text-[10px] shadow-xl shadow-blue-500/20"
+                  className="flex-1 min-w-[140px] min-h-12 sm:min-h-14 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold uppercase tracking-[0.15em] text-[10px] shadow-[var(--shadow-card-md)]"
                   disabled={syncDeviceId === "" || syncBusy || unsyncedStudents.length === 0}
                   onClick={() => runBulkStudentSync()}
                 >
@@ -804,7 +804,7 @@ export default function StudentsPage() {
                 <Button
                   type="button"
                   size="lg"
-                  className="flex-1 min-w-[140px] min-h-12 sm:min-h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold uppercase tracking-[0.15em] text-[10px] shadow-xl shadow-indigo-500/20"
+                  className="flex-1 min-w-[140px] min-h-12 sm:min-h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold uppercase tracking-[0.15em] text-[10px] shadow-[var(--shadow-card-md)]"
                   disabled={syncDeviceId === "" || syncBusy || unsyncedTeachers.length === 0}
                   onClick={() => runBulkTeacherSync()}
                 >
@@ -839,7 +839,7 @@ export default function StudentsPage() {
                 onValueChange={(v) => setSyncLedgerTab(v as "students" | "teachers")}
                 className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden"
               >
-                <TabsList className="flex h-auto w-full flex-wrap justify-start gap-2 rounded-2xl border border-gray-200/50 bg-gray-100/80 p-2 dark:border-gray-700/50 dark:bg-gray-900/50">
+                <TabsList className="flex h-auto w-full flex-wrap justify-start gap-2 rounded-2xl border border-gray-200/50 bg-gray-100/80 p-2 dark:border-gray-700/50">
                   <TabsTrigger
                     value="students"
                     className="rounded-xl px-4 py-2.5 text-xs font-bold data-[state=active]:bg-blue-600 data-[state=active]:text-white"
@@ -857,10 +857,10 @@ export default function StudentsPage() {
                 </TabsList>
 
                 <TabsContent value="students" className="mt-0 flex min-h-0 flex-1 flex-col overflow-hidden">
-                  <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-lg dark:border-gray-800 dark:bg-gray-950 sm:rounded-2xl">
+                  <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[var(--shadow-card)] dark:border-gray-800 dark:bg-gray-950 sm:rounded-2xl">
                     <div className="flex flex-col gap-3 border-b border-gray-100 p-4 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between sm:p-6">
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-700 dark:text-blue-400">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-blue-700 dark:text-blue-400">
                           Student ledger
                         </p>
                         <p className="text-xs text-muted-foreground">
@@ -884,7 +884,7 @@ export default function StudentsPage() {
                       <div className="min-h-[200px] flex-1 overflow-auto rounded-2xl border border-gray-100 dark:border-gray-800">
                         <Table>
                           <TableHeader>
-                            <TableRow className="border-0  hover:bg-transparent">
+                            <TableRow className="border-0 hover:bg-transparent">
                               <TableHead className="min-w-[200px] text-[10px] font-bold uppercase tracking-wider text-white">
                                 Student
                               </TableHead>
@@ -939,10 +939,10 @@ export default function StudentsPage() {
                 </TabsContent>
 
                 <TabsContent value="teachers" className="mt-0 flex min-h-0 flex-1 flex-col overflow-hidden">
-                  <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-lg dark:border-gray-800 dark:bg-gray-950 sm:rounded-2xl">
+                  <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[var(--shadow-card)] dark:border-gray-800 dark:bg-gray-950 sm:rounded-2xl">
                     <div className="flex flex-col gap-3 border-b border-gray-100 p-4 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between sm:p-6">
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-700 dark:text-indigo-400">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-indigo-700 dark:text-indigo-400">
                           Faculty ledger
                         </p>
                         <p className="text-xs text-muted-foreground">
@@ -966,7 +966,7 @@ export default function StudentsPage() {
                       <div className="min-h-[200px] flex-1 overflow-auto rounded-2xl border border-gray-100 dark:border-gray-800">
                         <Table>
                           <TableHeader>
-                            <TableRow className="border-0  hover:bg-transparent">
+                            <TableRow className="border-0 hover:bg-transparent">
                               <TableHead className="min-w-[220px] text-[10px] font-bold uppercase tracking-wider text-white">
                                 Name
                               </TableHead>
@@ -1016,7 +1016,7 @@ export default function StudentsPage() {
               </Tabs>
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center py-20 bg-gray-50/30 dark:bg-gray-900/20 rounded-2xl border-2 border-dashed border-gray-100 dark:border-gray-800">
-                <div className="h-24 w-24 rounded-full bg-white dark:bg-gray-800 shadow-2xl flex items-center justify-center mb-8 relative">
+                <div className="h-24 w-24 rounded-full bg-white dark:bg-gray-800 shadow-[var(--shadow-card-md)] flex items-center justify-center mb-8 relative">
                   <div className="absolute inset-0 rounded-full bg-emerald-500 animate-ping opacity-10" />
                   <CheckCircle2 className="h-12 w-12 text-emerald-500 relative z-10" />
                 </div>
@@ -1030,7 +1030,7 @@ export default function StudentsPage() {
             )}
           </div>
           
-          <DialogFooter className="flex flex-col-reverse gap-3 border-t border-gray-100 bg-gray-50/80 p-4 dark:border-gray-800 dark:bg-gray-900/80 sm:flex-row sm:items-center sm:justify-end sm:rounded-b-[2rem] sm:p-6 lg:p-8">
+          <DialogFooter className="flex flex-col-reverse gap-3 border-t border-gray-100 bg-gray-50/80 p-4 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-end sm:rounded-b-[2rem] sm:p-6 lg:p-8">
             <Button
               type="button"
               variant="outline"

@@ -66,7 +66,7 @@ export default function ProfilePage() {
   ] as const
 
   return (
-    <div className="min-h-full w-full ">
+    <div className="min-h-full w-full">
       <motion.main
         variants={fadeInUp}
         initial="hidden"
@@ -75,7 +75,7 @@ export default function ProfilePage() {
       >
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
           <div className="min-w-0 space-y-1">
-            <h1 className="text-2xl font-bold tracking-tight text-primary sm:text-3xl">
+            <h1 className="text-xl sm:text-[22px] font-bold leading-tight tracking-tight text-slate-900">
               Full profile
             </h1>
             <p className="text-sm text-muted-foreground">Your account information</p>
@@ -90,13 +90,13 @@ export default function ProfilePage() {
           </Button>
         </div>
 
-        <Card className="overflow-hidden rounded-2xl border border-gray-200/50 bg-white/80 shadow-lg backdrop-blur-sm dark:border-gray-700/50 dark:bg-gray-800/80 sm:rounded-3xl">
+        <Card className="overflow-hidden rounded-2xl border border-gray-200/50 bg-white shadow-[var(--shadow-card)] dark:border-gray-700/50 sm:rounded-2xl">
           <CardHeader className="space-y-1 px-4 pt-5 sm:px-6 sm:pt-6">
             <CardTitle className="text-lg text-blue-700 dark:text-blue-400">Account</CardTitle>
             <CardDescription className="text-xs sm:text-sm">Details from your signed-in session</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6 px-4 pb-6 sm:px-6 sm:pb-8">
-            <div className="flex flex-col items-center gap-4 rounded-2xl border border-gray-200/50 bg-white/60 p-4 dark:border-gray-700/50 dark:bg-gray-900/30 sm:flex-row sm:items-center sm:p-5">
+            <div className="flex flex-col items-center gap-4 rounded-2xl border border-gray-200/50 bg-white p-4 dark:border-gray-700/50 dark:bg-gray-900/30 sm:flex-row sm:items-center sm:p-5">
               <Avatar className="h-20 w-20 border-2 border-blue-200 dark:border-blue-800 sm:h-24 sm:w-24">
                 <AvatarImage src={u?.avatar_url || undefined} />
                 <AvatarFallback className="text-lg font-bold bg-primary text-white sm:text-xl">
@@ -118,7 +118,7 @@ export default function ProfilePage() {
               {fields.map(({ key, label, value, icon: Icon }) => (
                 <div
                   key={key}
-                  className="flex flex-col gap-1.5 rounded-xl border border-gray-200/50 bg-white/70 p-4 dark:border-gray-700/50 dark:bg-gray-900/40"
+                  className="flex flex-col gap-1.5 rounded-xl border border-gray-200/50 bg-white p-4 dark:border-gray-700/50"
                 >
                   <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400">
                     <Icon className="h-3.5 w-3.5 shrink-0" />

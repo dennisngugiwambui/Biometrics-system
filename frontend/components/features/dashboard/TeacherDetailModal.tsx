@@ -90,7 +90,7 @@ export function TeacherDetailModal({
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-md"
+                        className="fixed inset-0 z-[60] bg-black/40"
                         onClick={() => onOpenChange(false)}
                     />
                     <motion.div
@@ -110,17 +110,17 @@ export function TeacherDetailModal({
 
                             <div className="flex items-center gap-5 mt-2">
                                 <Avatar className="h-16 w-16 shadow-premium border-2 border-white/50 dark:border-white/10">
-                                    <AvatarFallback className="bg-primary text-white text-xl font-black bevel-sm">
+                                    <AvatarFallback className="bg-primary text-white text-xl font-bold bevel-sm">
                                         {initials}
                                     </AvatarFallback>
                                 </Avatar>
                                 <div>
-                                    <h3 className="text-xl font-black text-foreground tracking-tight">{teacherName}</h3>
+                                    <h3 className="text-xl font-bold text-foreground tracking-tight">{teacherName}</h3>
                                     <div className="flex items-center gap-2 mt-1">
-                                        <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 border-primary/20 bg-primary/5 text-primary">
+                                        <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-[0.08em] px-2 py-0.5 border-primary/20 bg-primary/5 text-primary">
                                             {employeeId ?? "STAFF"}
                                         </Badge>
-                                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Verified Teacher</span>
+                                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.08em] opacity-60">Verified Teacher</span>
                                     </div>
                                 </div>
                             </div>
@@ -131,7 +131,7 @@ export function TeacherDetailModal({
                                         <Briefcase className="size-3.5 text-primary" />
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-[9px] font-black uppercase tracking-widest opacity-40">Role</span>
+                                        <span className="text-[9px] font-bold uppercase tracking-[0.08em] opacity-40">Role</span>
                                         <span className="text-xs font-bold">Faculty Member</span>
                                     </div>
                                 </div>
@@ -140,7 +140,7 @@ export function TeacherDetailModal({
                                         <Mail className="size-3.5 text-primary" />
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-[9px] font-black uppercase tracking-widest opacity-40">Status</span>
+                                        <span className="text-[9px] font-bold uppercase tracking-[0.08em] opacity-40">Status</span>
                                         <span className="text-xs font-bold text-green-500">Active Duty</span>
                                     </div>
                                 </div>
@@ -149,13 +149,13 @@ export function TeacherDetailModal({
                             {/* Range Toggle */}
                             <div className="flex items-center gap-2 mt-8 border-b border-border/50 pb-4">
                                 <ClipboardList className="size-4 text-primary" />
-                                <h4 className="text-sm font-black uppercase tracking-widest text-foreground flex-1">Activity Log</h4>
+                                <h4 className="text-sm font-bold uppercase tracking-[0.08em] text-foreground flex-1">Activity Log</h4>
                                 <div className="flex bg-muted/20 p-1 rounded-xl">
                                     {["7d", "30d", "all"].map((r) => (
                                         <button
                                             key={r}
                                             onClick={() => setTimeRange(r as any)}
-                                            className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${timeRange === r ? "bg-white dark:bg-gray-800 shadow-sm text-primary" : "text-muted-foreground opacity-60 hover:opacity-100"
+                                            className={`px-3 py-1 text-[10px] font-bold uppercase tracking-[0.08em] rounded-lg transition-all ${timeRange === r ? "bg-white dark:bg-gray-800 shadow-sm text-primary" : "text-muted-foreground opacity-60 hover:opacity-100"
                                                 }`}
                                         >
                                             {r}
@@ -177,7 +177,7 @@ export function TeacherDetailModal({
                                         <div className="size-12 rounded-full bg-muted/20 flex items-center justify-center mb-4 text-muted-foreground/30">
                                             <Fingerprint className="size-6" />
                                         </div>
-                                        <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.2em]">No logs on record</p>
+                                        <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.08em]">No logs on record</p>
                                     </div>
                                 ) : (
                                     events.map((evt, i) => {
@@ -195,8 +195,8 @@ export function TeacherDetailModal({
                                                 className="flex items-center gap-4 group"
                                             >
                                                 <div className="flex flex-col items-center gap-1 w-12 shrink-0">
-                                                    <span className="text-[10px] font-black text-foreground/80 tabular-nums">{time}</span>
-                                                    <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest opacity-40">{date}</span>
+                                                    <span className="text-[10px] font-bold text-foreground/80 tabular-nums">{time}</span>
+                                                    <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-[0.08em] opacity-40">{date}</span>
                                                 </div>
 
                                                 <div className="relative h-10 w-0.5 bg-border/40 group-last:bg-transparent">
@@ -204,12 +204,12 @@ export function TeacherDetailModal({
                                                         }`} />
                                                 </div>
 
-                                                <div className="flex-1 p-3 bg-muted/5 rounded-2xl border border-border/50 transition-all hover:bg-white/40 dark:hover:bg-white/5 hover:border-primary/20">
+                                                <div className="flex-1 p-3 bg-muted/5 rounded-2xl border border-border/50 transition-all hover:bg-white dark:hover:bg-white/5 hover:border-primary/20">
                                                     <div className="flex items-center justify-between">
                                                         <span className="text-xs font-bold text-foreground">
                                                             {isIn ? "Terminal Check-In" : isOut ? "Terminal Check-Out" : "Manual Record"}
                                                         </span>
-                                                        <Badge className={`text-[8px] font-black px-1.5 h-4 tracking-widest ${isIn ? "bg-green-500/10 text-green-600 border-green-200/50" :
+                                                        <Badge className={`text-[8px] font-bold px-1.5 h-4 tracking-[0.08em] ${isIn ? "bg-green-500/10 text-green-600 border-green-200/50" :
                                                                 isOut ? "bg-amber-500/10 text-amber-600 border-amber-200/50" : "bg-gray-500/10 text-gray-500"
                                                             }`}>
                                                             {evt.event_type}
@@ -230,7 +230,7 @@ export function TeacherDetailModal({
                         <div className="p-4 border-t border-border/50 bg-muted/5 flex justify-center">
                             <Button
                                 variant="ghost"
-                                className="text-[10px] font-black uppercase tracking-[0.2em] h-10 px-6 rounded-xl hover:bg-primary/10 hover:text-primary transition-all active:scale-95"
+                                className="text-[10px] font-bold uppercase tracking-[0.08em] h-10 px-6 rounded-xl hover:bg-primary/10 hover:text-primary transition-all active:scale-95"
                                 onClick={() => onOpenChange(false)}
                             >
                                 Close Profile

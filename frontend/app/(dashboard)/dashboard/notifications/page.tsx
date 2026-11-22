@@ -212,7 +212,7 @@ export default function NotificationsPage() {
       {/* ── Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-primary">
+          <h1 className="text-xl sm:text-[22px] font-bold leading-tight tracking-tight text-slate-900">
             Notifications
           </h1>
           <div className="flex items-center gap-2 mt-1.5 text-xs text-gray-400">
@@ -302,7 +302,7 @@ export default function NotificationsPage() {
             {groups.map(({ label, items }) => (
               <motion.div key={label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-1">{label}</p>
-                <div className="rounded-2xl border border-gray-200/70 dark:border-gray-700/70 bg-gray-50 dark:bg-gray-800/50 divide-y divide-gray-100 dark:divide-gray-700/50 overflow-hidden shadow-sm">
+                <div className="rounded-2xl border border-gray-200/70 dark:border-gray-700/70 bg-gray-50 divide-y divide-gray-100 dark:divide-gray-700/50 overflow-hidden shadow-sm">
                   <AnimatePresence>
                     {deduplicateItems(items).map((n) => (
                       <NotifRow key={n.id} notif={n} onRead={handleMarkRead} />

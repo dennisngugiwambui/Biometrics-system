@@ -1,5 +1,7 @@
 "use client"
 
+import { PageHeader } from "@/components/shared/PageHeader"
+
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { motion, AnimatePresence, type Variants } from "framer-motion"
@@ -468,7 +470,7 @@ export default function SettingsPage() {
       {draftColors.map((c, i) => (
         <div key={i} className="flex flex-col items-center gap-1">
           <div
-            className="h-8 w-8 rounded-lg border-2 border-white shadow-md transition-transform hover:scale-110"
+            className="h-8 w-8 rounded-lg border-2 border-white shadow-[var(--shadow-card)] transition-transform hover:scale-110"
             style={{ backgroundColor: c }}
             title={COLOR_LABELS[i]?.label}
           />
@@ -477,7 +479,7 @@ export default function SettingsPage() {
       ))}
       {/* Gradient preview */}
       <div
-        className="ml-2 h-8 w-24 rounded-lg border-2 border-white shadow-md"
+        className="ml-2 h-8 w-24 rounded-lg border-2 border-white shadow-[var(--shadow-card)]"
         style={{
           background: `linear-gradient(135deg, ${draftColors[0]}, ${draftColors[1] || draftColors[0]}, ${draftColors[2] || draftColors[0]})`,
         }}
@@ -514,19 +516,15 @@ export default function SettingsPage() {
       variants={pageVariants}
       initial="initial"
       animate="animate"
-      className="flex-1 p-4 sm:p-6 lg:p-8"
+      className="page-shell"
     >
-      <div className="w-full space-y-8">
+      <div className="w-full space-y-5">
         {/* Page Header */}
-        <motion.div variants={fadeInUp} className="flex items-center gap-4">
-          <div className="p-3 rounded-2xl bg-primary shadow-lg shadow-indigo-500/25 text-white shrink-0">
-            <School className="h-6 w-6" />
-          </div>
-          <div className="space-y-0.5">
-            <h2 className="text-2xl font-bold tracking-tight text-primary sm:text-3xl">School Settings</h2>
-            <p className="text-muted-foreground text-sm">Manage your school's information, colours, and branding</p>
-          </div>
-        </motion.div>
+        <PageHeader
+          icon={School}
+          title="Settings"
+          subtitle="School details, colours, branding and notifications"
+        />
 
         {/* Alerts */}
         <AnimatePresence mode="wait">
@@ -558,7 +556,7 @@ export default function SettingsPage() {
         {school && (
           <motion.div variants={staggerContainer} initial="initial" animate="animate">
             <Card className="glass-panel shadow-premium bevel-card border-white/10 overflow-hidden">
-              <div className="bg-primary h-1.5 w-full " />
+              <div className="bg-primary h-1.5 w-full" />
               <CardHeader>
                 <CardTitle className="flex items-center gap-3 text-lg font-bold">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-inner-bevel">
@@ -802,10 +800,10 @@ export default function SettingsPage() {
         {school && (
           <motion.div variants={staggerContainer} initial="initial" animate="animate">
             <Card className="glass-panel shadow-premium bevel-card border-none overflow-hidden group">
-              <div className="bg-primary h-1.5 w-full  opacity-80 group-hover:opacity-100 transition-opacity" />
+              <div className="bg-primary h-1.5 w-full opacity-80 group-hover:opacity-100 transition-opacity" />
               <CardContent className="p-6">
                 <div className="flex flex-col md:flex-row items-center gap-6">
-                  <div className="bg-primary/10 flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl  text-indigo-600 dark:text-indigo-400 ring-1 ring-indigo-500/20 shadow-inner-bevel">
+                  <div className="bg-primary/10 flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-indigo-600 dark:text-indigo-400 ring-1 ring-indigo-500/20 shadow-inner-bevel">
                     <MessageSquare className="h-8 w-8" />
                   </div>
 
@@ -822,7 +820,7 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="flex flex-col w-full md:w-auto gap-3 shrink-0">
-                    <Button asChild className="rounded-xl px-8 h-12 bg-primary text-white font-bold shadow-lg shadow-indigo-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                    <Button asChild className="rounded-xl px-8 h-12 bg-primary text-white font-bold shadow-[var(--shadow-card)] transition-all hover:scale-[1.02] active:scale-[0.98]">
                       <Link href="/dashboard/settings/notifications" className="inline-flex items-center gap-2">
                         Configure Now
                         <ArrowRight className="h-5 w-5" />
@@ -840,7 +838,7 @@ export default function SettingsPage() {
         {school && (
           <motion.div variants={fadeInUp} initial="initial" animate="animate" transition={{ delay: 0.1 }}>
             <Card className="glass-panel shadow-premium bevel-card border-white/10 overflow-hidden">
-              <div className="bg-primary h-1.5 w-full " />
+              <div className="bg-primary h-1.5 w-full" />
               <CardHeader>
                 <CardTitle className="flex items-center gap-3 text-lg font-bold">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500 shadow-inner-bevel">
@@ -1055,7 +1053,7 @@ export default function SettingsPage() {
         {/* ------------------------------------------------------------------ */}
         <motion.div variants={fadeInUp} initial="initial" animate="animate" transition={{ delay: 0.1 }}>
           <Card className="glass-panel shadow-premium bevel-card border-white/10 overflow-hidden">
-            <div className="bg-primary h-1.5 w-full " />
+            <div className="bg-primary h-1.5 w-full" />
             <CardHeader>
               <CardTitle className="flex items-center gap-3 text-lg font-bold">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500 shadow-inner-bevel">
@@ -1150,7 +1148,7 @@ export default function SettingsPage() {
         {/* ------------------------------------------------------------------ */}
         <motion.div variants={fadeInUp} initial="initial" animate="animate" transition={{ delay: 0.15 }}>
           <Card className="glass-panel shadow-premium bevel-card border-white/10 overflow-hidden">
-            <div className="bg-primary h-1.5 w-full " />
+            <div className="bg-primary h-1.5 w-full" />
             <CardHeader>
               <CardTitle className="flex items-center gap-3 text-lg font-bold">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/10 text-purple-500 shadow-inner-bevel">
@@ -1230,7 +1228,7 @@ export default function SettingsPage() {
         {/* ------------------------------------------------------------------ */}
         <motion.div variants={fadeInUp} initial="initial" animate="animate" transition={{ delay: 0.2 }}>
           <Card className="glass-panel shadow-premium bevel-card border-white/10 overflow-hidden">
-            <div className="bg-primary h-1.5 w-full " />
+            <div className="bg-primary h-1.5 w-full" />
             <CardHeader>
               <CardTitle className="flex items-center gap-3 text-lg font-bold">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500 shadow-inner-bevel">
@@ -1265,7 +1263,7 @@ export default function SettingsPage() {
                     <div className="flex items-center gap-3">
                       {/* Color swatch button linked to the hidden input */}
                       <div
-                        className="relative h-10 w-10 shrink-0 rounded-lg border-2 border-white shadow-md cursor-pointer overflow-hidden transition-transform hover:scale-105"
+                        className="relative h-10 w-10 shrink-0 rounded-lg border-2 border-white shadow-[var(--shadow-card)] cursor-pointer overflow-hidden transition-transform hover:scale-105"
                         style={{ backgroundColor: draftColors[i] || "#cccccc" }}
                         onClick={() => document.getElementById(`color-${i}`)?.click()}
                         title={`Pick ${slot.label} color`}
@@ -1358,7 +1356,7 @@ export default function SettingsPage() {
         {/* ------------------------------------------------------------------ */}
         <motion.div variants={fadeInUp} initial="initial" animate="animate" transition={{ delay: 0.25 }}>
           <Card className="border-2 border-red-300 dark:border-red-900/60 overflow-hidden">
-            <div className="bg-primary h-1.5 w-full " />
+            <div className="bg-primary h-1.5 w-full" />
             <CardHeader>
               <CardTitle className="flex items-center gap-3 text-lg font-bold">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-500/10 text-red-600 dark:text-red-400">

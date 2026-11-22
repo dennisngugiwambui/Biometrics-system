@@ -218,7 +218,7 @@ export function AdminEnrollment() {
         </ol>
       </nav>
 
-      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-lg overflow-hidden">
+      <div className="bg-white rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-[var(--shadow-card)] overflow-hidden">
         <div className="p-6 sm:p-8">
           {currentStep < 4 && (
             <div className="mb-6">
@@ -428,7 +428,7 @@ export function AdminEnrollment() {
 
         {/* Footer */}
         {currentStep < 4 && (
-          <div className="flex items-center justify-between px-6 sm:px-8 py-4  border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between px-6 sm:px-8 py-4 border-t border-gray-200 dark:border-gray-700">
             <Button
               variant="ghost"
               onClick={handlePrevious}
@@ -441,7 +441,7 @@ export function AdminEnrollment() {
             <Button
               onClick={handleNext}
               disabled={!canProceed() || isSubmitting}
-              className="gap-2 bg-primary text-white shadow-lg"
+              className="gap-2 bg-primary text-white shadow-[var(--shadow-card)]"
             >
               {isSubmitting ? (
                 <>

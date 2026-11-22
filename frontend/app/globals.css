@@ -534,3 +534,33 @@ table { font-variant-numeric: tabular-nums; }
   .ledger thead th { padding: 10px 12px; }
   .ledger tbody > tr > td { padding: 8px 12px; }
 }
+
+/* Legacy helpers used across the dashboard now resolve to the portal's surfaces,
+   so every page that still carries them reads as the same product. */
+.glass-panel {
+  background: #fff !important;
+  border: 1px solid rgb(226 232 240 / 0.8) !important;
+  box-shadow: var(--shadow-card);
+  backdrop-filter: none !important;
+}
+.shadow-premium, .bevel-card { box-shadow: var(--shadow-card) !important; }
+.bevel-sm { box-shadow: var(--shadow-key-2) !important; }
+.shadow-glow { box-shadow: none !important; }
+.hover-lift:hover { transform: translateY(-1px); box-shadow: var(--shadow-card-md); }
+.card-raised { box-shadow: var(--shadow-card); border-radius: 1rem; }
+
+/* Native selects that are not the Radix Select get the portal's field skin. */
+.field-select {
+  width: 100%; height: 2.5rem; padding: 0 2.25rem 0 .875rem; font-size: .875rem; color: rgb(15 23 42);
+  background-color: #fff; border: 1px solid rgb(203 213 225); border-radius: .75rem; box-shadow: var(--shadow-field);
+  appearance: none; cursor: pointer; outline: none;
+  background-repeat: no-repeat; background-position: right .75rem center; background-size: 1rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  transition: border-color .15s, box-shadow .15s;
+}
+.field-select:hover { border-color: rgb(148 163 184); }
+.field-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 25%, transparent); }
+.field-select:disabled { background-color: rgb(248 250 252); color: rgb(148 163 184); cursor: not-allowed; }
+
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }

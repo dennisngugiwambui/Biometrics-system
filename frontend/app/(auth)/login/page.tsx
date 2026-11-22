@@ -112,7 +112,7 @@ export default function LoginPage() {
       {/* Heading */}
       <div className="auth-rise mb-6 [animation-delay:.25s]">
         <h1 className="text-2xl font-bold text-slate-900 tracking-tight leading-tight">Welcome back 👋</h1>
-        <p className="text-slate-500 text-sm mt-1.5">Sign in to continue to your attendance portal.</p>
+        <p className="text-slate-500 text-sm mt-1.5">Sign in with your attendance account, or with your Shulepoa portal email and password.</p>
       </div>
 
       {/* Error */}

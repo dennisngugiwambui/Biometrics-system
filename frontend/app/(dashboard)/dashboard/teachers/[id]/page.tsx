@@ -390,7 +390,7 @@ export default function TeacherDetailPage() {
           <Button
             variant="ghost"
             onClick={() => router.push("/dashboard/teachers")}
-            className="text-muted-foreground hover:text-foreground font-extrabold uppercase text-[10px] tracking-widest gap-2"
+            className="text-muted-foreground hover:text-foreground font-bold uppercase text-[10px] tracking-[0.08em] gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Teachers
@@ -400,7 +400,7 @@ export default function TeacherDetailPage() {
             <Button
               variant="outline"
               onClick={() => setShowSyncDialog(true)}
-              className="w-full sm:w-auto border-indigo-200 text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 font-bold uppercase text-[10px] tracking-widest h-11 px-6 rounded-xl transition-all active:scale-95"
+              className="w-full sm:w-auto border-indigo-200 text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 font-bold uppercase text-[10px] tracking-[0.08em] h-11 px-6 rounded-xl transition-all active:scale-95"
             >
               <Server className="mr-2 h-4 w-4" />
               Sync to Device
@@ -410,7 +410,7 @@ export default function TeacherDetailPage() {
                 <Button
                   variant="outline"
                   onClick={() => router.push(`/dashboard/teachers/${teacher.id}/edit`)}
-                  className="w-full sm:w-auto border-blue-200 text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 font-bold uppercase text-[10px] tracking-widest h-11 px-6 rounded-xl transition-all active:scale-95"
+                  className="w-full sm:w-auto border-blue-200 text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 font-bold uppercase text-[10px] tracking-[0.08em] h-11 px-6 rounded-xl transition-all active:scale-95"
                 >
                   <Edit className="mr-2 h-4 w-4" />
                   Modify Record
@@ -419,7 +419,7 @@ export default function TeacherDetailPage() {
                   variant="destructive"
                   onClick={handleDelete}
                   disabled={isDeleting}
-                  className="w-full sm:w-auto bg-rose-600 hover:bg-rose-700 font-bold uppercase text-[10px] tracking-widest h-11 px-6 rounded-xl shadow-lg shadow-rose-600/20 transition-all active:scale-95"
+                  className="w-full sm:w-auto bg-rose-600 hover:bg-rose-700 font-bold uppercase text-[10px] tracking-[0.08em] h-11 px-6 rounded-xl shadow-[var(--shadow-card)] transition-all active:scale-95"
                 >
                   {isDeleting ? (
                     <>
@@ -444,15 +444,15 @@ export default function TeacherDetailPage() {
           animate="visible"
           transition={{ delay: 0.1 }}
         >
-          <Card className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border-white/50 dark:border-gray-700/50 shadow-2xl rounded-2xl overflow-hidden">
+          <Card className="bg-white border-white/50 dark:border-gray-700/50 shadow-[var(--shadow-card-md)] rounded-2xl overflow-hidden">
             <CardHeader className="p-6 sm:p-10 border-b border-gray-100/50 dark:border-gray-800/50 relative">
               <div className="absolute top-0 right-0 w-64 h-64 bg-violet-500/5 rounded-full blur-3xl -mr-32 -mt-32" />
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 relative">
-                <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-primary text-white text-3xl font-bold shadow-xl shadow-violet-600/20 shrink-0 transform -rotate-3">
+                <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-primary text-white text-3xl font-bold shadow-[var(--shadow-card-md)] shrink-0 transform -rotate-3">
                   {initials || "T"}
                 </div>
                 <div className="text-center sm:text-left pt-2">
-                  <Badge variant="outline" className="mb-3 font-bold uppercase text-[9px] tracking-[0.2em] px-3 py-1 border-violet-200 text-violet-600 bg-violet-50/50">
+                  <Badge variant="outline" className="mb-3 font-bold uppercase text-[9px] tracking-[0.08em] px-3 py-1 border-violet-200 text-violet-600 bg-violet-50/50">
                     Faculty Personnel ID: {teacher.employee_id || "TID-NEW"}
                   </Badge>
                   <CardTitle className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
@@ -461,12 +461,12 @@ export default function TeacherDetailPage() {
                   <div className="flex flex-wrap justify-center sm:justify-start items-center gap-3 mt-4">
                     <div className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-xl border border-emerald-100 dark:border-emerald-800/50">
                       <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">
+                      <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-[0.08em]">
                         {teacher.is_active ? "Active Duty" : "On Leave"}
                       </span>
                     </div>
                     {teacher.department && (
-                       <Badge variant="secondary" className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 font-bold uppercase text-[9px] tracking-widest px-3 py-1.5 rounded-xl border-none">
+                       <Badge variant="secondary" className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 font-bold uppercase text-[9px] tracking-[0.08em] px-3 py-1.5 rounded-xl border-none">
                          Dept: {teacher.department}
                        </Badge>
                     )}
@@ -478,7 +478,7 @@ export default function TeacherDetailPage() {
             <CardContent className="p-8 sm:p-10 space-y-10">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-900/20 p-6">
-                  <div className="flex items-center gap-3 text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4">
+                  <div className="flex items-center gap-3 text-[10px] font-bold text-muted-foreground uppercase tracking-[0.08em] mb-4">
                     <User className="h-4 w-4 text-violet-600" />
                     Personnel Identity
                   </div>
@@ -502,7 +502,7 @@ export default function TeacherDetailPage() {
                 </div>
 
                 <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-900/20 p-6">
-                  <div className="flex items-center gap-3 text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4">
+                  <div className="flex items-center gap-3 text-[10px] font-bold text-muted-foreground uppercase tracking-[0.08em] mb-4">
                     <Phone className="h-4 w-4 text-indigo-600" />
                     Communication Vector
                   </div>
@@ -522,8 +522,8 @@ export default function TeacherDetailPage() {
                   </div>
                 </div>
 
-                <div className="bg-white rounded-2xl border border-violet-100 dark:border-violet-900/30  p-6 shadow-sm">
-                  <div className="flex items-center gap-3 text-[10px] font-bold text-violet-700 dark:text-violet-400 uppercase tracking-widest mb-4">
+                <div className="bg-white rounded-2xl border border-violet-100 dark:border-violet-900/30 p-6 shadow-sm">
+                  <div className="flex items-center gap-3 text-[10px] font-bold text-violet-700 dark:text-violet-400 uppercase tracking-[0.08em] mb-4">
                     <BookOpen className="h-4 w-4" />
                     Academic Portfolio
                   </div>
@@ -536,7 +536,7 @@ export default function TeacherDetailPage() {
                             <Badge
                               key={idx}
                               variant="secondary"
-                              className="bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-800 px-3 py-1 rounded-xl text-[10px] font-bold uppercase tracking-widest"
+                              className="bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-800 px-3 py-1 rounded-xl text-[10px] font-bold uppercase tracking-[0.08em]"
                             >
                               {s}
                             </Badge>
@@ -548,7 +548,7 @@ export default function TeacherDetailPage() {
                     </div>
                     <div className="pt-4 border-t border-violet-100 dark:border-violet-900/20">
                       <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Institutional Dept.</p>
-                      <Badge variant="outline" className="border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 bg-white/50 dark:bg-gray-950 font-bold uppercase text-[10px] tracking-widest px-4 py-1.5 rounded-xl">
+                      <Badge variant="outline" className="border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 bg-white dark:bg-gray-950 font-bold uppercase text-[10px] tracking-[0.08em] px-4 py-1.5 rounded-xl">
                         {teacher.department || "Lead Faculty"}
                       </Badge>
                     </div>
@@ -581,22 +581,22 @@ export default function TeacherDetailPage() {
           animate="visible"
           transition={{ delay: 0.15 }}
         >
-          <Card className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border-white/50 dark:border-gray-700/50 shadow-2xl rounded-2xl overflow-hidden">
+          <Card className="bg-white border-white/50 dark:border-gray-700/50 shadow-[var(--shadow-card-md)] rounded-2xl overflow-hidden">
             <CardHeader className="p-8 pb-4">
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-xl font-bold tracking-tight flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-600/20">
+                    <div className="h-10 w-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-[var(--shadow-card)]">
                       <Server className="h-5 w-5 text-white" />
                     </div>
                     Device Synchronization
                   </CardTitle>
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-2 ml-13"> Biometric reconciliation vector</p>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.08em] mt-2 ml-13"> Biometric reconciliation vector</p>
                 </div>
                 {syncSummaryLoading ? (
                    <Loader2 className="h-6 w-6 animate-spin text-indigo-500" />
                 ) : (
-                  <Badge variant={syncedDeviceIds.size > 0 ? "secondary" : "outline"} className={`h-8 px-4 rounded-xl font-bold uppercase text-[9px] tracking-widest ${syncedDeviceIds.size > 0 ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'text-amber-600 border-amber-100'}`}>
+                  <Badge variant={syncedDeviceIds.size > 0 ? "secondary" : "outline"} className={`h-8 px-4 rounded-xl font-bold uppercase text-[9px] tracking-[0.08em] ${syncedDeviceIds.size > 0 ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'text-amber-600 border-amber-100'}`}>
                     {syncedDeviceIds.size > 0 ? "Reconciled" : "Pending Sync"}
                   </Badge>
                 )}
@@ -608,14 +608,14 @@ export default function TeacherDetailPage() {
                     Sync this teacher to devices so they can clock in and out at the gate terminals.
                   </p>
                   <div className="flex flex-wrap items-center gap-3 mt-4">
-                    <div className="flex items-center gap-2 bg-white/80 dark:bg-gray-900/80 px-3 py-1.5 rounded-lg border border-indigo-200/50 dark:border-indigo-800/50">
+                    <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-indigo-200/50 dark:border-indigo-800/50">
                        <div className={`h-2 w-2 rounded-full ${syncedDeviceIds.size > 0 ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-                       <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-600">
+                       <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-indigo-600">
                          {syncedDeviceIds.size} Node{syncedDeviceIds.size !== 1 ? 's' : ''} Synced
                        </span>
                     </div>
-                    <div className="flex items-center gap-2 bg-white/80 dark:bg-gray-900/80 px-3 py-1.5 rounded-lg border border-indigo-200/50 dark:border-indigo-800/50">
-                       <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                    <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-indigo-200/50 dark:border-indigo-800/50">
+                       <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
                          Nodes Online: {devices.filter((d) => d.status === "online").length}
                        </span>
                     </div>
@@ -625,7 +625,7 @@ export default function TeacherDetailPage() {
               <Button
                 variant="outline"
                 onClick={() => setShowSyncDialog(true)}
-                className="w-full sm:w-auto h-12 px-8 border-indigo-200 text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 font-bold uppercase text-[10px] tracking-widest rounded-xl transition-all active:scale-95"
+                className="w-full sm:w-auto h-12 px-8 border-indigo-200 text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 font-bold uppercase text-[10px] tracking-[0.08em] rounded-xl transition-all active:scale-95"
               >
                 <Server className="mr-3 h-4 w-4" />
                 Initiate Node Sync
@@ -643,12 +643,12 @@ export default function TeacherDetailPage() {
           transition={{ delay: 0.2 }}
           className="space-y-4"
         >
-          <Card className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border-white/50 dark:border-gray-700/50 shadow-2xl rounded-2xl overflow-hidden">
+          <Card className="bg-white border-white/50 dark:border-gray-700/50 shadow-[var(--shadow-card-md)] rounded-2xl overflow-hidden">
             <CardHeader className="p-8 border-b border-gray-100/50 dark:border-gray-800/50">
               <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <CardTitle className="text-2xl font-bold tracking-tight flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-xl bg-violet-600 flex items-center justify-center shadow-lg shadow-violet-600/20">
+                    <div className="h-10 w-10 rounded-xl bg-violet-600 flex items-center justify-center shadow-[var(--shadow-card)]">
                       <BarChart3 className="h-5 w-5 text-white" />
                     </div>
                     Faculty Attendance Analytics
@@ -656,7 +656,7 @@ export default function TeacherDetailPage() {
                   <p className="mt-2 text-xs text-muted-foreground">Presence, entries, and exits for the range you select.</p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-4 items-center">
-                  <div className="flex items-center bg-gray-100/80 dark:bg-gray-900/80 rounded-2xl p-1.5 border border-white/10">
+                  <div className="flex items-center bg-gray-100/80 rounded-2xl p-1.5 border border-white/10">
                     {([
                       { id: "today" as const, label: "Today" },
                       { id: "this_week" as const, label: "Week" },
@@ -666,8 +666,8 @@ export default function TeacherDetailPage() {
                       <button
                         key={t.id}
                         onClick={() => setPreset(t.id)}
-                        className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all ${preset === t.id
-                          ? "bg-white dark:bg-gray-800 text-violet-600 shadow-xl scale-105"
+                        className={`px-4 py-2 text-[10px] font-bold uppercase tracking-[0.08em] rounded-xl transition-all ${preset === t.id
+                          ? "bg-white dark:bg-gray-800 text-violet-600 shadow-[var(--shadow-card-md)] scale-105"
                           : "text-muted-foreground hover:text-foreground dark:hover:text-white"}`}
                       >
                         {t.label}
@@ -681,8 +681,8 @@ export default function TeacherDetailPage() {
             <CardContent className="p-8 space-y-8">
               {preset === "custom" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
-                  <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/40 p-4">
-                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-2">
+                  <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-gray-50/50 p-4">
+                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.08em] mb-3 flex items-center gap-2">
                       <Calendar className="h-3 w-3 text-violet-500" />
                       From
                     </p>
@@ -690,11 +690,11 @@ export default function TeacherDetailPage() {
                       type="date"
                       value={customFrom}
                       onChange={(e) => setCustomFrom(e.target.value)}
-                      className="w-full h-11 rounded-xl border border-gray-100 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 px-4 text-xs font-bold focus:ring-4 focus:ring-violet-600/10 outline-none transition-all"
+                      className="w-full h-11 rounded-xl border border-gray-100 dark:border-gray-700 bg-white px-4 text-xs font-bold focus:ring-4 focus:ring-violet-600/10 outline-none transition-all"
                     />
                   </div>
-                  <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/40 p-4">
-                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-2">
+                  <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-gray-50/50 p-4">
+                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.08em] mb-3 flex items-center gap-2">
                       <Calendar className="h-3 w-3 text-violet-500" />
                       To
                     </p>
@@ -702,7 +702,7 @@ export default function TeacherDetailPage() {
                       type="date"
                       value={customTo}
                       onChange={(e) => setCustomTo(e.target.value)}
-                      className="w-full h-11 rounded-xl border border-gray-100 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 px-4 text-xs font-bold focus:ring-4 focus:ring-violet-600/10 outline-none transition-all"
+                      className="w-full h-11 rounded-xl border border-gray-100 dark:border-gray-700 bg-white px-4 text-xs font-bold focus:ring-4 focus:ring-violet-600/10 outline-none transition-all"
                     />
                   </div>
                 </div>
@@ -753,7 +753,7 @@ export default function TeacherDetailPage() {
                   return (
                     <div
                       key={i}
-                      className="group relative overflow-hidden rounded-2xl border border-gray-200/50 bg-white/80 p-4 shadow-sm backdrop-blur-sm transition-all hover:border-indigo-200 hover:shadow-md dark:border-gray-800 dark:bg-gray-950/80 dark:hover:border-indigo-800 sm:p-5"
+                      className="group relative overflow-hidden rounded-2xl border border-gray-200/50 bg-white p-4 shadow-sm transition-all hover:border-indigo-200 hover:shadow-[var(--shadow-card)] dark:border-gray-800 dark:bg-gray-950/80 dark:hover:border-indigo-800 sm:p-5"
                     >
                       <div
                         className={cn(
@@ -785,7 +785,7 @@ export default function TeacherDetailPage() {
                 })}
               </div>
 
-              <div className="rounded-2xl border border-gray-200/50 bg-white/80 p-5 shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/40 sm:rounded-2xl sm:p-8">
+              <div className="rounded-2xl border border-gray-200/50 bg-white p-5 shadow-sm dark:border-gray-800 sm:rounded-2xl sm:p-8">
                 <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm font-bold text-gray-900 dark:text-white">Presence by day</p>
@@ -793,7 +793,7 @@ export default function TeacherDetailPage() {
                   </div>
                   <div className="flex flex-wrap items-center gap-4">
                     <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-full bg-violet-600 shadow-md shadow-violet-600/30" />
+                      <div className="h-2 w-2 rounded-full bg-violet-600 shadow-[var(--shadow-card)]" />
                       <span className="text-xs font-semibold text-muted-foreground">Present</span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -819,8 +819,8 @@ export default function TeacherDetailPage() {
                           if (active && payload && payload.length) {
                              const isPresent = payload[0].value === 1
                              return (
-                                <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl p-4 rounded-2xl border border-white/20 shadow-2xl">
-                                   <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-2">{label}</p>
+                                <div className="bg-white p-4 rounded-2xl border border-white/20 shadow-[var(--shadow-card-md)]">
+                                   <p className="text-[9px] font-bold uppercase tracking-[0.08em] text-muted-foreground mb-2">{label}</p>
                                    <div className="flex items-center gap-2">
                                       <div className={`h-2 w-2 rounded-full ${isPresent ? 'bg-violet-600' : 'bg-gray-300'}`} />
                                       <span className="text-xs font-bold">{isPresent ? 'Verified Present' : 'Absent'}</span>
@@ -845,17 +845,17 @@ export default function TeacherDetailPage() {
                   </h4>
                   <Badge
                     variant="outline"
-                    className="w-fit border-gray-200 bg-white/80 px-3 py-1 text-xs font-semibold dark:border-gray-700 dark:bg-gray-950"
+                    className="w-fit border-gray-200 bg-white px-3 py-1 text-xs font-semibold dark:border-gray-700 dark:bg-gray-950"
                   >
                     {events.length} event{events.length !== 1 ? "s" : ""}
                   </Badge>
                 </div>
 
-                <div className="overflow-hidden rounded-2xl border border-gray-200/50 bg-white/80 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/30">
+                <div className="overflow-hidden rounded-2xl border border-gray-200/50 bg-white dark:border-gray-800 dark:bg-gray-900/30">
                   <div className="overflow-x-auto">
                     <table className="w-full text-left">
                       <thead>
-                        <tr className="border-b border-gray-200/50 bg-gray-50/80 dark:border-gray-800 dark:bg-gray-900/50">
+                        <tr className="border-b border-gray-200/50 bg-gray-50/80 dark:border-gray-800">
                           <th className="px-4 py-4 text-xs font-bold uppercase tracking-wide text-muted-foreground sm:px-6">
                             Time
                           </th>

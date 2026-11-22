@@ -228,7 +228,7 @@ export function StudentForm({ studentId, onSuccess }: StudentFormProps) {
 
       {/* Form Card */}
       <motion.div variants={fadeInUp} initial="hidden" animate="visible" transition={{ delay: 0.1 }}>
-        <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50">
+        <Card className="bg-white border border-gray-200/50 dark:border-gray-700/50">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-primary">
               {studentId ? "Edit Student" : "Add New Student"}

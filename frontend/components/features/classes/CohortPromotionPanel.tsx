@@ -122,7 +122,7 @@ export function CohortPromotionPanel({ classes, selectedClassId, onRefresh }: Pr
 
   return (
     <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
-      <Card className="border border-gray-200/50 bg-white/80 shadow-lg backdrop-blur-sm dark:border-gray-700/50 dark:bg-gray-800/80">
+      <Card className="border border-gray-200/50 bg-white shadow-[var(--shadow-card)] dark:border-gray-700/50">
         <CardHeader>
           <CardTitle className="flex flex-wrap items-center gap-2 text-lg text-primary">
             <GraduationCap className="h-5 w-5 text-indigo-600" />
@@ -168,7 +168,7 @@ export function CohortPromotionPanel({ classes, selectedClassId, onRefresh }: Pr
             </div>
             <div className="space-y-2">
               <Label className="text-indigo-700 dark:text-indigo-400">Ladder order</Label>
-              <div className="min-h-[120px] space-y-2 rounded-xl border border-gray-200/50 bg-gray-50/50 p-3 dark:border-gray-700/50 dark:bg-gray-900/40">
+              <div className="min-h-[120px] space-y-2 rounded-xl border border-gray-200/50 bg-gray-50/50 p-3 dark:border-gray-700/50">
                 {ladder.length === 0 ? (
                   <p className="text-sm text-muted-foreground">No classes in ladder yet.</p>
                 ) : (
@@ -177,7 +177,7 @@ export function CohortPromotionPanel({ classes, selectedClassId, onRefresh }: Pr
                     return (
                       <div
                         key={`${id}-${idx}`}
-                        className="flex items-center justify-between gap-2 rounded-lg border border-gray-200/50 bg-white/80 px-3 py-2 dark:border-gray-700/50 dark:bg-gray-800/80"
+                        className="flex items-center justify-between gap-2 rounded-lg border border-gray-200/50 bg-white px-3 py-2 dark:border-gray-700/50"
                       >
                         <span className="text-sm font-semibold">
                           {idx + 1}. {name}

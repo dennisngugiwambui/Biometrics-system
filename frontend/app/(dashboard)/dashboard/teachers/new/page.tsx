@@ -125,11 +125,11 @@ export default function AddTeacherPage() {
           Back to Teachers
         </Button>
 
-        <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 shadow-premium hover-lift overflow-hidden">
-          <div className="h-1 " />
+        <Card className="bg-white border border-gray-200/50 dark:border-gray-700/50 shadow-premium hover-lift overflow-hidden">
+          <div className="h-1" />
           <CardHeader className="pb-4">
             <div className="flex items-center gap-3">
-              <div className="flex size-12 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-violet-500/20">
+              <div className="flex size-12 items-center justify-center rounded-xl bg-primary text-white shadow-[var(--shadow-card)]">
                 <UserPlus className="size-6" />
               </div>
               <div>
@@ -253,7 +253,7 @@ export default function AddTeacherPage() {
                           <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-full min-w-[300px] p-0 rounded-2xl border-violet-100 shadow-2xl overflow-hidden" align="start">
+                      <PopoverContent className="w-full min-w-[300px] p-0 rounded-2xl border-violet-100 shadow-[var(--shadow-card-md)] overflow-hidden" align="start">
                         <Command className="p-1">
                           <CommandInput placeholder="Search subjects..." className="h-10" />
                           <CommandList className="max-h-[300px]">
@@ -358,7 +358,7 @@ export default function AddTeacherPage() {
                 <Button
                   type="submit"
                   disabled={isSaving || !form.first_name?.trim() || !form.last_name?.trim() || !form.phone?.trim()}
-                  className="bg-primary text-white shadow-lg shadow-violet-500/20 sm:min-w-[160px]"
+                  className="bg-primary text-white shadow-[var(--shadow-card)] sm:min-w-[160px]"
                 >
                   {isSaving ? (
                     <>

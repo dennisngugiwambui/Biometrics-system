@@ -37,21 +37,21 @@ export function ErrorScreen({
       style={inline ? undefined : { background: "#eef2f6" }}
     >
       <div
-        className="w-full max-w-[520px] rounded-3xl bg-white px-6 py-10 text-center sm:px-12"
+        className="w-full max-w-[520px] rounded-2xl bg-white px-6 py-10 text-center sm:px-12"
         style={{ boxShadow: "0 0 0 1px rgb(15 23 42 / 0.05), 0 30px 70px -24px rgb(15 23 42 / 0.22), 0 6px 16px -6px rgb(15 23 42 / 0.08)" }}
       >
         {!inline && (
           <div className="mb-8 flex items-center justify-center gap-2.5">
             <span
-              className="flex h-9 w-9 items-center justify-center rounded-xl text-lg font-black text-white shadow-sm"
+              className="flex h-9 w-9 items-center justify-center rounded-xl text-lg font-bold text-white shadow-sm"
               style={{ background: "#15803d" }}
             >
               S
             </span>
-            <span className="text-[19px] font-extrabold tracking-tight text-slate-900">Shulepoa</span>
+            <span className="text-[19px] font-bold tracking-tight text-slate-900">Shulepoa</span>
           </div>
         )}
-        <p className="text-primary bg-clip-text text-7xl font-black tracking-tight text-transparent sm:text-8xl">
+        <p className="text-primary bg-clip-text text-7xl font-bold tracking-tight text-transparent sm:text-8xl">
           {code}
         </p>
         <h1 className="mt-4 text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">{title}</h1>

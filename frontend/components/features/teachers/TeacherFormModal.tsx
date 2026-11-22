@@ -110,17 +110,17 @@ export function TeacherFormModal({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4"
+        className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
         onClick={onClose}
       >
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-[32px] shadow-premium w-full max-w-xl border border-white/20 dark:border-white/10 overflow-hidden bevel-card"
+          className="bg-white/95 dark:bg-gray-800/95 rounded-[32px] shadow-premium w-full max-w-xl border border-white/20 dark:border-white/10 overflow-hidden bevel-card"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="bg-primary h-1.5 " />
+          <div className="bg-primary h-1.5" />
 
           <div className="p-8 pb-4 flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -128,10 +128,10 @@ export function TeacherFormModal({
                 <User className="size-6" />
               </div>
               <div>
-                <h3 className="text-2xl font-black text-gray-900 dark:text-gray-100 tracking-tight">
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
                   {initial ? "Edit Profile" : "New Teacher"}
                 </h3>
-                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground opacity-60">
+                <p className="text-xs font-bold uppercase tracking-[0.08em] text-muted-foreground opacity-60">
                   Staff Management Core
                 </p>
               </div>
@@ -148,7 +148,7 @@ export function TeacherFormModal({
             <div className="p-8 pt-4 space-y-6">
               <div className="grid grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label className="text-xs font-black uppercase tracking-widest opacity-70">First Name *</Label>
+                  <Label className="text-xs font-bold uppercase tracking-[0.08em] opacity-70">First Name *</Label>
                   <Input
                     value={form.first_name}
                     onChange={(e) => setForm((f) => ({ ...f, first_name: e.target.value }))}
@@ -157,7 +157,7 @@ export function TeacherFormModal({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs font-black uppercase tracking-widest opacity-70">Last Name *</Label>
+                  <Label className="text-xs font-bold uppercase tracking-[0.08em] opacity-70">Last Name *</Label>
                   <Input
                     value={form.last_name}
                     onChange={(e) => setForm((f) => ({ ...f, last_name: e.target.value }))}
@@ -168,7 +168,7 @@ export function TeacherFormModal({
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs font-black uppercase tracking-widest opacity-70 flex items-center gap-2">
+                <Label className="text-xs font-bold uppercase tracking-[0.08em] opacity-70 flex items-center gap-2">
                   <Phone className="size-3.5" /> Phone Number *
                 </Label>
                 <Input
@@ -182,7 +182,7 @@ export function TeacherFormModal({
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs font-black uppercase tracking-widest opacity-70 flex items-center gap-2">
+                <Label className="text-xs font-bold uppercase tracking-[0.08em] opacity-70 flex items-center gap-2">
                   <Mail className="size-3.5" /> Email Address
                 </Label>
                 <Input
@@ -196,7 +196,7 @@ export function TeacherFormModal({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="space-y-3">
-                  <Label className="text-xs font-black uppercase tracking-widest opacity-70 flex items-center gap-2">
+                  <Label className="text-xs font-bold uppercase tracking-[0.08em] opacity-70 flex items-center gap-2">
                     <BookOpen className="size-3.5" /> Subjects
                   </Label>
                   <div className="flex flex-wrap gap-2 mb-2 p-3 rounded-2xl bg-muted/20 border border-dashed border-border min-h-[50px]">
@@ -215,13 +215,13 @@ export function TeacherFormModal({
                   </div>
                   <Popover open={subjectOpen} onOpenChange={setSubjectOpen}>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full justify-between h-12 rounded-2xl border-none bg-muted/30 hover:bg-muted/50 font-bold text-xs uppercase tracking-widest">
+                      <Button variant="outline" className="w-full justify-between h-12 rounded-2xl border-none bg-muted/30 hover:bg-muted/50 font-bold text-xs uppercase tracking-[0.08em]">
                         Manage Subjects
                         <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-[300px] p-0 rounded-[24px] border-none shadow-premium overflow-hidden">
-                      <Command className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl">
+                      <Command className="bg-white/95 dark:bg-gray-800/95">
                         <CommandInput placeholder="Search catalog..." />
                         <CommandList>
                           <CommandEmpty className="p-4 flex flex-col gap-2">
@@ -263,14 +263,14 @@ export function TeacherFormModal({
                 </div>
 
                 <div className="space-y-3">
-                  <Label className="text-xs font-black uppercase tracking-widest opacity-70 flex items-center gap-2">
+                  <Label className="text-xs font-bold uppercase tracking-[0.08em] opacity-70 flex items-center gap-2">
                     <Briefcase className="size-3.5" /> Department
                   </Label>
                   <Select
                     value={form.department || ""}
                     onValueChange={(v) => setForm(f => ({ ...f, department: v }))}
                   >
-                    <SelectTrigger className="h-12 rounded-2xl border-none bg-muted/30 hover:bg-muted/50 font-bold text-xs uppercase tracking-widest">
+                    <SelectTrigger className="h-12 rounded-2xl border-none bg-muted/30 hover:bg-muted/50 font-bold text-xs uppercase tracking-[0.08em]">
                       <SelectValue placeholder="Select Dept" />
                     </SelectTrigger>
                     <SelectContent className="rounded-2xl border-none shadow-premium">
@@ -288,14 +288,14 @@ export function TeacherFormModal({
             <Button
               variant="ghost"
               onClick={onClose}
-              className="h-12 px-6 rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-muted transition-all"
+              className="h-12 px-6 rounded-2xl font-bold text-xs uppercase tracking-[0.08em] hover:bg-muted transition-all"
             >
               Cancel
             </Button>
             <Button
               onClick={() => onSave(form)}
               disabled={isSaving || !form.first_name || !form.last_name || !form.phone}
-              className="h-12 px-10 rounded-2xl font-black text-xs uppercase tracking-[0.2em] bg-primary text-white shadow-glow hover:shadow-glow-lg transition-all active:scale-95 disabled:opacity-40"
+              className="h-12 px-10 rounded-2xl font-bold text-xs uppercase tracking-[0.08em] bg-primary text-white shadow-glow hover:shadow-glow-lg transition-all active:scale-95 disabled:opacity-40"
             >
               {isSaving ? (
                 <motion.div

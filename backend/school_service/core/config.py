@@ -42,6 +42,10 @@ class Settings(BaseSettings):
     # Lets the portal's owner console (portal.shulepoa.co.ke) manage schools and licences.
     PLATFORM_SERVICE_KEY: str = ""
 
+    # The Shulepoa portal, so a school already on it can sign in here with its portal email and
+    # password. Empty switches that off. e.g. https://portal.shulepoa.co.ke
+    PORTAL_API_URL: str = ""
+
     # Password reset ("Forgot password?")
     # The emailed link points at APP_BASE_URL/reset-password and works for this long.
     PASSWORD_RESET_EXPIRE_MINUTES: int = 30

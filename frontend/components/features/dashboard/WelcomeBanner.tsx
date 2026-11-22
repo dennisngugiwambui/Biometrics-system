@@ -15,7 +15,7 @@ export interface WelcomeBannerProps {
 export function WelcomeBanner({ schoolCode, adminFirstName, isSetupComplete = true }: WelcomeBannerProps) {
   return (
     <motion.div variants={fadeInUp} initial="hidden" animate="visible">
-      <Card className="overflow-hidden border-none bg-primary text-primary-foreground shadow-lg">
+      <Card className="overflow-hidden border-none bg-primary text-primary-foreground shadow-[var(--shadow-card)]">
         <CardContent className="p-6 sm:p-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-2">
@@ -35,7 +35,7 @@ export function WelcomeBanner({ schoolCode, adminFirstName, isSetupComplete = tr
               )}
             </div>
             <div className="hidden sm:block">
-              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-sm">
+              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-white/10">
                 <School className="h-10 w-10 text-white/80" />
               </div>
             </div>

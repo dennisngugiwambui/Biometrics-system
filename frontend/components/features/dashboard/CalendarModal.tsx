@@ -77,8 +77,8 @@ function StatPill({
   }
   return (
     <div className={`rounded-2xl px-4 py-3 border flex flex-col items-center justify-center text-center transition-all hover:scale-[1.02] shadow-sm bevel-sm ${colors[color]}`}>
-      <p className="text-xl sm:text-2xl font-black tabular-nums tracking-tight">{value}</p>
-      <p className="text-[10px] font-bold uppercase tracking-widest opacity-60 mt-0.5">{label}</p>
+      <p className="text-xl sm:text-2xl font-bold tabular-nums tracking-tight">{value}</p>
+      <p className="text-[10px] font-bold uppercase tracking-[0.08em] opacity-60 mt-0.5">{label}</p>
     </div>
   )
 }
@@ -101,7 +101,7 @@ function EventRow({ event }: { event: AttendanceEvent }) {
 
   return (
     <div
-      className={`flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all hover:shadow-md group ${isIn
+      className={`flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all hover:shadow-[var(--shadow-card)] group ${isIn
         ? "border-green-200/50 bg-green-50/30 dark:border-green-800/20 dark:bg-green-900/5"
         : isOut
           ? "border-amber-200/50 bg-amber-50/30 dark:border-amber-800/20 dark:bg-amber-900/5"
@@ -116,7 +116,7 @@ function EventRow({ event }: { event: AttendanceEvent }) {
         <p className="text-sm font-bold text-foreground truncate group-hover:text-primary transition-colors">
           {event.student_name ?? "Unknown"}
           {event.admission_number && (
-            <span className="ml-1.5 text-[10px] uppercase font-bold tracking-widest opacity-40">
+            <span className="ml-1.5 text-[10px] uppercase font-bold tracking-[0.08em] opacity-40">
               #{event.admission_number}
             </span>
           )}
@@ -127,12 +127,12 @@ function EventRow({ event }: { event: AttendanceEvent }) {
         </p>
       </div>
       <div className="flex flex-col items-end gap-1 shrink-0">
-        <span className="text-[11px] font-black text-foreground/80 tabular-nums">
+        <span className="text-[11px] font-bold text-foreground/80 tabular-nums">
           {time}
         </span>
         <Badge
           variant="secondary"
-          className={`text-[9px] font-black tracking-[0.15em] px-1.5 py-0 rounded-md ${isIn
+          className={`text-[9px] font-bold tracking-[0.15em] px-1.5 py-0 rounded-md ${isIn
             ? "bg-green-500/10 text-green-600 border-green-200/50"
             : isOut
               ? "bg-amber-500/10 text-amber-600 border-amber-200/50"
@@ -250,7 +250,7 @@ export function CalendarModal({ open, onOpenChange }: CalendarModalProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-md"
+            className="fixed inset-0 z-50 bg-black/40"
             onClick={() => onOpenChange(false)}
           />
 
@@ -275,8 +275,8 @@ export function CalendarModal({ open, onOpenChange }: CalendarModalProps) {
                   <CalendarDays className="size-6" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-black tracking-tight text-foreground">Attendance Intel</h2>
-                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground opacity-60">
+                  <h2 className="text-xl font-bold tracking-tight text-foreground">Attendance Intel</h2>
+                  <p className="text-xs font-bold uppercase tracking-[0.08em] text-muted-foreground opacity-60">
                     Historical Log Explorer
                   </p>
                 </div>
@@ -304,7 +304,7 @@ export function CalendarModal({ open, onOpenChange }: CalendarModalProps) {
                       >
                         <ChevronLeft className="size-5" />
                       </button>
-                      <h3 className="text-base font-black tracking-tight text-foreground uppercase">
+                      <h3 className="text-base font-bold tracking-tight text-foreground uppercase">
                         {format(currentMonth, "MMMM yyyy")}
                       </h3>
                       <button
@@ -320,7 +320,7 @@ export function CalendarModal({ open, onOpenChange }: CalendarModalProps) {
                       {weekDays.map((d) => (
                         <div
                           key={d}
-                          className="text-center text-[10px] font-black uppercase tracking-widest text-muted-foreground py-2"
+                          className="text-center text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground py-2"
                         >
                           {d[0]}
                         </div>
@@ -349,7 +349,7 @@ export function CalendarModal({ open, onOpenChange }: CalendarModalProps) {
                                   : "text-muted-foreground/30 hover:bg-muted/5"
                               }`}
                           >
-                            <span className={`text-[13px] ${isSelected ? "font-black" : "font-bold"}`}>{format(day, "d")}</span>
+                            <span className={`text-[13px] ${isSelected ? "font-bold" : "font-bold"}`}>{format(day, "d")}</span>
                             {/* Dots */}
                             {dots && (
                               <div className="flex gap-0.5 mt-1">
@@ -361,7 +361,7 @@ export function CalendarModal({ open, onOpenChange }: CalendarModalProps) {
                                 )}
                                 {dots.out > 0 && (
                                   <span
-                                    className={`w-1 h-1 rounded-full ${isSelected ? "bg-white/60" : "bg-amber-500"
+                                    className={`w-1 h-1 rounded-full ${isSelected ? "bg-white" : "bg-amber-500"
                                       }`}
                                   />
                                 )}
@@ -374,7 +374,7 @@ export function CalendarModal({ open, onOpenChange }: CalendarModalProps) {
 
                     {/* Legend */}
                     <div className="mt-8 pt-8 border-t border-border/50 space-y-4">
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-4">
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.08em] mb-4">
                         Status Indicators
                       </p>
                       <div className="grid grid-cols-1 gap-3">
@@ -398,16 +398,16 @@ export function CalendarModal({ open, onOpenChange }: CalendarModalProps) {
               {/* RIGHT — Day detail */}
               <div className="flex-1 flex flex-col overflow-hidden bg-background">
                 {/* Day header with stats */}
-                <div className="px-6 py-6 border-b border-border/50 ">
+                <div className="px-6 py-6 border-b border-border/50">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <CalendarDays className="size-4 text-primary" />
-                        <h3 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
+                        <h3 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
                           {format(selectedDate, "EEE, d MMMM")}
                         </h3>
                       </div>
-                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest pl-6">
+                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-[0.08em] pl-6">
                         {isToday(selectedDate) ? "Active Today" : format(selectedDate, "yyyy")}
                       </p>
                     </div>
@@ -418,10 +418,10 @@ export function CalendarModal({ open, onOpenChange }: CalendarModalProps) {
                           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                           className="w-3.5 h-3.5 border-2 border-primary border-t-transparent rounded-full"
                         />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-primary">Syncing...</span>
+                        <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-primary">Syncing...</span>
                       </div>
                     ) : (
-                      <Badge variant="outline" className="w-fit text-[10px] font-black uppercase tracking-widest px-3 py-1 border-primary/20 bg-primary/5 text-primary">
+                      <Badge variant="outline" className="w-fit text-[10px] font-bold uppercase tracking-[0.08em] px-3 py-1 border-primary/20 bg-primary/5 text-primary">
                         Data Live
                       </Badge>
                     )}
@@ -468,8 +468,8 @@ export function CalendarModal({ open, onOpenChange }: CalendarModalProps) {
                           <div className="w-20 h-20 rounded-full bg-muted/20 flex items-center justify-center mb-6">
                             <Fingerprint className="size-10 text-muted-foreground/40" />
                           </div>
-                          <p className="font-black text-lg text-foreground tracking-tight uppercase">Silent Records</p>
-                          <p className="text-[11px] font-bold text-muted-foreground mt-1 uppercase tracking-widest opacity-60">No activity captured on this date</p>
+                          <p className="font-bold text-lg text-foreground tracking-tight uppercase">Silent Records</p>
+                          <p className="text-[11px] font-bold text-muted-foreground mt-1 uppercase tracking-[0.08em] opacity-60">No activity captured on this date</p>
                         </div>
                       ) : (
                         <AnimatePresence initial={false}>
@@ -497,7 +497,7 @@ export function CalendarModal({ open, onOpenChange }: CalendarModalProps) {
                       {dayEvents.length} Sequential Logs
                     </span>
                     <Separator orientation="vertical" className="h-4 hidden sm:block" />
-                    <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest">
+                    <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.08em]">
                       Device Auth Guaranteed
                     </span>
                   </div>
@@ -505,7 +505,7 @@ export function CalendarModal({ open, onOpenChange }: CalendarModalProps) {
                     variant="ghost"
                     size="sm"
                     onClick={() => onOpenChange(false)}
-                    className="text-[10px] font-black uppercase tracking-[0.2em] h-10 px-6 rounded-xl hover:bg-primary/10 hover:text-primary transition-all active:scale-95"
+                    className="text-[10px] font-bold uppercase tracking-[0.08em] h-10 px-6 rounded-xl hover:bg-primary/10 hover:text-primary transition-all active:scale-95"
                   >
                     Close Terminal
                   </Button>

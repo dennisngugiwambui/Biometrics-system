@@ -112,11 +112,11 @@ function BulkUploadModal({ open, onClose, onImport, isImporting, importResult, u
     return (
         <AnimatePresence>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+                className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={onClose}>
                 <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-                    className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg border border-gray-200/70 dark:border-gray-700/70"
+                    className="bg-white dark:bg-gray-800 rounded-2xl shadow-[var(--shadow-card-md)] w-full max-w-lg border border-gray-200/70 dark:border-gray-700/70"
                     onClick={(e) => e.stopPropagation()}>
-                    <div className="h-1  rounded-t-2xl" />
+                    <div className="h-1 rounded-t-2xl" />
                     <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                         <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Bulk Import Teachers</h3>
                         <button onClick={onClose} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 transition-colors"><X className="size-5" /></button>
@@ -175,17 +175,17 @@ function BulkUploadModal({ open, onClose, onImport, isImporting, importResult, u
                                             initial={false}
                                             animate={{ width: `${uploadProgress}%` }}
                                             transition={{ duration: 0.2 }}
-                                            className="bg-primary h-full  rounded-full"
+                                            className="bg-primary h-full rounded-full"
                                         />
                                     </div>
-                                    <span className="text-sm font-extrabold tabular-nums text-violet-700 dark:text-violet-300">{uploadProgress}%</span>
+                                    <span className="text-sm font-bold tabular-nums text-violet-700 dark:text-violet-300">{uploadProgress}%</span>
                                 </div>
                                 <h4 className="text-lg font-bold text-gray-900 dark:text-white">Uploading Teachers...</h4>
                                 <p className="text-sm text-gray-500 mt-2">Please wait while we import your file.</p>
                             </div>
                         ) : importResult && (
                             <div className="space-y-4">
-                                <div className={`rounded-3xl p-6 border-2 ${importResult.errors.length > 0 ? "bg-amber-50/50 border-amber-200 dark:bg-amber-900/10 dark:border-amber-900/30" : "bg-green-50/50 border-green-200 dark:bg-green-900/10 dark:border-green-900/30"}`}>
+                                <div className={`rounded-2xl p-6 border-2 ${importResult.errors.length > 0 ? "bg-amber-50/50 border-amber-200 dark:bg-amber-900/10 dark:border-amber-900/30" : "bg-green-50/50 border-green-200 dark:bg-green-900/10 dark:border-green-900/30"}`}>
                                     <div className="flex items-start gap-4">
                                         <div className={`p-3 rounded-2xl shadow-sm ${importResult.errors.length > 0 ? "bg-amber-500 text-white" : "bg-green-500 text-white"}`}>
                                             {importResult.errors.length > 0 ? <AlertCircle className="size-6" /> : <CheckCircle2 className="size-6" />}
@@ -212,8 +212,8 @@ function BulkUploadModal({ open, onClose, onImport, isImporting, importResult, u
                                     </div>
 
                                     {importResult.errors.length > 0 && (
-                                        <div className="mt-5 bg-white/50 dark:bg-black/20 rounded-2xl p-4 border border-black/5 dark:border-white/5">
-                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Error Logs</p>
+                                        <div className="mt-5 bg-white dark:bg-black/20 rounded-2xl p-4 border border-black/5 dark:border-white/5">
+                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.08em] mb-2">Error Logs</p>
                                             <div className="max-h-40 overflow-y-auto pr-2 custom-scrollbar">
                                                 {importResult.errors.map((err, i) => (
                                                     <div key={i} className="flex gap-2 py-1.5 border-b border-black/5 dark:border-white/5 last:border-0">
@@ -242,7 +242,7 @@ function BulkUploadModal({ open, onClose, onImport, isImporting, importResult, u
                             <button
                                 disabled={!pickedFile}
                                 onClick={() => pickedFile && onImport(pickedFile)}
-                                className="flex-1 px-6 py-4 bg-primary text-white font-bold rounded-2xl shadow-xl shadow-violet-500/20 disabled:opacity-50 disabled:shadow-none transition-all flex items-center justify-center gap-2"
+                                className="flex-1 px-6 py-4 bg-primary text-white font-bold rounded-2xl shadow-[var(--shadow-card-md)] disabled:opacity-50 disabled:shadow-none transition-all flex items-center justify-center gap-2"
                             >
                                 <Upload className="size-5" />
                                 Upload Teachers

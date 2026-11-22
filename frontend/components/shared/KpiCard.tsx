@@ -92,8 +92,8 @@ export function Panel({
   return (
     <section className={cn("card-portal flex min-w-0 flex-col", className)}>
       {title || actions ? (
-        <header className="flex items-start justify-between gap-3 px-4 pb-2 pt-3 sm:px-5 sm:pb-3 sm:pt-4">
-          <div className="flex min-w-0 items-start gap-2.5">
+        <header className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2 px-4 pb-2 pt-3 sm:px-5 sm:pb-3 sm:pt-4">
+          <div className="flex min-w-0 flex-1 basis-44 items-start gap-2.5">
             {Icon ? (
               <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
                 <Icon className="h-3.5 w-3.5" />
@@ -104,7 +104,7 @@ export function Panel({
               {subtitle ? <p className="mt-0.5 text-[12px] leading-snug text-slate-500">{subtitle}</p> : null}
             </div>
           </div>
-          {actions ? <div className="flex shrink-0 items-center gap-1.5">{actions}</div> : null}
+          {actions ? <div className="flex max-w-full items-center gap-1.5 overflow-x-auto no-scrollbar">{actions}</div> : null}
         </header>
       ) : null}
       <div className={cn("min-h-0 flex-1", pad && "px-4 pb-4 sm:px-5 sm:pb-5", bodyClassName)}>{children}</div>

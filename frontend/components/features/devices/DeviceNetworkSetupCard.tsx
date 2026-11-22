@@ -59,14 +59,14 @@ export function DeviceNetworkSetupCard({ token, setValue }: DeviceNetworkSetupCa
       variants={fadeInUp}
       initial="hidden"
       animate="visible"
-      className="relative overflow-hidden rounded-2xl border border-gray-200/50 dark:border-gray-700/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg shadow-blue-500/5"
+      className="relative overflow-hidden rounded-2xl border border-gray-200/50 dark:border-gray-700/50 bg-white shadow-[var(--shadow-card)]"
     >
-      <div className="absolute inset-0  pointer-events-none" />
+      <div className="absolute inset-0 pointer-events-none" />
       <div className="relative p-5 sm:p-6 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white shadow-md shadow-blue-600/25">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white shadow-[var(--shadow-card)]">
                 <Network className="h-4 w-4" />
               </div>
               <div>
@@ -164,7 +164,7 @@ export function DeviceNetworkSetupCard({ token, setValue }: DeviceNetworkSetupCa
                       <Badge
                         key={ip}
                         variant="secondary"
-                        className="font-mono text-[10px] bg-white/80 dark:bg-gray-900/80 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800"
+                        className="font-mono text-[10px] bg-white text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800"
                       >
                         {ip}
                       </Badge>
@@ -173,7 +173,7 @@ export function DeviceNetworkSetupCard({ token, setValue }: DeviceNetworkSetupCa
                 </div>
               )}
 
-              <div className="rounded-xl border border-gray-200/50 dark:border-gray-700/50 bg-white/50 dark:bg-gray-900/30 px-4 py-3">
+              <div className="rounded-xl border border-gray-200/50 dark:border-gray-700/50 bg-white dark:bg-gray-900/30 px-4 py-3">
                 <p className="text-sm text-gray-700 dark:text-gray-300">
                   <span className="font-medium text-blue-700 dark:text-blue-400">On the terminal:</span>{" "}
                   {hints.menu_path}. TCP port{" "}
@@ -199,7 +199,7 @@ export function DeviceNetworkSetupCard({ token, setValue }: DeviceNetworkSetupCa
                   {hints.subnets.map((row) => (
                     <div
                       key={`${row.your_pc_or_server_ip}-${row.suggested_k40_ip}`}
-                      className="rounded-xl border border-gray-200/50 dark:border-gray-700/50 p-4 "
+                      className="rounded-xl border border-gray-200/50 dark:border-gray-700/50 p-4"
                     >
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
                         <div className="space-y-1">
@@ -228,7 +228,7 @@ export function DeviceNetworkSetupCard({ token, setValue }: DeviceNetworkSetupCa
                         <div className="flex items-end sm:col-span-2 lg:col-span-1">
                           <Button
                             type="button"
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/20"
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-[var(--shadow-card)]"
                             onClick={() => {
                               setValue("ip_address", row.suggested_k40_ip, { shouldValidate: true })
                               setValue("port", hints.tcp_port, { shouldValidate: true })

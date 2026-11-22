@@ -55,6 +55,8 @@ import {
   Users as UsersIcon,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { KpiCard, type Tone } from "@/components/shared/KpiCard";
 import { TeacherDetailModal } from "@/components/features/dashboard/TeacherDetailModal";
 import { format } from "date-fns";
 
@@ -72,40 +74,26 @@ type AttendanceView = "details" | "visualize";
 // Stat Card
 // ---------------------------------------------------------------------------
 
+const STAT_TONE: Record<string, Tone> = {
+  "Total Events": "primary",
+  "Checked In": "success",
+  "Checked Out": "warning",
+  "Present Rate": "info",
+};
+
 function StatCard({
   label,
   value,
-  icon: Icon,
-  colorClass,
+  icon,
   hint,
 }: {
   label: string;
   value: number | string;
   icon: React.ElementType;
-  colorClass: string;
+  colorClass?: string;
   hint?: string;
 }) {
-  return (
-    <motion.div
-      variants={staggerItem}
-      className="glass-panel shadow-sm rounded-2xl border border-white/20 dark:border-white/10 p-4 hover-lift group transition-all"
-    >
-      <div className="flex items-center gap-3">
-        <div className={`p-2.5 rounded-xl shadow-glow bevel-sm transition-transform group-hover:scale-105 ${colorClass}`}>
-          <Icon className="size-4.5" />
-        </div>
-        <div>
-          <p className="text-xl font-black text-foreground tabular-nums tracking-tight">
-            {value}
-          </p>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-70">{label}</p>
-          {hint && (
-            <p className="text-[9px] font-bold text-muted-foreground/40 mt-0.5 uppercase tracking-tighter">{hint}</p>
-          )}
-        </div>
-      </div>
-    </motion.div>
-  );
+  return <KpiCard label={label} value={value} icon={icon as never} tone={STAT_TONE[label] ?? "primary"} hint={hint} />;
 }
 
 // ---------------------------------------------------------------------------
@@ -113,38 +101,14 @@ function StatCard({
 // ---------------------------------------------------------------------------
 
 function EventBadge({ type }: { type: EventType }) {
-  const config: Record<string, { bg: string; text: string; label: string }> = {
-    IN: {
-      bg: "bg-green-100 dark:bg-green-900/50",
-      text: "text-green-700 dark:text-green-300",
-      label: "IN",
-    },
-    OUT: {
-      bg: "bg-amber-100 dark:bg-amber-900/50",
-      text: "text-amber-700 dark:text-amber-300",
-      label: "OUT",
-    },
-    DUPLICATE: {
-      bg: "bg-purple-100 dark:bg-purple-900/50",
-      text: "text-purple-600 dark:text-purple-300",
-      label: "DUPLICATE",
-    },
-    UNKNOWN: {
-      bg: "bg-gray-100 dark:bg-gray-700/50",
-      text: "text-gray-600 dark:text-gray-400",
-      label: "UNKNOWN",
-    },
+  const config: Record<string, { tone: string; label: string }> = {
+    IN: { tone: "success", label: "In" },
+    OUT: { tone: "warning", label: "Out" },
+    DUPLICATE: { tone: "info", label: "Duplicate" },
+    UNKNOWN: { tone: "neutral", label: "Unknown" },
   };
-
   const c = config[type] ?? config.UNKNOWN;
-
-  return (
-    <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${c.bg} ${c.text}`}
-    >
-      {c.label}
-    </span>
-  );
+  return <span className={`pill pill-${c.tone}`}>{c.label}</span>;
 }
 
 // ---------------------------------------------------------------------------
@@ -189,7 +153,7 @@ function FilterBar({
           placeholder={audience === "teachers" ? "Search teacher or employee ID..." : "Search student or admission #..."}
           value={filters.search || ""}
           onChange={(e) => onFilterChange({ search: e.target.value })}
-          className="pl-10 h-11 bg-white/40 dark:bg-black/20 border-white/20 dark:border-white/10 focus:ring-4 focus:ring-primary/10 transition-all rounded-xl font-medium"
+          className="pl-10 h-11 bg-white dark:bg-black/20 border-white/20 dark:border-white/10 focus:ring-4 focus:ring-primary/10 transition-all rounded-xl font-medium"
         />
       </div>
 
@@ -337,8 +301,8 @@ function LiveScanRow({ event }: { event: AttendanceEvent }) {
       animate={{ opacity: isDuplicate ? 0.65 : 1, x: 0, scale: 1 }}
       exit={{ opacity: 0, height: 0, marginBottom: 0, scale: 0.9 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
-      className={`flex items-center gap-3 px-4 py-3.5 border-l-[4px] ${borderColor[event.event_type] ?? borderColor.UNKNOWN
-        } glass-panel shadow-sm rounded-r-2xl transition-all hover:translate-x-1 hover:shadow-md ${isDuplicate ? "opacity-50 grayscale-[0.3]" : ""
+      className={`flex items-center gap-3 rounded-xl border border-slate-200/80 border-l-[4px] bg-white px-4 py-3 transition-colors hover:bg-primary/5 ${borderColor[event.event_type] ?? borderColor.UNKNOWN
+        } ${isDuplicate ? "opacity-60" : ""
         }`}
     >
       {/* Icon */}
@@ -346,7 +310,7 @@ function LiveScanRow({ event }: { event: AttendanceEvent }) {
         {isDuplicate ? (
           <Copy className="size-4 text-purple-400" />
         ) : (
-          <Fingerprint className="size-4 text-blue-500 dark:text-blue-400" />
+          <Fingerprint className="size-4 text-primary" />
         )}
       </div>
 
@@ -427,13 +391,13 @@ function LiveCaptureFeed({
       variants={fadeInUp}
       initial="hidden"
       animate="visible"
-      className="glass-panel shadow-premium rounded-3xl border border-white/20 dark:border-white/10 overflow-hidden bevel-card"
+      className="data-card"
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-5 border-b border-white/10 dark:border-white/5 bg-primary/5">
+      <div className="flex items-center justify-between px-4 py-3.5 sm:px-5 border-b border-slate-100 bg-slate-50/60">
         <div className="flex items-center gap-3">
-          <h3 className="text-lg font-black tracking-tight text-foreground uppercase">
-            Live Stream
+          <h3 className="text-[15px] font-semibold tracking-tight text-slate-900">
+            Live stream
           </h3>
           {isConnected ? (
             <span className="flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400">
@@ -582,7 +546,7 @@ function HistoryTab({
         onReset={onReset}
       />
 
-      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50 dark:border-gray-700/50">
+      <div className="bg-white rounded-xl shadow-[var(--shadow-card)] border border-gray-200/50 dark:border-gray-700/50">
         {/* Summary */}
         <div className="px-5 py-4 border-b border-gray-200/50 dark:border-gray-700/50 flex justify-between items-center">
           <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -594,7 +558,7 @@ function HistoryTab({
         <div className="overflow-x-auto rounded-xl border border-gray-200/50 dark:border-gray-700/50">
           <table className="w-full text-sm min-w-[640px]">
             <thead>
-              <tr className="text-left border-b border-indigo-200/40 dark:border-indigo-900/50 ">
+              <tr className="text-left border-b border-indigo-200/40 dark:border-indigo-900/50">
                 <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-wider text-white whitespace-nowrap">Time</th>
                 <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-wider text-white">{audience === "teachers" ? "Teacher" : "Student"}</th>
                 <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-wider text-white hidden sm:table-cell whitespace-nowrap">
@@ -822,11 +786,11 @@ function PresenceStatusTab({
         >
           <div className="flex items-center gap-2">
             <UserCheck className="size-4 text-green-600 dark:text-green-400" />
-            <p className="text-[10px] font-bold uppercase tracking-widest text-green-700/60 dark:text-green-300/60">
+            <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-green-700/60 dark:text-green-300/60">
               {audience === "teachers" ? "Teachers in" : "Students in"}
             </p>
           </div>
-          <p className="text-2xl font-black text-green-700 dark:text-green-300 tabular-nums mt-1">{inside}</p>
+          <p className="text-2xl font-bold text-green-700 dark:text-green-300 tabular-nums mt-1">{inside}</p>
           <p className="text-[10px] text-muted-foreground mt-1">Tap to list only</p>
         </button>
         <button
@@ -840,11 +804,11 @@ function PresenceStatusTab({
         >
           <div className="flex items-center gap-2">
             <UserX className="size-4 text-amber-600 dark:text-amber-400" />
-            <p className="text-[10px] font-bold uppercase tracking-widest text-amber-700/60 dark:text-amber-300/60">
+            <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-amber-700/60 dark:text-amber-300/60">
               {audience === "teachers" ? "Teachers out" : "Students out"}
             </p>
           </div>
-          <p className="text-2xl font-black text-amber-700 dark:text-amber-300 tabular-nums mt-1">{outside}</p>
+          <p className="text-2xl font-bold text-amber-700 dark:text-amber-300 tabular-nums mt-1">{outside}</p>
           <p className="text-[10px] text-muted-foreground mt-1">Tap to list only</p>
         </button>
         <button
@@ -858,11 +822,11 @@ function PresenceStatusTab({
         >
           <div className="flex items-center gap-2">
             <UsersIcon className="size-4 text-blue-600 dark:text-blue-400" />
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80">
+            <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground/80">
               {audience === "teachers" ? "All staff today" : "Everyone today"}
             </p>
           </div>
-          <p className="text-2xl font-black text-foreground tabular-nums mt-1">{records.length}</p>
+          <p className="text-2xl font-bold text-foreground tabular-nums mt-1">{records.length}</p>
           <p className="text-[10px] text-muted-foreground mt-1">
             {unknown} unknown status · tap to show all
           </p>
@@ -911,7 +875,7 @@ function PresenceStatusTab({
       </div>
 
       {/* Table */}
-      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
+      <div className="bg-white rounded-xl shadow-[var(--shadow-card)] border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
         {isLoading && records.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-gray-400">
             <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mb-3" />
@@ -927,7 +891,7 @@ function PresenceStatusTab({
           <div className="overflow-x-auto">
               <table className="w-full text-sm">
               <thead>
-                <tr className="text-left border-b border-indigo-200/40 dark:border-indigo-900/50  shadow-md">
+                <tr className="text-left border-b border-indigo-200/40 dark:border-indigo-900/50 shadow-[var(--shadow-card)]">
                   <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-wider text-white">{audience === "teachers" ? "Teacher" : "Student"}</th>
                   <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-wider text-white">{audience === "teachers" ? "Employee #" : "Adm No."}</th>
                   <th className="px-5 py-3.5 text-[10px] font-bold uppercase tracking-wider text-white">
@@ -1309,78 +1273,58 @@ export default function AttendancePage() {
 
   return (
     <motion.main
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
-      className="flex-1 space-y-6 p-4 sm:p-6 lg:p-8"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="page-shell space-y-5"
     >
       {/* Header */}
-      <motion.div variants={fadeInUp} initial="hidden" animate="visible" className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-        {/* Header */}
-        <div className="relative mb-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-primary rounded-2xl shadow-lg shadow-indigo-500/25 text-white">
-              <ClipboardCheck className="size-6" />
+      <PageHeader
+        icon={ClipboardCheck}
+        title="Attendance"
+        subtitle="Real-time biometric event capture"
+        actions={
+          <>
+            <div className="flex items-center rounded-xl border border-slate-200 bg-slate-100/80 p-0.5">
+              {(["students", "teachers"] as const).map((a) => (
+                <button
+                  key={a}
+                  onClick={() => setAudience(a)}
+                  className={`rounded-lg px-3.5 py-1.5 text-[13px] font-semibold capitalize transition-all ${audience === a ? "bg-white text-primary shadow-[var(--shadow-key-2)]" : "text-slate-500 hover:text-slate-800"}`}
+                >
+                  {a}
+                </button>
+              ))}
             </div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-primary">
-                Attendance Terminal
-              </h1>
-              <p className="text-xs text-muted-foreground mt-0.5 font-medium">Real-time biometric event capture</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
-          <div className="flex items-center bg-gray-100 dark:bg-gray-700/50 rounded-xl p-1 self-start">
-            <button
-              onClick={() => setAudience("students")}
-              className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all ${audience === "students" ? "bg-white dark:bg-gray-800 text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"}`}
+            <Button
+              variant={view === "visualize" ? "default" : "outline"}
+              onClick={() => setView((v) => (v === "details" ? "visualize" : "details"))}
             >
-              Students
-            </button>
-            <button
-              onClick={() => setAudience("teachers")}
-              className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all ${audience === "teachers" ? "bg-white dark:bg-gray-800 text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"}`}
-            >
-              Teachers
-            </button>
-          </div>
-
-          <Button
-            variant={view === "visualize" ? "default" : "outline"}
-            className="h-10 rounded-xl"
-            onClick={() => setView((v) => (v === "details" ? "visualize" : "details"))}
-          >
-            <BarChart3 className="size-4 mr-2" />
-            Visualize
-          </Button>
-        </div>
-      </motion.div>
+              <BarChart3 className="size-4" />
+              Visualize
+            </Button>
+          </>
+        }
+      />
 
       {/* Stats */}
-      <motion.div
-        variants={staggerContainer}
-        initial="hidden"
-        animate="visible"
-        className="grid grid-cols-2 gap-4 lg:grid-cols-4"
-      >
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {statCards.map((s) => (
           <StatCard key={s.label} {...s} />
         ))}
-      </motion.div>
+      </div>
 
       <motion.div
         variants={fadeInUp}
         initial="hidden"
         animate="visible"
-        className="glass-panel shadow-premium rounded-3xl border border-white/20 dark:border-white/10 p-5 bevel-sm"
+        className="card-portal p-4 sm:p-5"
       >
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-5 px-1">
-          <h2 className="text-xs font-black uppercase tracking-[0.15em] text-muted-foreground opacity-70">
-            Scanning Metrics
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <h2 className="text-[15px] font-semibold tracking-tight text-slate-900">
+            Scanning metrics
           </h2>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-white/40 dark:bg-black/20 px-3 py-1.5 rounded-full border border-white/10">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-semibold text-slate-500">
             <div className="flex items-center gap-1.5">
               <Clock className="size-3 text-primary" />
               Scan: <span className="text-foreground tabular-nums">
@@ -1411,23 +1355,24 @@ export default function AttendancePage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
           {[
-            { label: "Live Scans", value: totalSeen, icon: Fingerprint, color: "blue" },
-            { label: "Check-Ins", value: liveCounters.in, icon: LogIn, color: "green" },
-            { label: "Check-Outs", value: liveCounters.out, icon: LogOut, color: "amber" },
-            { label: "Duplicates", value: liveCounters.duplicate, icon: Copy, color: "purple" },
-            { label: "Unknown", value: liveCounters.unknown, icon: HelpCircle, color: "gray" },
-          ].map((item, i) => (
-            <div key={i} className={`rounded-2xl px-4 py-3.5 border bevel-sm flex flex-col items-center text-center transition-all hover:scale-[1.02] ${item.color === 'blue' ? 'border-blue-500/20 bg-blue-500/5 text-blue-700 dark:text-blue-300' :
-              item.color === 'green' ? 'border-green-500/20 bg-green-500/5 text-green-700 dark:text-green-300' :
-                item.color === 'amber' ? 'border-amber-500/20 bg-amber-500/5 text-amber-700 dark:text-amber-300' :
-                  item.color === 'purple' ? 'border-purple-500/20 bg-purple-500/5 text-purple-700 dark:text-purple-300' :
-                    'border-white/20 bg-white/5 dark:bg-white/5 text-foreground'
+            { label: "Live scans", value: totalSeen, icon: Fingerprint, tone: "primary" },
+            { label: "Check-ins", value: liveCounters.in, icon: LogIn, tone: "success" },
+            { label: "Check-outs", value: liveCounters.out, icon: LogOut, tone: "warning" },
+            { label: "Duplicates", value: liveCounters.duplicate, icon: Copy, tone: "info" },
+            { label: "Unknown", value: liveCounters.unknown, icon: HelpCircle, tone: "neutral" },
+          ].map((item) => (
+            <div key={item.label} className="flex items-center gap-3 rounded-xl border border-slate-200/80 bg-slate-50/60 px-3.5 py-3">
+              <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset ${
+                { primary: "bg-primary/10 text-primary ring-primary/20", success: "bg-emerald-50 text-emerald-600 ring-emerald-200/70", warning: "bg-amber-50 text-amber-600 ring-amber-200/70", info: "bg-blue-50 text-blue-600 ring-blue-200/70", neutral: "bg-slate-100 text-slate-500 ring-slate-200/70" }[item.tone]
               }`}>
-              <item.icon className="size-4 opacity-40 mb-2" />
-              <p className="text-xl font-black tabular-nums tracking-tighter">{item.value}</p>
-              <p className="text-[9px] font-black uppercase tracking-widest opacity-60 mt-0.5">{item.label}</p>
+                <item.icon className="size-4" />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-xl font-bold leading-none tabular-nums tracking-tight text-slate-900">{item.value}</span>
+                <span className="mt-1 block truncate text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-500">{item.label}</span>
+              </span>
             </div>
           ))}
         </div>
@@ -1436,12 +1381,12 @@ export default function AttendancePage() {
       {view === "details" && (
         <>
           {/* Tabs */}
-          <div className="flex gap-6 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex gap-6 overflow-x-auto border-b border-slate-200 no-scrollbar">
             <button
               onClick={() => setActiveTab("live")}
-              className={`pb-3 text-sm font-medium transition-colors relative ${activeTab === "live"
-                ? "text-blue-600 dark:text-blue-400"
-                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+              className={`pb-3 text-sm font-semibold whitespace-nowrap transition-colors relative ${activeTab === "live"
+                ? "text-primary"
+                : "text-slate-500 hover:text-slate-800"
                 }`}
             >
               <span className="flex items-center gap-2">
@@ -1457,15 +1402,15 @@ export default function AttendancePage() {
               {activeTab === "live" && (
                 <motion.div
                   layoutId="tab-indicator"
-                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400 rounded-full"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full"
                 />
               )}
             </button>
             <button
               onClick={() => setActiveTab("history")}
-              className={`pb-3 text-sm font-medium transition-colors relative ${activeTab === "history"
-                ? "text-blue-600 dark:text-blue-400"
-                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+              className={`pb-3 text-sm font-semibold whitespace-nowrap transition-colors relative ${activeTab === "history"
+                ? "text-primary"
+                : "text-slate-500 hover:text-slate-800"
                 }`}
             >
               <span className="flex items-center gap-2">
@@ -1475,15 +1420,15 @@ export default function AttendancePage() {
               {activeTab === "history" && (
                 <motion.div
                   layoutId="tab-indicator"
-                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400 rounded-full"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full"
                 />
               )}
             </button>
             <button
               onClick={() => setActiveTab("presence")}
-              className={`pb-3 text-sm font-medium transition-colors relative ${activeTab === "presence"
-                ? "text-blue-600 dark:text-blue-400"
-                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+              className={`pb-3 text-sm font-semibold whitespace-nowrap transition-colors relative ${activeTab === "presence"
+                ? "text-primary"
+                : "text-slate-500 hover:text-slate-800"
                 }`}
             >
               <span className="flex items-center gap-2">
@@ -1493,7 +1438,7 @@ export default function AttendancePage() {
               {activeTab === "presence" && (
                 <motion.div
                   layoutId="tab-indicator"
-                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400 rounded-full"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full"
                 />
               )}
             </button>
@@ -1563,7 +1508,7 @@ export default function AttendancePage() {
           variants={fadeInUp}
           initial="hidden"
           animate="visible"
-          className="rounded-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 p-5"
+          className="rounded-2xl bg-white border border-gray-200/50 dark:border-gray-700/50 p-5"
         >
           <h2 className="font-bold text-gray-900 dark:text-gray-100">
             {audience === "teachers" ? "Teacher Attendance Overview" : "Student Attendance Overview"}
@@ -1574,11 +1519,11 @@ export default function AttendancePage() {
 
           <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Primary Rate Card */}
-            <div className="lg:col-span-1 glass-panel shadow-premium rounded-3xl border border-white/20 p-6 flex flex-col justify-center items-center text-center bevel-card relative overflow-hidden group">
+            <div className="lg:col-span-1 glass-panel shadow-premium rounded-2xl border border-white/20 p-6 flex flex-col justify-center items-center text-center bevel-card relative overflow-hidden group">
               <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:rotate-12 transition-transform duration-700">
                 <BarChart3 className="size-32" />
               </div>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60 mb-2">Overall Presence Rate</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground opacity-60 mb-2">Overall Presence Rate</p>
               <div className="relative">
                 <svg className="size-32 transform -rotate-90">
                   <circle
@@ -1606,49 +1551,49 @@ export default function AttendancePage() {
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-3xl font-black tabular-nums tracking-tighter">{stats ? Math.round(stats.present_rate) : "—"}%</span>
+                  <span className="text-3xl font-bold tabular-nums tracking-tight">{stats ? Math.round(stats.present_rate) : "—"}%</span>
                 </div>
               </div>
-              <p className="text-[10px] font-bold text-muted-foreground mt-4 uppercase tracking-widest">
+              <p className="text-[10px] font-bold text-muted-foreground mt-4 uppercase tracking-[0.08em]">
                 {stats?.checked_in ?? 0} / {stats?.total_users ?? 0}{" "}
                 {audience === "teachers" ? "teachers" : "students"} present
               </p>
             </div>
 
             {/* Movement Trends */}
-            <div className="lg:col-span-2 glass-panel shadow-premium rounded-3xl border border-white/20 p-6 bevel-card">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60 mb-6">Movement Analytics</p>
+            <div className="lg:col-span-2 glass-panel shadow-premium rounded-2xl border border-white/20 p-6 bevel-card">
+              <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground opacity-60 mb-6">Movement Analytics</p>
               <div className="space-y-6">
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-foreground">
+                    <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.08em] text-foreground">
                       <LogIn className="size-3.5 text-green-500" /> entries
                     </span>
-                    <span className="text-sm font-black tabular-nums">{stats?.checked_in ?? 0}</span>
+                    <span className="text-sm font-bold tabular-nums">{stats?.checked_in ?? 0}</span>
                   </div>
                   <div className="h-3 rounded-full bg-muted/10 overflow-hidden bevel-sm">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${stats?.total_users ? Math.min(100, (stats.checked_in * 100) / stats.total_users) : 0}%` }}
                       transition={{ duration: 1, ease: "easeOut" }}
-                      className="bg-primary h-full  shadow-glow"
+                      className="bg-primary h-full shadow-glow"
                     />
                   </div>
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-foreground">
+                    <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.08em] text-foreground">
                       <LogOut className="size-3.5 text-amber-500" /> exits
                     </span>
-                    <span className="text-sm font-black tabular-nums">{stats?.checked_out ?? 0}</span>
+                    <span className="text-sm font-bold tabular-nums">{stats?.checked_out ?? 0}</span>
                   </div>
                   <div className="h-3 rounded-full bg-muted/10 overflow-hidden bevel-sm">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${stats?.total_users ? Math.min(100, (stats.checked_out * 100) / stats.total_users) : 0}%` }}
                       transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
-                      className="bg-primary h-full  shadow-glow"
+                      className="bg-primary h-full shadow-glow"
                     />
                   </div>
                 </div>
@@ -1656,16 +1601,16 @@ export default function AttendancePage() {
                 {audience === "students" && school?.school_type === "mixed" && (
                   <div className="pt-4 mt-6 border-t border-white/10 grid grid-cols-2 gap-8">
                     <div>
-                      <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60 mb-3">Boarders</p>
+                      <p className="text-[9px] font-bold uppercase tracking-[0.08em] text-muted-foreground opacity-60 mb-3">Boarders</p>
                       <div className="flex items-end gap-2">
-                        <span className="text-2xl font-black tabular-nums">84%</span>
+                        <span className="text-2xl font-bold tabular-nums">84%</span>
                         <span className="text-[10px] font-bold text-green-500 mb-1">+2.4%</span>
                       </div>
                     </div>
                     <div>
-                      <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60 mb-3">Day Students</p>
+                      <p className="text-[9px] font-bold uppercase tracking-[0.08em] text-muted-foreground opacity-60 mb-3">Day Students</p>
                       <div className="flex items-end gap-2">
-                        <span className="text-2xl font-black tabular-nums">71%</span>
+                        <span className="text-2xl font-bold tabular-nums">71%</span>
                         <span className="text-[10px] font-bold text-amber-500 mb-1">-1.2%</span>
                       </div>
                     </div>
@@ -1674,7 +1619,7 @@ export default function AttendancePage() {
 
                 {audience === "teachers" && (
                   <div className="pt-4 mt-6 border-t border-white/10">
-                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60 mb-4">Department Deployment</p>
+                    <p className="text-[9px] font-bold uppercase tracking-[0.08em] text-muted-foreground opacity-60 mb-4">Department Deployment</p>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                       {[
                         { name: "Science", count: 12, total: 14 },
@@ -1707,7 +1652,7 @@ export default function AttendancePage() {
           <div className="mt-8 flex justify-end">
             <Button
               variant="outline"
-              className="rounded-2xl h-11 px-8 font-black uppercase tracking-widest text-[10px] bevel-sm hover:bg-primary hover:text-white transition-all active:scale-95"
+              className="rounded-2xl h-11 px-8 font-bold uppercase tracking-[0.08em] text-[10px] bevel-sm hover:bg-primary hover:text-white transition-all active:scale-95"
               onClick={() => setView("details")}
             >
               Back to Terminal

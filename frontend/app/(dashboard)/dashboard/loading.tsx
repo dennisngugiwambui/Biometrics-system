@@ -4,13 +4,13 @@ import { motion } from "framer-motion";
 
 export default function Loading() {
     return (
-        <div className="flex flex-col items-center justify-center min-h-[400px] w-full p-8 bg-slate-50/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-3xl border border-slate-200 dark:border-slate-800 my-8">
+        <div className="flex flex-col items-center justify-center min-h-[400px] w-full p-8 bg-slate-50/50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-800 my-8">
             <div className="relative">
                 {/* Main large spinner */}
                 <motion.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                    className="w-20 h-20 rounded-full border-4 border-slate-200 dark:border-slate-700 border-t-indigo-600 dark:border-t-indigo-500 shadow-xl"
+                    className="w-20 h-20 rounded-full border-4 border-slate-200 dark:border-slate-700 border-t-indigo-600 dark:border-t-indigo-500 shadow-[var(--shadow-card-md)]"
                 />
 
                 {/* Inner reverse spinner */}
@@ -47,7 +47,7 @@ export default function Loading() {
                 <motion.div
                     animate={{ x: [-192, 192] }}
                     transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                    className="bg-primary w-full h-full "
+                    className="bg-primary w-full h-full"
                 />
             </div>
 

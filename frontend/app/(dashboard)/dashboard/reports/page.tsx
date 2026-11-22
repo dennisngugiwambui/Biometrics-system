@@ -19,6 +19,9 @@ import {
   staggerContainer,
 } from "@/lib/animations/framer-motion"
 import { Badge } from "@/components/ui/badge"
+import { PageHeader } from "@/components/shared/PageHeader"
+import { KpiCard, type Tone } from "@/components/shared/KpiCard"
+import { StatusPill } from "@/components/shared/DataCard"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -278,132 +281,97 @@ export default function ReportsPage() {
     <motion.main
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="flex-1 space-y-6 p-4 sm:p-8 lg:p-10 bg-background"
+      className="page-shell space-y-5"
     >
       {/* ── Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white">
-              <FileText className="h-6 w-6" />
-            </div>
-            <div>
-              <h1 className="text-2xl sm:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-                Analytics Hub
-              </h1>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">
-                Biometric Intelligence · <span className="text-indigo-600">Secure Audit Generation</span>
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={fetchData}
-            disabled={isDataLoading}
-            className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border-gray-200 dark:border-gray-700 rounded-2xl h-14 px-6 font-extrabold uppercase tracking-widest text-[11px] shadow-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-600 transition-all active:scale-95"
-          >
-            <RefreshCw className={`size-5 mr-3 text-indigo-500 ${isDataLoading ? 'animate-spin' : ''}`} />
-            Sync Data
-          </Button>
-          <Button
-            size="lg"
-            onClick={() => window.print()}
-            className="bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-gray-100 dark:text-gray-900 text-white rounded-2xl h-14 px-8 font-extrabold uppercase tracking-widest text-[11px] shadow-2xl transition-all active:scale-95"
-          >
-            <Printer className="size-5 mr-3" />
-            Export Hub
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        icon={FileText}
+        title="Reports"
+        subtitle="Attendance trends and PDF registers"
+        actions={
+          <>
+            <Button variant="outline" onClick={fetchData} disabled={isDataLoading}>
+              <RefreshCw className={`size-4 ${isDataLoading ? "animate-spin" : ""}`} />
+              Refresh
+            </Button>
+            <Button onClick={() => window.print()}>
+              <Printer className="size-4" />
+              Print page
+            </Button>
+          </>
+        }
+      />
 
       {downloadError && (
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="p-4 border-2 border-red-200 bg-red-50 dark:bg-red-950/20 rounded-2xl flex items-center gap-3">
-          <ShieldCheck className="h-5 w-5 text-red-500" />
-          <p className="text-sm font-bold text-red-800 dark:text-red-200">{downloadError}</p>
-        </motion.div>
+        <div className="flex items-center gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4">
+          <ShieldCheck className="h-5 w-5 text-rose-500" />
+          <p className="text-sm font-semibold text-rose-800">{downloadError}</p>
+        </div>
       )}
 
-      {/* ── Metric Highlights */}
-      <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[
-          { label: "Today's Yield", value: `${chartData[chartData.length - 1]?.rate ?? 0}%`, sub: "Attendance Rate", icon: TrendingUp, color: "emerald" },
-          { label: "Check-Ins", value: chartData[chartData.length - 1]?.present ?? 0, sub: "Total Personnel", icon: UserCheck, color: "indigo" },
-          { label: "Yield Gap", value: chartData[chartData.length - 1]?.absent ?? 0, sub: "Missing Subject Count", icon: X, color: "rose" },
-          { label: "Avg Baseline", value: Math.round(chartData.reduce((acc, curr) => acc + curr.rate, 0) / (chartData.length || 1)) + "%", sub: "14-Day Performance", icon: Clock, color: "violet" },
-        ].map((item, i) => (
-          <motion.div key={item.label} variants={fadeInUp} className="group relative overflow-hidden rounded-3xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/50 dark:border-gray-700/50 shadow-2xl p-6">
-            <div className={`absolute top-0 right-0 w-32 h-32 bg-${item.color}-500 opacity-[0.03] -mr-12 -mt-12 rounded-full blur-3xl`} />
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-muted-foreground/60 mb-2">{item.label}</p>
-                <h3 className="text-3xl font-extrabold text-gray-900 dark:text-white tabular-nums tracking-tight">{item.value}</h3>
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-2 flex items-center gap-2">
-                  <div className={`h-1.5 w-1.5 rounded-full bg-${item.color}-500`} />
-                  {item.sub}
-                </p>
-              </div>
-              <div className={`h-12 w-12 rounded-2xl bg-${item.color}-600/10 flex items-center justify-center text-${item.color}-600 group-hover:scale-110 transition-transform`}>
-                <item.icon className="h-6 w-6" />
-              </div>
-            </div>
-          </motion.div>
+      {/* ── KPI cards */}
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        {([
+          { label: "Today’s attendance", value: `${chartData[chartData.length - 1]?.rate ?? 0}%`, sub: "Attendance rate", icon: TrendingUp, tone: "success" },
+          { label: "Check-ins", value: chartData[chartData.length - 1]?.present ?? 0, sub: "Present today", icon: UserCheck, tone: "primary" },
+          { label: "Absent", value: chartData[chartData.length - 1]?.absent ?? 0, sub: "No check-in today", icon: X, tone: "danger" },
+          { label: "14-day average", value: Math.round(chartData.reduce((acc, curr) => acc + curr.rate, 0) / (chartData.length || 1)) + "%", sub: "Average attendance rate", icon: Clock, tone: "info" },
+        ] as { label: string; value: string | number; sub: string; icon: typeof X; tone: Tone }[]).map((item) => (
+          <KpiCard key={item.label} label={item.label} value={item.value} icon={item.icon as never} tone={item.tone} hint={item.sub} />
         ))}
-      </motion.div>
+      </div>
 
       {/* ── Main Analytical Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 items-start">
         
         {/* PDF Workspace */}
-        <motion.div variants={fadeInUp} className="lg:col-span-4 space-y-8">
-          <Card className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border-white/50 dark:border-gray-700/50 shadow-2xl rounded-3xl overflow-hidden">
-            <CardHeader className="p-8 border-b border-gray-100 dark:border-gray-800">
-              <CardTitle className="text-xl font-extrabold flex items-center gap-3">
-                <div className="h-8 w-8 rounded-xl bg-indigo-600 flex items-center justify-center">
+        <motion.div variants={fadeInUp} className="lg:col-span-4 space-y-4 sm:space-y-5">
+          <Card className="gap-0 overflow-hidden py-0">
+            <CardHeader className="border-b border-slate-100 py-4">
+              <CardTitle className="flex items-center gap-2.5 text-[15px]">
+                <span className="icon-tile h-8 w-8 rounded-lg">
                   <Download className="h-4 w-4 text-white" />
-                </div>
-                PDF Command Center
+                </span>
+                PDF registers
               </CardTitle>
-              <CardDescription className="text-xs font-bold uppercase tracking-widest mt-1">Export Verified Documentation</CardDescription>
+              <CardDescription className="text-xs">Download attendance registers as PDF</CardDescription>
             </CardHeader>
-            <CardContent className="p-8 space-y-6">
+            <CardContent className="space-y-5 p-4 sm:p-5">
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground ml-1">Academic Context</Label>
+                  <Label className="text-[13px] font-semibold text-slate-700">Class</Label>
                   <select
-                    className="w-full h-12 rounded-2xl bg-gray-50 dark:bg-gray-900 border-none px-4 text-sm font-bold focus:ring-4 focus:ring-indigo-600/10 transition-all outline-none"
+                    className="field-select"
                     value={pdfClassId}
                     onChange={(e) => {
                       setPdfClassId(e.target.value ? Number(e.target.value) : "")
                       setPdfStreamId("")
                     }}
                   >
-                    <option value="">Global Institute View</option>
+                    <option value="">Whole school</option>
                     {pdfClasses.map(c => <option key={c.id} value={c.id}>Class: {c.name}</option>)}
                   </select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground ml-1">Section Stream</Label>
+                  <Label className="text-[13px] font-semibold text-slate-700">Stream</Label>
                   <select
-                    className="w-full h-12 rounded-2xl bg-gray-50 dark:bg-gray-900 border-none px-4 text-sm font-bold focus:ring-4 focus:ring-indigo-600/10 transition-all outline-none disabled:opacity-30"
+                    className="field-select"
                     disabled={pdfClassId === ""}
                     value={pdfStreamId}
                     onChange={(e) => setPdfStreamId(e.target.value ? Number(e.target.value) : "")}
                   >
-                    <option value="">Full Class Perspective</option>
+                    <option value="">All streams</option>
                     {pdfStreams.map(s => <option key={s.id} value={s.id}>{s.name} Stream</option>)}
                   </select>
                 </div>
               </div>
 
               <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-                <TabsList className="grid grid-cols-3 bg-gray-100 dark:bg-gray-900 rounded-xl p-1 h-12">
-                  <TabsTrigger value="daily" className="rounded-lg text-[10px] font-extrabold uppercase tracking-tighter">Daily</TabsTrigger>
-                  <TabsTrigger value="historical" className="rounded-lg text-[10px] font-extrabold uppercase tracking-tighter">History</TabsTrigger>
-                  <TabsTrigger value="audit" className="rounded-lg text-[10px] font-extrabold uppercase tracking-tighter">Audit</TabsTrigger>
+                <TabsList className="grid h-10 w-full grid-cols-3">
+                  <TabsTrigger value="daily" className="text-[13px]">Daily</TabsTrigger>
+                  <TabsTrigger value="historical" className="text-[13px]">History</TabsTrigger>
+                  <TabsTrigger value="audit" className="text-[13px]">Audit</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="daily" className="space-y-6 outline-none">
@@ -413,7 +381,7 @@ export default function ReportsPage() {
                         key={type}
                         variant={presentTodayType === type ? "default" : "outline"}
                         onClick={() => setPresentTodayType(type)}
-                        className={`h-11 rounded-xl font-extrabold uppercase text-[10px] tracking-widest ${presentTodayType === type ? "bg-indigo-600 shadow-lg shadow-indigo-600/20" : ""}`}
+                        className="h-10 capitalize"
                       >
                         {type}s
                       </Button>
@@ -422,42 +390,42 @@ export default function ReportsPage() {
                   <Button
                     onClick={handlePresentToday}
                     disabled={downloadLoading}
-                    className="w-full h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-extrabold uppercase text-[11px] tracking-widest shadow-xl shadow-indigo-600/20 active:scale-95 transition-all"
+                    className="w-full h-11"
                   >
-                    {downloadLoading ? <Loader2 className="animate-spin mr-3 size-5" /> : <Eye className="size-5 mr-3" />}
-                    Preview Today
+                    {downloadLoading ? <Loader2 className="animate-spin size-4" /> : <Eye className="size-5 mr-3" />}
+                    Preview today
                   </Button>
                 </TabsContent>
 
                 <TabsContent value="historical" className="space-y-6 outline-none">
                   <div className="grid grid-cols-1 gap-4">
                     <div className="grid grid-cols-2 gap-3">
-                       <Input type="date" value={rangeFrom} onChange={e => setRangeFrom(e.target.value)} className="h-12 rounded-xl bg-gray-50 dark:bg-gray-900 border-none font-bold text-xs" />
-                       <Input type="date" value={rangeTo} onChange={e => setRangeTo(e.target.value)} className="h-12 rounded-xl bg-gray-50 dark:bg-gray-900 border-none font-bold text-xs" />
+                       <Input type="date" value={rangeFrom} onChange={e => setRangeFrom(e.target.value)}  />
+                       <Input type="date" value={rangeTo} onChange={e => setRangeTo(e.target.value)}  />
                     </div>
                     <Button
                       onClick={handlePresentRange}
                       disabled={downloadLoading}
-                      className="w-full h-14 bg-violet-600 hover:bg-violet-700 text-white rounded-2xl font-extrabold uppercase text-[11px] tracking-widest shadow-xl shadow-violet-600/20 active:scale-95 transition-all"
+                      className="w-full h-11"
                     >
-                      {downloadLoading ? <Loader2 className="animate-spin mr-3 size-5" /> : <Calendar className="size-5 mr-3" />}
-                      Generate Historical
+                      {downloadLoading ? <Loader2 className="animate-spin size-4" /> : <Calendar className="size-5 mr-3" />}
+                      Generate for date range
                     </Button>
                   </div>
                 </TabsContent>
 
                 <TabsContent value="audit" className="space-y-6 outline-none">
-                   <div className="bg-amber-50 dark:bg-amber-900/10 p-4 rounded-2xl border border-amber-100 dark:border-amber-900/30">
-                      <p className="text-[10px] font-extrabold text-amber-700 dark:text-amber-400 uppercase tracking-widest leading-relaxed text-center">
-                        Sequential biometric audit form configured for comprehensive oversight.
+                   <div className="bg-amber-50 p-3.5 rounded-xl border border-amber-100">
+                      <p className="text-xs font-medium text-amber-800 leading-relaxed text-center">
+                        Full list of every in and out event, ready to file.
                       </p>
                    </div>
                    <Button
                     onClick={handleEvents}
                     disabled={downloadLoading}
-                    className="w-full h-14 bg-slate-900 dark:bg-white dark:text-slate-900 text-white rounded-2xl font-extrabold uppercase text-[11px] tracking-widest shadow-xl active:scale-95 transition-all"
+                    className="w-full h-11"
                   >
-                    Download Audit File
+                    Download event log
                   </Button>
                 </TabsContent>
               </Tabs>
@@ -466,19 +434,19 @@ export default function ReportsPage() {
         </motion.div>
 
         {/* Charts & Trends */}
-        <motion.div variants={fadeInUp} className="lg:col-span-8 space-y-8">
-          <Card className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border-white/50 dark:border-gray-700/50 shadow-2xl rounded-3xl overflow-hidden">
-            <CardHeader className="p-5 sm:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <motion.div variants={fadeInUp} className="lg:col-span-8 space-y-4 sm:space-y-5">
+          <Card className="gap-0 overflow-hidden py-0">
+            <CardHeader className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <CardTitle className="text-2xl font-extrabold tracking-tight">Analytical Trends</CardTitle>
-                <CardDescription className="text-xs font-bold uppercase tracking-widest mt-1">Personnel Volume Vectors (14-Day View)</CardDescription>
+                <CardTitle className="text-[15px]">Attendance trend</CardTitle>
+                <CardDescription className="text-xs">Present and absent over the last 14 days</CardDescription>
               </div>
               <div className="flex gap-4">
-                <div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-indigo-600" /><span className="text-[10px] font-extrabold uppercase text-muted-foreground">Present</span></div>
-                <div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-gray-300" /><span className="text-[10px] font-extrabold uppercase text-muted-foreground">Absent</span></div>
+                <div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-primary" /><span className="text-xs font-semibold text-slate-500">Present</span></div>
+                <div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-slate-300" /><span className="text-xs font-semibold text-slate-500">Absent</span></div>
               </div>
             </CardHeader>
-            <CardContent className="p-5 sm:p-8 pt-0">
+            <CardContent className="px-4 pb-4 pt-0 sm:px-5 sm:pb-5">
               <div className="h-56 sm:h-72 lg:h-80 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={chartData}>
@@ -488,18 +456,18 @@ export default function ReportsPage() {
                         <stop offset="95%" stopColor="#15803d" stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900, fill: '#94a3b8' }} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900, fill: '#94a3b8' }} />
+                    <CartesianGrid strokeDasharray="3 4" vertical={false} stroke="#e6ebf1" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#7b889c' }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#7b889c' }} />
                     <Tooltip
                       content={({ active, payload, label }) => {
                         if (active && payload && payload.length) {
                           return (
-                            <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl p-4 rounded-2xl border border-white/20 shadow-2xl">
-                              <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-2">{label}</p>
+                            <div className="bg-white px-3.5 py-3 rounded-xl border border-slate-200 shadow-[var(--shadow-card-md)]">
+                              <p className="text-xs font-semibold text-slate-700 mb-1.5">{label}</p>
                               <div className="space-y-1">
-                                <div className="flex justify-between gap-6"><span className="text-xs font-bold">Present</span><span className="text-xs font-extrabold text-indigo-600">{payload[0].value}</span></div>
-                                <div className="flex justify-between gap-6"><span className="text-xs font-bold text-muted-foreground">Absent</span><span className="text-xs font-extrabold text-gray-400">{payload[1].value}</span></div>
+                                <div className="flex justify-between gap-6"><span className="text-xs font-bold">Present</span><span className="text-xs font-bold text-primary">{payload[0].value}</span></div>
+                                <div className="flex justify-between gap-6"><span className="text-xs font-bold text-muted-foreground">Absent</span><span className="text-xs font-bold text-gray-400">{payload[1].value}</span></div>
                               </div>
                             </div>
                           )
@@ -507,7 +475,7 @@ export default function ReportsPage() {
                         return null
                       }}
                     />
-                    <Area type="monotone" dataKey="present" stroke="#15803d" strokeWidth={4} fillOpacity={1} fill="url(#colorPresent)" />
+                    <Area type="monotone" dataKey="present" stroke="#15803d" strokeWidth={2.5} fillOpacity={1} fill="url(#colorPresent)" />
                     <Area type="monotone" dataKey="absent" stroke="#cbd5e1" strokeWidth={2} strokeDasharray="5 5" fill="transparent" />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -516,40 +484,34 @@ export default function ReportsPage() {
           </Card>
           
           {/* Ledger Table */}
-          <Card className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border-white/50 dark:border-gray-700/50 shadow-2xl rounded-3xl overflow-hidden">
-             <CardHeader className="p-5 sm:p-8 border-b border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <Card className="gap-0 overflow-hidden py-0">
+             <CardHeader className="flex flex-col gap-3 border-b border-slate-100 py-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                   <CardTitle className="text-xl font-extrabold">Biometric Ledger</CardTitle>
-                   <CardDescription className="text-[10px] font-extrabold uppercase tracking-widest mt-1 text-muted-foreground">Real-Time Event Sequential Feed</CardDescription>
+                   <CardTitle className="text-[15px]">Recent events</CardTitle>
+                   <CardDescription className="text-xs">Latest taps from your devices</CardDescription>
                 </div>
-                <Badge variant="outline" className="rounded-lg h-8 px-3 font-extrabold uppercase text-[9px] tracking-widest text-indigo-600 border-indigo-100 bg-indigo-50/50">
-                  Live Feed Status: Active
-                </Badge>
+                <StatusPill tone="success">Live</StatusPill>
              </CardHeader>
              <CardContent className="p-0 overflow-x-auto">
                 <Table className="min-w-135">
                   <TableHeader>
-                    <TableRow className="bg-indigo-50/80 dark:bg-indigo-900/30 border-0">
-                      <TableHead className="px-8 h-12 text-[10px] font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-300">Time</TableHead>
-                      <TableHead className="h-12 text-[10px] font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-300">Identity</TableHead>
-                      <TableHead className="h-12 text-[10px] font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-300">Role</TableHead>
-                      <TableHead className="h-12 text-[10px] font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-300">Vector</TableHead>
+                    <TableRow>
+                      <TableHead>Time</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Event</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {recentLogs.slice(0, 5).map((log, i) => (
-                      <TableRow key={log.id} className="border-gray-50 dark:border-gray-800/50 hover:bg-gray-50/80 dark:hover:bg-gray-900/50">
-                        <TableCell className="px-8 py-5 text-[11px] font-bold text-muted-foreground">{format(new Date(log.occurred_at), 'HH:mm:ss')}</TableCell>
-                        <TableCell className="text-sm font-extrabold text-gray-900 dark:text-white">{log.student_name || log.teacher_name}</TableCell>
+                      <TableRow key={log.id}>
+                        <TableCell className="tabular-nums text-slate-500">{format(new Date(log.occurred_at), 'HH:mm:ss')}</TableCell>
+                        <TableCell className="cell-strong">{log.student_name || log.teacher_name}</TableCell>
                         <TableCell>
-                          <Badge variant="outline" className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-md ${log.teacher_id ? "text-purple-600 border-purple-100" : "text-blue-600 border-blue-100"}`}>
-                            {log.teacher_id ? "Faculty" : "Student"}
-                          </Badge>
+                          <StatusPill tone={log.teacher_id ? "info" : "neutral"}>{log.teacher_id ? "Staff" : "Student"}</StatusPill>
                         </TableCell>
                         <TableCell>
-                           <span className={`text-[10px] font-extrabold uppercase tracking-widest ${log.event_type === 'IN' ? 'text-emerald-600' : 'text-amber-600'}`}>
-                             {log.event_type === 'IN' ? 'Entry Confirmed' : 'Exit Logged'}
-                           </span>
+                           <StatusPill tone={log.event_type === "IN" ? "success" : "warning"}>{log.event_type === "IN" ? "Checked in" : "Checked out"}</StatusPill>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -562,14 +524,14 @@ export default function ReportsPage() {
 
       {/* PDF Preview Dialog */}
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-[95vw] sm:max-w-[1700px] w-full h-[95vh] flex flex-col p-0 gap-0 overflow-hidden border-none bg-slate-100 dark:bg-slate-900 shadow-2xl">
+        <DialogContent className="max-w-[95vw] sm:max-w-[1700px] w-full h-[95vh] flex flex-col p-0 gap-0 overflow-hidden border-none bg-slate-100 dark:bg-slate-900 shadow-[var(--shadow-card-md)]">
           <DialogHeader className="p-6 border-b bg-white dark:bg-slate-950 flex flex-row justify-between items-center space-y-0">
             <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-xl bg-indigo-600/10 flex items-center justify-center text-indigo-600">
-                <FileText className="h-6 w-6" />
+              <div className="icon-tile h-10 w-10">
+                <FileText className="h-5 w-5" />
               </div>
               <div>
-                <DialogTitle className="text-xl font-bold">Institutional Document Preview</DialogTitle>
+                <DialogTitle className="text-xl font-bold">PDF preview</DialogTitle>
                 <p className="text-xs text-muted-foreground font-medium flex items-center gap-2">
                   <ShieldCheck className="h-3 w-3" /> {previewFilename}
                 </p>
@@ -585,26 +547,26 @@ export default function ReportsPage() {
                 <iframe 
                   src={`${previewUrl}#toolbar=0&view=FitH`} 
                   title={previewFilename}
-                  className="w-full h-full rounded-lg shadow-2xl z-10" 
+                  className="w-full h-full rounded-lg shadow-[var(--shadow-card-md)] z-10" 
                 />
              ) : (
                 <div className="flex flex-col items-center gap-4">
-                   <Loader2 className="h-10 w-10 animate-spin text-indigo-600" />
-                   <p className="text-sm font-extrabold uppercase tracking-widest text-muted-foreground">Rendering File...</p>
+                   <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                   <p className="text-sm font-semibold text-slate-500">Preparing PDF…</p>
                 </div>
              )}
           </div>
 
           <DialogFooter className="p-6 border-t bg-white dark:bg-slate-950 flex flex-row items-center justify-between">
-            <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+            <span className="text-xs font-semibold text-slate-500 flex items-center gap-2">
                <div className="h-2 w-2 rounded-full bg-emerald-500" /> Official attendance record
             </span>
             <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => previewUrl && window.open(previewUrl, "_blank")} className="h-12 rounded-xl font-bold">
+            <Button variant="outline" onClick={() => previewUrl && window.open(previewUrl, "_blank")} >
               Open in new tab
             </Button>
-            <Button onClick={handlePreviewDownload} className="h-12 px-8 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl gap-3">
-              <Download className="h-5 w-5" /> Download Full PDF
+            <Button onClick={handlePreviewDownload} className="gap-2">
+              <Download className="h-5 w-5" /> Download PDF
             </Button>
             </div>
           </DialogFooter>

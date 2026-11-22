@@ -33,7 +33,7 @@ export function EnterprisePage({
                 </div>
               ) : null}
               <div className="space-y-3">
-                <h1 className="text-[clamp(2rem,4vw,3.4rem)] font-extrabold leading-[0.96] tracking-[-0.04em] text-white">
+                <h1 className="text-[clamp(2rem,4vw,3.4rem)] font-bold leading-[0.96] tracking-[-0.04em] text-white">
                   {title}
                 </h1>
                 {description ? <p className="max-w-3xl text-sm leading-7 text-white/74">{description}</p> : null}

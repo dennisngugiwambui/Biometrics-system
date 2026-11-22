@@ -72,7 +72,7 @@ export function DeviceGroupForm({
       initial="hidden"
       animate="visible"
     >
-      <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50">
+      <Card className="bg-white border border-gray-200/50 dark:border-gray-700/50">
         <div className="p-6">
           <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
             {/* Error Alert */}

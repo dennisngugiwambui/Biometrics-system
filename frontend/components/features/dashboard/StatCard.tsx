@@ -22,7 +22,7 @@ export function StatCard({ label, value, icon: Icon, colorClass, index = 0 }: St
       transition={{ delay: index * 0.1 }}
     >
       <motion.div variants={cardHover} initial="rest" whileHover="hover" animate="rest">
-        <Card className="border-none bg-card shadow-sm transition-shadow hover:shadow-md">
+        <Card className="border-none bg-card shadow-sm transition-shadow hover:shadow-[var(--shadow-card)]">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${colorClass}`}>

@@ -368,8 +368,8 @@ export function StudentWizard({ mode, studentId }: StudentWizardProps) {
           <ChevronLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
           System Orbit
         </Button>
-        <span className="text-muted-foreground/30 font-black">/</span>
-        <span className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Enrolment Console</span>
+        <span className="text-muted-foreground/30 font-bold">/</span>
+        <span className="text-sm font-bold text-muted-foreground uppercase tracking-[0.08em]">Enrolment Console</span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 xl:gap-16 items-start">
@@ -378,9 +378,9 @@ export function StudentWizard({ mode, studentId }: StudentWizardProps) {
           <div className="space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-200/50 dark:border-blue-900/30">
               <div className="size-1.5 rounded-full bg-blue-600 animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-widest">Live Registration</span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.08em]">Live Registration</span>
             </div>
-            <h1 className="text-4xl lg:text-5xl font-black tracking-tight text-gray-900 dark:text-white leading-[1.1]">
+            <h1 className="text-4xl lg:text-5xl font-bold tracking-tight text-gray-900 dark:text-white leading-[1.1]">
               {mode === "add" ? "Student" : "Edit"} <br />
               <span className="text-primary">
                 {mode === "add" ? "Deployment" : "Update"}
@@ -396,12 +396,12 @@ export function StudentWizard({ mode, studentId }: StudentWizardProps) {
           </div>
 
           {/* Desktop specific context card */}
-          <div className="hidden lg:block p-6 rounded-2xl  border border-indigo-200/20 dark:border-indigo-800/20 backdrop-blur-sm">
+          <div className="hidden lg:block p-6 rounded-2xl border border-indigo-200/20 dark:border-indigo-800/20">
             <div className="flex items-center gap-3 mb-3">
               <div className="size-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-600">
                 <AlertCircle className="size-4" />
               </div>
-              <h4 className="text-sm font-black uppercase tracking-widest text-indigo-700 dark:text-indigo-400">Security Note</h4>
+              <h4 className="text-sm font-bold uppercase tracking-[0.08em] text-indigo-700 dark:text-indigo-400">Security Note</h4>
             </div>
             <p className="text-xs font-bold text-muted-foreground leading-relaxed">
               Biometric data is encrypted at rest and never transmitted over unsecured channels. All sync operations are audited.
@@ -413,9 +413,9 @@ export function StudentWizard({ mode, studentId }: StudentWizardProps) {
         <div className="lg:col-span-8">
           <div className="relative group/card">
             {/* Background Glows */}
-            <div className="absolute -inset-1  rounded-2xl opacity-5 blur group-hover/card:opacity-10 transition-opacity duration-500" />
+            <div className="absolute -inset-1 rounded-2xl opacity-5 blur group-hover/card:opacity-10 transition-opacity duration-500" />
 
-            <div className="relative overflow-hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 rounded-2xl shadow-premium bevel-card ring-1 ring-black/5 dark:ring-white/5 min-h-[520px] lg:min-h-[580px] flex flex-col">
+            <div className="relative overflow-hidden bg-white/95 dark:bg-gray-900/95 border border-white/20 dark:border-white/10 rounded-2xl shadow-premium bevel-card ring-1 ring-black/5 dark:ring-white/5 min-h-[520px] lg:min-h-[580px] flex flex-col">
               {/* Top Progress Bar */}
               <div className="absolute top-0 left-0 right-0 h-1.5 flex transition-all duration-700">
                 {STEPS.map((s, idx) => (
@@ -440,21 +440,21 @@ export function StudentWizard({ mode, studentId }: StudentWizardProps) {
               <div className="relative p-8 sm:p-12 flex flex-col flex-1">
                 <div className="flex items-start justify-between gap-6 pb-8 border-b border-black/5 dark:border-white/5">
                   <div className="flex items-center gap-5">
-                    <div className="size-16 rounded-3xl bg-primary text-white flex items-center justify-center shadow-glow-lg bevel-sm ring-4 ring-blue-500/10">
+                    <div className="size-16 rounded-2xl bg-primary text-white flex items-center justify-center shadow-glow-lg bevel-sm ring-4 ring-blue-500/10">
                       <currentStepDef.icon className="size-7" />
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center gap-3">
-                        <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
                           {currentStepDef.name}
                         </h2>
                         {currentStepDef.optional && (
-                          <span className="text-[10px] font-black uppercase tracking-[0.2em] bg-muted/30 text-muted-foreground border border-border/50 rounded-lg px-2.5 py-1">
+                          <span className="text-[10px] font-bold uppercase tracking-[0.08em] bg-muted/30 text-muted-foreground border border-border/50 rounded-lg px-2.5 py-1">
                             Optional
                           </span>
                         )}
                       </div>
-                      <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest opacity-60">
+                      <p className="text-sm font-bold text-muted-foreground uppercase tracking-[0.08em] opacity-60">
                         Task Component {currentStep} of {STEPS.length}
                       </p>
                     </div>
@@ -462,7 +462,7 @@ export function StudentWizard({ mode, studentId }: StudentWizardProps) {
 
                   {student?.admission_number ? (
                     <div className="flex flex-col items-end gap-1.5">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-40">System Admission</span>
+                      <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground opacity-40">System Admission</span>
                       <Badge variant="outline" className="font-mono text-base px-4 py-1.5 rounded-2xl bg-muted/10 border-blue-200/50 text-blue-600">
                         {student.admission_number}
                       </Badge>
@@ -472,7 +472,7 @@ export function StudentWizard({ mode, studentId }: StudentWizardProps) {
 
                 {error && (
                   <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mt-8">
-                    <Alert variant="destructive" className="rounded-3xl bg-red-500/5 border-red-500/20 text-red-600 flex items-center gap-4 py-4 px-6">
+                    <Alert variant="destructive" className="rounded-2xl bg-red-500/5 border-red-500/20 text-red-600 flex items-center gap-4 py-4 px-6">
                       <AlertCircle className="size-5 shrink-0" />
                       <AlertDescription className="font-bold text-sm tracking-tight">{error}</AlertDescription>
                     </Alert>

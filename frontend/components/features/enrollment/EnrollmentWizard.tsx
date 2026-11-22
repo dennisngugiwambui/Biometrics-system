@@ -321,7 +321,7 @@ export function EnrollmentWizard({ mode = "student", onStartEnrollment }: Enroll
 
       {/* Selected Items Display */}
       {currentStep > 1 && (
-        <div className="mb-4 p-3  rounded-xl border border-blue-200/50 dark:border-gray-700">
+        <div className="mb-4 p-3 rounded-xl border border-blue-200/50 dark:border-gray-700">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide mr-1">Selected:</span>
 
@@ -383,7 +383,7 @@ export function EnrollmentWizard({ mode = "student", onStartEnrollment }: Enroll
                       {/* TODO: Add enrolled fingers count when API is ready */}
                     </div>
                   </div>
-                  <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700">
+                  <div className="px-4 py-2 bg-gray-50 border-t border-gray-200 dark:border-gray-700">
                     <button
                       onClick={clearStudent}
                       className="text-xs text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
@@ -447,7 +447,7 @@ export function EnrollmentWizard({ mode = "student", onStartEnrollment }: Enroll
                       )}
                     </div>
                   </div>
-                  <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700">
+                  <div className="px-4 py-2 bg-gray-50 border-t border-gray-200 dark:border-gray-700">
                     <button
                       onClick={clearTeacher}
                       className="text-xs text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
@@ -513,7 +513,7 @@ export function EnrollmentWizard({ mode = "student", onStartEnrollment }: Enroll
                       </div>
                     </div>
                   </div>
-                  <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700">
+                  <div className="px-4 py-2 bg-gray-50 border-t border-gray-200 dark:border-gray-700">
                     <button
                       onClick={clearDevice}
                       className="text-xs text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
@@ -575,7 +575,7 @@ export function EnrollmentWizard({ mode = "student", onStartEnrollment }: Enroll
                       )}
                     </div>
                   </div>
-                  <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700">
+                  <div className="px-4 py-2 bg-gray-50 border-t border-gray-200 dark:border-gray-700">
                     <button
                       onClick={clearFinger}
                       className="text-xs text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
@@ -591,7 +591,7 @@ export function EnrollmentWizard({ mode = "student", onStartEnrollment }: Enroll
       )}
 
       {/* Step Content */}
-      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-lg overflow-hidden">
+      <div className="bg-white rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-[var(--shadow-card)] overflow-hidden">
         <div className="p-6 sm:p-8">
           {/* Step Header */}
           {currentStep < 4 && (
@@ -701,13 +701,13 @@ export function EnrollmentWizard({ mode = "student", onStartEnrollment }: Enroll
 
         {/* Navigation Footer */}
         {currentStep < 4 && (
-          <div className="flex items-center justify-between px-6 sm:px-8 py-4  border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between px-6 sm:px-8 py-4 border-t border-gray-200 dark:border-gray-700">
             <Button variant="ghost" onClick={handlePrevious} disabled={currentStep === 1} className="gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
               <ChevronLeft className="size-4" />
               Back
             </Button>
 
-            <Button onClick={handleNext} disabled={!canProceed() || isStartingEnrollment} className="gap-2 bg-primary text-white shadow-lg hover:shadow-xl transition-all">
+            <Button onClick={handleNext} disabled={!canProceed() || isStartingEnrollment} className="gap-2 bg-primary text-white shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-md)] transition-all">
               {isStartingEnrollment ? (
                 <>
                   Starting Enrollment...

@@ -71,8 +71,8 @@ export function NavigationProgress() {
         <div className="nav-progress-bar h-full w-1/3 rounded-full bg-green-600" />
       </div>
       {slow && (
-        <div className="absolute inset-0 z-40 flex items-start justify-center bg-white/60 backdrop-blur-[1px] dark:bg-gray-950/60" aria-live="polite">
-          <div className="sticky top-1/3 mt-32 flex flex-col items-center gap-3 rounded-2xl bg-white px-7 py-5 shadow-lg ring-1 ring-slate-200 dark:bg-gray-900 dark:ring-gray-800">
+        <div className="absolute inset-0 z-40 flex items-start justify-center bg-white backdrop-blur-[1px] dark:bg-gray-950/60" aria-live="polite">
+          <div className="sticky top-1/3 mt-32 flex flex-col items-center gap-3 rounded-2xl bg-white px-7 py-5 shadow-[var(--shadow-card)] ring-1 ring-slate-200 dark:bg-gray-900 dark:ring-gray-800">
             <span className="h-9 w-9 animate-spin rounded-full border-[3px] border-green-100 border-t-green-600" />
             <p className="text-xs font-semibold tracking-wide text-slate-500">Loading…</p>
           </div>

@@ -7,7 +7,8 @@ import { fadeInUp } from '@/lib/animations/framer-motion';
 import { EnrollmentWizard } from '@/components/features/enrollment/EnrollmentWizard';
 import { AdminEnrollment } from '@/components/features/enrollment/AdminEnrollment';
 import { startEnrollment, startTeacherEnrollment, EnrollmentApiError } from '@/lib/api/enrollment';
-import { GraduationCap, UserCircle, ShieldCheck } from 'lucide-react';
+import { GraduationCap, UserCircle, ShieldCheck, Fingerprint } from 'lucide-react';
+import { PageHeader } from '@/components/shared/PageHeader';
 import { cn } from '@/lib/utils';
 
 export default function EnrollmentPage() {
@@ -88,69 +89,35 @@ export default function EnrollmentPage() {
   };
 
   return (
-    <div className="min-h-screen ">
-      {/* Animated background shapes */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-400/20 rounded-full blur-3xl animate-pulse delay-1000" />
-      </div>
-
-      <div className="relative z-10 w-full px-4 py-8 sm:px-6 lg:px-10">
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={fadeInUp}
-        >
-          <div className="mb-6 text-center">
-            <h1 className="text-2xl sm:text-3xl font-bold text-primary mb-1">
-              Fingerprint Enrollment
-            </h1>
-            <p className="text-gray-500 dark:text-gray-400 text-sm max-w-md mx-auto">
-              Register biometric data for students or teachers on connected scanners
-            </p>
+    <div className="page-shell space-y-5">
+      <PageHeader
+        icon={Fingerprint}
+        title="Enrollment"
+        subtitle="Register fingerprints for students, teachers or admins on a connected device"
+        actions={
+          <div className="grid grid-cols-3 gap-0.5 rounded-xl border border-slate-200 bg-slate-100/80 p-0.5">
+            {([
+              { id: 'student', label: 'Student', icon: GraduationCap },
+              { id: 'teacher', label: 'Teacher', icon: UserCircle },
+              { id: 'admin', label: 'Admin', icon: ShieldCheck },
+            ] as const).map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setActiveTab(t.id)}
+                className={cn(
+                  'flex items-center justify-center gap-1.5 rounded-lg px-3.5 py-1.5 text-[13px] font-semibold transition-all',
+                  activeTab === t.id ? 'bg-white text-primary shadow-[var(--shadow-key-2)]' : 'text-slate-500 hover:text-slate-800'
+                )}
+              >
+                <t.icon className="size-3.5" />
+                {t.label}
+              </button>
+            ))}
           </div>
+        }
+      />
 
-          <div className="w-full max-w-md mx-auto grid grid-cols-3 gap-2 mb-8 p-1 rounded-xl bg-white/80 dark:bg-gray-800/80 border border-gray-200/50 dark:border-gray-700/50">
-            <button
-              type="button"
-              onClick={() => setActiveTab('student')}
-              className={cn(
-                'flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-bold text-xs transition-all',
-                activeTab === 'student'
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50'
-              )}
-            >
-              <GraduationCap className="size-3.5" />
-              Student
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('teacher')}
-              className={cn(
-                'flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-bold text-xs transition-all',
-                activeTab === 'teacher'
-                  ? 'bg-indigo-600 text-white shadow-md'
-                  : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50'
-              )}
-            >
-              <UserCircle className="size-3.5" />
-              Teacher
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('admin')}
-              className={cn(
-                'flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-bold text-xs transition-all',
-                activeTab === 'admin'
-                  ? 'bg-amber-600 text-white shadow-md'
-                  : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50'
-              )}
-            >
-              <ShieldCheck className="size-3.5" />
-              Admin
-            </button>
-          </div>
           {activeTab === 'student' && (
             <EnrollmentWizard mode="student" onStartEnrollment={handleStartEnrollment} />
           )}
@@ -158,8 +125,6 @@ export default function EnrollmentPage() {
             <EnrollmentWizard mode="teacher" onStartEnrollment={handleStartEnrollment} />
           )}
           {activeTab === 'admin' && <AdminEnrollment />}
-        </motion.div>
-      </div>
     </div>
   );
 }

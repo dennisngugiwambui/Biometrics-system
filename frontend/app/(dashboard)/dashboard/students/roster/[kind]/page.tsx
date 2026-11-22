@@ -187,7 +187,7 @@ function StudentRosterSessionPageInner() {
   if (!hasHydrated) return null
 
   return (
-    <div className="min-h-screen  p-4 sm:p-6 lg:p-8 print:bg-white print:p-2">
+    <div className="min-h-screen p-4 sm:p-6 lg:p-8 print:bg-white print:p-2">
       <motion.div
         initial="hidden"
         animate="visible"
@@ -233,8 +233,8 @@ function StudentRosterSessionPageInner() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-gray-200/50 dark:border-gray-700/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg shadow-blue-500/10 overflow-hidden">
-          <div className="bg-primary border-b border-gray-200/50 dark:border-gray-700/50  px-5 py-4 print:bg-blue-700">
+        <div className="rounded-2xl border border-gray-200/50 dark:border-gray-700/50 bg-white shadow-[var(--shadow-card)] overflow-hidden">
+          <div className="bg-primary border-b border-gray-200/50 dark:border-gray-700/50 px-5 py-4 print:bg-blue-700">
             <h1 className="text-xl font-bold text-white tracking-tight">
               {kind === "on-site" ? "Students on site" : "Students absent (no check-in today)"}
             </h1>
@@ -270,7 +270,7 @@ function StudentRosterSessionPageInner() {
             ) : kind === "on-site" ? (
               <Table>
                 <TableHeader>
-                  <TableRow className="border-b border-gray-200 dark:border-gray-700 hover:bg-transparent ">
+                  <TableRow className="border-b border-gray-200 dark:border-gray-700 hover:bg-transparent">
                     <TableHead className="text-white font-bold uppercase text-[10px] tracking-wider">Name</TableHead>
                     <TableHead className="text-white font-bold uppercase text-[10px] tracking-wider">Admission</TableHead>
                     <TableHead className="text-white font-bold uppercase text-[10px] tracking-wider">Class</TableHead>
@@ -300,7 +300,7 @@ function StudentRosterSessionPageInner() {
             ) : (
               <Table>
                 <TableHeader>
-                  <TableRow className="border-b border-gray-200 dark:border-gray-700 hover:bg-transparent ">
+                  <TableRow className="border-b border-gray-200 dark:border-gray-700 hover:bg-transparent">
                     <TableHead className="text-white font-bold uppercase text-[10px] tracking-wider">Name</TableHead>
                     <TableHead className="text-white font-bold uppercase text-[10px] tracking-wider">Admission</TableHead>
                     <TableHead className="text-white font-bold uppercase text-[10px] tracking-wider">Class</TableHead>
@@ -334,7 +334,7 @@ export default function StudentRosterSessionPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-[40vh] flex items-center justify-center ">
+        <div className="min-h-[40vh] flex items-center justify-center">
           <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
         </div>
       }

@@ -16,12 +16,32 @@ from school_service.core.security import (
     decode_refresh_token,
 )
 from school_service.services.user_service import UserService
+from school_service.services import portal_link
 from shared.schemas.user import UserLogin, Token, UserResponse, UserCreate
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
 # OAuth2 scheme for token extraction
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+
+
+async def _authenticate(db: AsyncSession, email: str, password: str):
+    """The attendance account for these credentials: its own password first, then the portal's.
+
+    The portal is only asked when the credentials are not an attendance account's own, so schools
+    that never used the portal sign in exactly as before.
+    """
+    user = await UserService(db).authenticate_user(email, password)
+    if user:
+        return user
+    try:
+        portal = await portal_link.verify_with_portal(email.strip().lower(), password)
+        if portal:
+            return await portal_link.user_for_portal_account(db, portal)
+    except portal_link.PortalRefusal as refusal:
+        raise HTTPException(status_code=refusal.status_code, detail=refusal.message)
+    return None
+
 
 
 @router.post(
@@ -63,10 +83,8 @@ async def login(
     
     Returns a JWT access token on successful authentication.
     """
-    user_service = UserService(db)
-    
     # Authenticate user (OAuth2PasswordRequestForm uses 'username' for email)
-    user = await user_service.authenticate_user(form_data.username, form_data.password)
+    user = await _authenticate(db, form_data.username, form_data.password)
     
     if not user:
         raise HTTPException(
@@ -129,10 +147,8 @@ async def login_json(
     
     Returns a JWT access token on successful authentication.
     """
-    user_service = UserService(db)
-    
     # Authenticate user
-    user = await user_service.authenticate_user(login_data.email, login_data.password)
+    user = await _authenticate(db, login_data.email, login_data.password)
     
     if not user:
         raise HTTPException(
