@@ -12,7 +12,7 @@ import { useAuthStore } from "@/lib/store/authStore"
 import { useSchoolBrandingStore } from "@/lib/store/schoolBrandingStore"
 import { decodeJwtPayload } from "@/lib/utils/jwt"
 import { toast } from "sonner"
-import { FullPageLoader } from "@/components/shared/OrbitLoader"
+import { OrbitLoader } from "@/components/shared/OrbitLoader"
 import AuthLayout from "@/components/auth/AuthLayout"
 import { authInputCls, authLabelCls } from "@/components/auth/formStyles"
 
@@ -98,7 +98,6 @@ export default function LoginPage() {
 
   return (
     <>
-    {isLoading && <FullPageLoader label="Signing in…" />}
     <AuthLayout
       brandName={displayName}
       logoUrl={logoDataUrl}
@@ -136,6 +135,14 @@ export default function LoginPage() {
         </div>
       )}
 
+      <div className="relative">
+      {/* Only the form is covered while signing in; the rest of the screen stays as it is. */}
+      {isLoading && (
+        <div role="status" className="absolute -inset-3 z-20 flex flex-col items-center justify-center gap-3 rounded-2xl bg-white/90">
+          <OrbitLoader size={64} />
+          <p className="text-[13px] font-semibold tracking-wide text-slate-600">Signing in…</p>
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="auth-rise space-y-4 [animation-delay:.35s]" autoComplete="on">
         {/* Email */}
         <div>
@@ -217,6 +224,7 @@ export default function LoginPage() {
           )}
         </button>
       </form>
+      </div>
 
       <p className="auth-rise text-[13px] text-slate-500 text-center leading-relaxed mt-6 pt-5 border-t border-slate-100 [animation-delay:.45s]">
         New to the platform?{" "}
