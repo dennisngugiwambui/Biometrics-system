@@ -10,7 +10,7 @@ import type React from "react"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import {
-  AlertTriangle, Award, Building2, Check, Copy, Download, KeyRound, LogOut, Mail, Pencil, Plus,
+  AlertTriangle, Award, Building2, Check, Copy, Download, Eye, KeyRound, LogOut, Mail, Pencil, Plus,
   RefreshCw, Search, ShieldCheck, Users, X,
 } from "lucide-react"
 import { toast } from "sonner"
@@ -329,7 +329,7 @@ function SchoolPanel({
         </SheetHeader>
 
         <div className="space-y-6 p-4">
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             <button className={primaryBtn} onClick={onIssue}><Award className="h-4 w-4" />{school.current_license ? "Renew licence" : "Grant licence"}</button>
             <button className={secondaryBtn} disabled={!school.current_license || busy === "resend"}
               onClick={() => run("resend", async () => {
@@ -337,6 +337,14 @@ function SchoolPanel({
                 onCredentials(await platformApi.resendCredentials(token, school.id))
               })}>
               {busy === "resend" ? <Spinner /> : <KeyRound className="h-4 w-4" />}Resend login
+            </button>
+            <button className={secondaryBtn} disabled={!school.current_license || busy === "reveal"}
+              title="Passwords are stored scrambled and cannot be read back. This sets a new one and shows it here once."
+              onClick={() => run("reveal", async () => {
+                if (!(await confirmDialog({ title: "Reset and show the password?", message: `A new password is set for ${school.admin?.email}. It is shown once on the next screen and the old one stops working.`, confirmLabel: "Reset and show" }))) return
+                onCredentials(await platformApi.resendCredentials(token, school.id, true))
+              })}>
+              {busy === "reveal" ? <Spinner /> : <Eye className="h-4 w-4" />}Reset &amp; show password
             </button>
           </div>
 

@@ -232,6 +232,9 @@ export default function LoginPage() {
           Register your school
         </Link>
       </p>
+      <p className="mt-3 text-center text-xs text-slate-400">
+        Platform owner? <Link href="/management/login" className="font-semibold text-slate-500 hover:underline">Open the management console</Link>
+      </p>
     </AuthLayout>
     </>
   )

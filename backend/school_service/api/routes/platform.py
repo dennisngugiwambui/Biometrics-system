@@ -360,7 +360,7 @@ class LicenseIssue(BaseModel):
     send_credentials: bool = True
 
 
-async def _issue_credentials(db: AsyncSession, school: School, lic: SchoolLicense) -> dict:
+async def _issue_credentials(db: AsyncSession, school: School, lic: SchoolLicense, reveal: bool = False) -> dict:
     """New temporary password for the school admin, switched on, emailed with the certificate."""
     user = await _school_admin(db, school.id)
     if not user:
@@ -379,8 +379,9 @@ async def _issue_credentials(db: AsyncSession, school: School, lic: SchoolLicens
         lic.credentials_sent_at = datetime.now(timezone.utc)
         await db.commit()
     # Shown once in the console when the email did not go, so the owner can pass it on.
+    # `reveal`: the owner asked to see it (stored passwords are hashed and can never be read back).
     return {"emailed": error is None, "email_error": error, "admin_email": user.email,
-            "temporary_password": None if error is None else password}
+            "temporary_password": password if (reveal or error is not None) else None}
 
 
 def _certificate_pdf(school: School, lic: SchoolLicense) -> bytes:
@@ -450,7 +451,7 @@ async def set_license_status(school_id: int, license_id: int, body: LicenseStatu
 
 
 @router.post("/schools/{school_id}/resend-credentials")
-async def resend_credentials(school_id: int, admin: PlatformAdmin = Depends(get_platform_admin), db: AsyncSession = Depends(get_db)):
+async def resend_credentials(school_id: int, reveal: bool = False, admin: PlatformAdmin = Depends(get_platform_admin), db: AsyncSession = Depends(get_db)):
     """Reset the school admin's password and email it again (needs a current licence)."""
     school = await _school_or_404(db, school_id)
     today = date.today()
@@ -459,7 +460,7 @@ async def resend_credentials(school_id: int, admin: PlatformAdmin = Depends(get_
     )).scalars().all() if l.is_valid_on(today)), None)
     if not lic:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Grant a licence first — the school has no current licence")
-    return await _issue_credentials(db, school, lic)
+    return await _issue_credentials(db, school, lic, reveal)
 
 
 @router.get("/schools/{school_id}/licenses/{license_id}/certificate")

@@ -111,8 +111,8 @@ export const platformApi = {
       `/schools/${id}/licenses`, { method: "POST", token, body: JSON.stringify(body) }),
   setLicenseStatus: (token: string, id: number, licenseId: number, status: "active" | "suspended" | "revoked") =>
     call<PlatformSchool>(`/schools/${id}/licenses/${licenseId}`, { method: "PATCH", token, body: JSON.stringify({ status }) }),
-  resendCredentials: (token: string, id: number) =>
-    call<CredentialsResult>(`/schools/${id}/resend-credentials`, { method: "POST", token }),
+  resendCredentials: (token: string, id: number, reveal = false) =>
+    call<CredentialsResult>(`/schools/${id}/resend-credentials${reveal ? "?reveal=true" : ""}`, { method: "POST", token }),
   /** Fetches the certificate PDF and saves it. */
   async downloadCertificate(token: string, id: number, lic: PlatformLicense) {
     let res: Response
