@@ -1,6 +1,6 @@
 "use client"
 
-import { Badge } from "@/components/ui/badge"
+import { StatusPill } from "@/components/shared/DataCard"
 import { type DeviceStatus } from "@/lib/api/devices"
 
 export interface DeviceStatusBadgeProps {
@@ -16,27 +16,11 @@ export interface DeviceStatusBadgeProps {
  * - Gray for unknown
  */
 export function DeviceStatusBadge({ status }: DeviceStatusBadgeProps) {
-  const statusConfig = {
-    online: {
-      label: "Online",
-      className: "bg-green-500 text-white border-green-600",
-    },
-    offline: {
-      label: "Offline",
-      className: "bg-red-500 text-white border-red-600",
-    },
-    unknown: {
-      label: "Unknown",
-      className: "bg-gray-500 text-white border-gray-600",
-    },
-  }
+  const config = {
+    online: { label: "Online", tone: "success" as const },
+    offline: { label: "Offline", tone: "danger" as const },
+    unknown: { label: "Unknown", tone: "neutral" as const },
+  }[status]
 
-  const config = statusConfig[status]
-
-  return (
-    <Badge className={config.className} variant="outline">
-      {config.label}
-    </Badge>
-  )
+  return <StatusPill tone={config.tone}>{config.label}</StatusPill>
 }
-

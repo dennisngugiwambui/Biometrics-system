@@ -464,3 +464,73 @@ main.has-tabbar [class*="blur-[1"], main.has-tabbar [class*="blur-3xl"] { displa
 @media (prefers-reduced-motion: reduce) {
   .auth-frame *, .auth-frame svg * { animation: none !important; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Portal design language — the same cards, tables, buttons and fields as
+   portal.shulepoa.co.ke, so a school moving between the two sees one product.
+   Plain CSS (not @apply) so these classes can be used from any component.
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root {
+  --shadow-card: 0 1px 2px 0 rgb(15 23 42 / 0.06), 0 6px 16px -8px rgb(15 23 42 / 0.14);
+  --shadow-card-md: 0 1px 2px 0 rgb(15 23 42 / 0.07), 0 10px 24px -10px rgb(15 23 42 / 0.20);
+  --shadow-key: 0 1px 0 color-mix(in srgb, var(--primary) 55%, #000), 0 3px 8px -3px color-mix(in srgb, var(--primary) 70%, transparent), inset 0 1px 0 rgb(255 255 255 / 0.18);
+  --shadow-key-2: 0 1px 0 rgb(15 23 42 / 0.10), 0 2px 6px -2px rgb(15 23 42 / 0.12), inset 0 1px 0 #fff;
+  --shadow-field: inset 0 1px 2px rgb(15 23 42 / 0.07);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --page-bg: #eef1f5;
+  --ledger-line: rgb(234 239 245);
+}
+body { background: var(--page-bg); font-feature-settings: "tnum" 0; }
+table { font-variant-numeric: tabular-nums; }
+
+/* Cards: white, 16px corners, a hairline edge and a soft ambient shadow. */
+.card-portal {
+  background: #fff; border: 1px solid rgb(226 232 240 / 0.8); border-radius: 1rem;
+  box-shadow: var(--shadow-card);
+}
+.card-portal-hover { transition: box-shadow .2s var(--ease-out-expo), transform .2s var(--ease-out-expo), border-color .2s; }
+.card-portal-hover:hover { box-shadow: var(--shadow-card-md); transform: translateY(-1px); }
+
+/* One data card: toolbar on top, ruled table, pager underneath. */
+.data-card { background: #fff; border: 1px solid rgb(226 232 240 / 0.8); border-radius: 1rem; box-shadow: var(--shadow-card); overflow: hidden; }
+.data-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; padding: .75rem 1rem; border-bottom: 1px solid rgb(241 245 249); }
+.data-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; padding: .75rem 1rem; border-top: 1px solid rgb(241 245 249); background: rgb(248 250 252 / 0.6); }
+
+/* Table scroll box: only rows move, header stays pinned. */
+.table-scroll { overflow: auto; overscroll-behavior: contain; max-height: clamp(320px, calc(100vh - 340px), 900px); background: #fff; scrollbar-width: thin; scrollbar-color: rgb(15 23 42 / 0.28) rgb(15 23 42 / 0.05); }
+.table-scroll table thead th { position: sticky; top: 0; z-index: 20; }
+.table-scroll::-webkit-scrollbar { width: 10px; height: 10px; }
+.table-scroll::-webkit-scrollbar-track { background: rgb(15 23 42 / 0.04); border-radius: 99px; }
+.table-scroll::-webkit-scrollbar-thumb { background: rgb(15 23 42 / 0.25); border-radius: 99px; border: 2px solid transparent; background-clip: padding-box; }
+@media (max-width: 767px) { .table-scroll { max-height: none; overscroll-behavior: auto; } }
+
+/* Ledger ruling, stripe and hover — the printed-register read of the portal. */
+.ledger { border-collapse: separate; border-spacing: 0; width: 100%; }
+.ledger thead th { box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.12); padding: 11px 16px; text-align: left; }
+.ledger tbody > tr > td { border-bottom: 1px solid var(--ledger-line); padding: 9px 16px; font-size: 13.5px; color: rgb(51 65 85); vertical-align: middle; }
+.ledger tbody > tr:nth-child(even) > td { background-color: rgb(248 250 252 / 0.6); }
+.ledger tbody > tr:hover > td { background-color: color-mix(in srgb, var(--primary) 6%, white); }
+.ledger tbody > tr:last-child > td { border-bottom: 0; }
+.cell-strong { font-weight: 600; color: rgb(15 23 42); }
+.cell-sub { display: block; font-size: 11.5px; color: rgb(100 116 139); }
+.cell-muted { color: rgb(148 163 184); }
+
+/* Soft status pills: a tinted ground, a ring and a dot — meaning, not paint. */
+.pill { display: inline-flex; align-items: center; gap: .375rem; border-radius: 999px; padding: 2px 10px; font-size: 11px; font-weight: 600; line-height: 1.5; white-space: nowrap; box-shadow: inset 0 0 0 1px var(--pill-ring, rgb(226 232 240 / .7)); background: var(--pill-bg, #f1f5f9); color: var(--pill-fg, #475569); }
+.pill::before { content: ""; width: 6px; height: 6px; border-radius: 99px; background: var(--pill-dot, #94a3b8); }
+.pill-success { --pill-bg: #ecfdf5; --pill-fg: #047857; --pill-ring: rgb(167 243 208 / .8); --pill-dot: #10b981; }
+.pill-info    { --pill-bg: #eff6ff; --pill-fg: #1d4ed8; --pill-ring: rgb(191 219 254 / .8); --pill-dot: #3b82f6; }
+.pill-warning { --pill-bg: #fffbeb; --pill-fg: #b45309; --pill-ring: rgb(253 230 138 / .8); --pill-dot: #f59e0b; }
+.pill-danger  { --pill-bg: #fff1f2; --pill-fg: #be123c; --pill-ring: rgb(254 205 211 / .8); --pill-dot: #f43f5e; }
+.pill-neutral { --pill-bg: #f1f5f9; --pill-fg: #475569; --pill-ring: rgb(226 232 240 / .8); --pill-dot: #94a3b8; }
+.pill-primary { --pill-bg: color-mix(in srgb, var(--primary) 9%, white); --pill-fg: var(--primary); --pill-ring: color-mix(in srgb, var(--primary) 25%, white); --pill-dot: var(--primary); }
+
+/* Icon tile used by page headers and panel titles. */
+.icon-tile { display: inline-flex; align-items: center; justify-content: center; flex: none; border-radius: .75rem; background: var(--primary); color: #fff; box-shadow: inset 0 0 0 1px rgb(255 255 255 / .15); }
+
+/* Phone: the table card goes edge to edge with a little less padding. */
+@media (max-width: 639px) {
+  .data-toolbar, .data-footer { padding: .625rem .75rem; }
+  .ledger thead th { padding: 10px 12px; }
+  .ledger tbody > tr > td { padding: 8px 12px; }
+}

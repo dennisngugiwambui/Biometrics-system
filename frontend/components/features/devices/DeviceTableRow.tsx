@@ -72,13 +72,13 @@ export function DeviceTableRow({
       variants={staggerItem}
       initial="hidden"
       animate="visible"
-      className="border-gray-200/50 dark:border-gray-700/50 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors"
+      className="transition-colors"
     >
-      <TableCell className="font-medium cursor-pointer" onClick={() => onDeviceClick(device.id)}>
+      <TableCell className="cell-strong cursor-pointer" onClick={() => onDeviceClick(device.id)}>
         {device.name}
       </TableCell>
       <TableCell className="cursor-pointer" onClick={() => onDeviceClick(device.id)}>
-        <div className="font-mono text-sm">
+        <div className="font-mono text-[13px]">
           {deviceAddress(device)}
         </div>
       </TableCell>
@@ -96,7 +96,7 @@ export function DeviceTableRow({
       </TableCell>
       <TableCell className="cursor-pointer" onClick={() => onDeviceClick(device.id)}>
         {device.serial_number ? (
-          <span className="font-mono text-sm">{device.serial_number}</span>
+          <span className="font-mono text-[13px]">{device.serial_number}</span>
         ) : (
           <span className="text-muted-foreground">—</span>
         )}
@@ -108,7 +108,7 @@ export function DeviceTableRow({
           compact={true}
         />
       </TableCell>
-      <TableCell>
+      <TableCell className="text-right">
         <Button
           variant="outline"
           size="sm"
@@ -117,21 +117,21 @@ export function DeviceTableRow({
             onTestConnection(device.id)
           }}
           disabled={isTestingConnection}
-          className="border-blue-300 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/20"
+          className="text-primary"
         >
           {isTestingConnection ? (
             <>
-              <WifiOff className="mr-2 h-3 w-3 animate-spin" />
+              <WifiOff className="h-3 w-3 animate-spin" />
               Testing...
             </>
           ) : currentStatus === "online" ? (
             <>
-              <Wifi className="mr-2 h-3 w-3" />
+              <Wifi className="h-3 w-3" />
               Test
             </>
           ) : (
             <>
-              <WifiOff className="mr-2 h-3 w-3" />
+              <WifiOff className="h-3 w-3" />
               Test
             </>
           )}

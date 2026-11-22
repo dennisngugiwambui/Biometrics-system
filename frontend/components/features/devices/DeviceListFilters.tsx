@@ -29,8 +29,8 @@ export function DeviceListFilters({
   const hasFilters = statusFilter || deviceGroupFilter
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-      <div className="flex-1 grid grid-cols-1 gap-3 sm:grid-cols-2">
+    <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {/* Status Filter */}
         <Select
           value={statusFilter || "all"}
@@ -38,11 +38,11 @@ export function DeviceListFilters({
             onStatusFilterChange(value === "all" ? null : (value as DeviceStatus))
           }
         >
-          <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+          <SelectTrigger className="min-w-[140px]">
             <SelectValue placeholder="All Statuses" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
+            <SelectItem value="all">All statuses</SelectItem>
             <SelectItem value="online">Online</SelectItem>
             <SelectItem value="offline">Offline</SelectItem>
             <SelectItem value="unknown">Unknown</SelectItem>
@@ -57,11 +57,11 @@ export function DeviceListFilters({
           }
           disabled={deviceGroups.length === 0}
         >
-          <SelectTrigger className="border-gray-300 focus:border-purple-500 focus:ring-purple-500">
+          <SelectTrigger className="min-w-[140px]">
             <SelectValue placeholder="All Groups" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Groups</SelectItem>
+            <SelectItem value="all">All groups</SelectItem>
             {deviceGroups.map((group) => (
               <SelectItem key={group.id} value={group.id.toString()}>
                 {group.name}
@@ -80,10 +80,9 @@ export function DeviceListFilters({
             onStatusFilterChange(null)
             onDeviceGroupFilterChange(null)
           }}
-          className="sm:w-auto"
         >
-          <X className="mr-2 h-4 w-4" />
-          Clear Filters
+          <X className="h-3.5 w-3.5" />
+          Clear filters
         </Button>
       )}
     </div>

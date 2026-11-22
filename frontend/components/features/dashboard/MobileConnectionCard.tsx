@@ -34,23 +34,23 @@ export function MobileConnectionCard() {
     }
 
     return (
-        <Card className="relative overflow-hidden border-none shadow-lg ">
+        <Card className="relative overflow-hidden">
             <div className="absolute top-0 right-0 p-3 opacity-10 pointer-events-none">
-                <Smartphone size={120} className="text-green-600 rotate-12" />
+                <Smartphone size={120} className="text-primary rotate-12" />
             </div>
 
             <CardHeader>
                 <div className="flex items-center gap-2 mb-1">
-                    <div className="p-1.5 bg-green-100 dark:bg-green-900/30 rounded-lg text-green-700">
+                    <div className="icon-tile h-8 w-8 rounded-lg">
                         <Smartphone size={16} />
                     </div>
-                    <CardTitle className="text-lg font-bold">Shulepoa App</CardTitle>
+                    <CardTitle className="text-[15px] font-semibold">Shulepoa App</CardTitle>
                 </div>
                 <CardDescription>Install on any phone — same login, same permissions</CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-4">
-                <div className="p-4 rounded-xl bg-white dark:bg-gray-800 border border-green-100 dark:border-green-900/20 shadow-sm">
+                <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-200">
                     <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Open on the phone</p>
                     <div className="flex items-center justify-between gap-3">
                         <code className="min-w-0 truncate text-sm font-bold text-green-700 dark:text-green-400 select-all">
@@ -69,13 +69,13 @@ export function MobileConnectionCard() {
                             <CheckCircle2 size={16} /> Installed
                         </div>
                     ) : state === "available" ? (
-                        <Button onClick={install} className="w-full bg-green-600 hover:bg-green-700 text-white rounded-xl shadow-md border-none">
+                        <Button onClick={install} className="w-full">
                             <Download size={16} className="mr-2" /> Install app
                         </Button>
                     ) : (
                         <Dialog>
                             <DialogTrigger asChild>
-                                <Button className="w-full bg-green-600 hover:bg-green-700 text-white rounded-xl shadow-md border-none">
+                                <Button className="w-full">
                                     <Download size={16} className="mr-2" /> Get App
                                 </Button>
                             </DialogTrigger>
@@ -108,7 +108,7 @@ export function MobileConnectionCard() {
                         </Dialog>
                     )}
 
-                    <Button variant="outline" className="w-full rounded-xl border-green-200 dark:border-green-800 hover:bg-green-50 dark:hover:bg-green-900/20" onClick={copyLink}>
+                    <Button variant="outline" className="w-full" onClick={copyLink}>
                         {copied ? <Check size={16} className="mr-2 text-green-600" /> : <Copy size={16} className="mr-2" />}
                         Copy link
                     </Button>

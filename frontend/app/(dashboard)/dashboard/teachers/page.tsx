@@ -38,6 +38,10 @@ import { format } from "date-fns"
 import { getAttendanceStats, listTeachersRoster, getPresenceOverview, type TeacherPresenceRow, type PresenceOverview } from "@/lib/api/attendance"
 import { staggerContainer, staggerItem, fadeInUp } from "@/lib/animations/framer-motion"
 import { PremiumPagination } from "@/components/shared/PremiumPagination"
+import { PageHeader } from "@/components/shared/PageHeader"
+import { KpiCard, PanelEmpty } from "@/components/shared/KpiCard"
+import { DataCard, DataToolbar, DataScroll, InitialsAvatar, StatusPill } from "@/components/shared/DataCard"
+import { Skeleton } from "@/components/ui/skeleton"
 
 // ─────────────────────────────────────────── hooks
 
@@ -89,74 +93,6 @@ function getLast7Days() {
     })
 }
 
-const AVATAR_GRADIENTS = [
-    "from-blue-500 to-indigo-600",
-    "from-emerald-500 to-teal-600",
-    "from-violet-500 to-purple-600",
-    "from-rose-500 to-pink-600",
-    "from-amber-500 to-orange-600",
-]
-
-// ─────────────────────────────────────────── Teacher Card
-
-function TeacherCard({ teacher }: { teacher: TeacherRow }) {
-    const router = useRouter()
-    const initials = `${teacher.first_name[0]}${teacher.last_name[0]}`.toUpperCase()
-    const gradient = AVATAR_GRADIENTS[teacher.id % AVATAR_GRADIENTS.length]
-    return (
-        <motion.div
-            variants={staggerItem}
-            whileHover={{ y: -5 }}
-            className="group bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-3xl border border-white/50 dark:border-gray-700/50 shadow-xl p-6 cursor-pointer relative overflow-hidden"
-            onClick={() => router.push(`/dashboard/teachers/${teacher.id}`)}
-        >
-            <div className={`absolute top-0 right-0 w-24 h-24  bg-primary opacity-5 -mr-8 -mt-8 rounded-full blur-2xl group-hover:opacity-20 transition-opacity`} />
-            
-            <div className="flex items-start gap-4 mb-5">
-                <div className={`h-14 w-14 rounded-2xl bg-primary bg-primary flex items-center justify-center text-white text-lg font-extrabold shadow-lg shadow-blue-500/20 transform group-hover:scale-110 group-hover:rotate-3 transition-transform`}>
-                    {initials}
-                </div>
-                <div className="flex-1 min-w-0">
-                    <h3 className="font-extrabold text-gray-900 dark:text-gray-100 text-lg leading-tight truncate group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
-                        {teacher.first_name} {teacher.last_name}
-                    </h3>
-                    <p className="text-[10px] text-muted-foreground font-extrabold uppercase tracking-widest mt-1">
-                        Emp ID: #{teacher.employee_id || "N/A"}
-                    </p>
-                </div>
-            </div>
-
-            <div className="space-y-3">
-                <div className="flex items-center gap-2.5 text-xs font-bold text-gray-600 dark:text-gray-400 bg-gray-50/50 dark:bg-gray-900/50 p-2 rounded-xl border border-gray-100 dark:border-gray-800">
-                    <BookOpen className="size-3.5 text-violet-500" />
-                    <span className="truncate">{[teacher.subject, teacher.department].filter(Boolean).join(" · ") || "General Staff"}</span>
-                </div>
-                <div className="flex items-center gap-2.5 text-xs font-bold text-gray-600 dark:text-gray-400 px-2">
-                    <Phone className="size-3.5 text-emerald-500" />
-                    <span className="tabular-nums">{teacher.phone}</span>
-                </div>
-                {teacher.email && (
-                    <div className="flex items-center gap-2.5 text-[11px] font-medium text-muted-foreground px-2 truncate">
-                        <Mail className="size-3.5 text-blue-500" />
-                        <span className="truncate">{teacher.email}</span>
-                    </div>
-                )}
-            </div>
-
-            <div className="mt-6 pt-5 border-t border-gray-100 dark:border-gray-700/50 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <div className={`h-2 w-2 rounded-full ${teacher.presenceLastType === 'IN' ? 'bg-emerald-500 shadow-sm shadow-emerald-500/50' : 'bg-gray-300 dark:bg-gray-600'}`} />
-                    <span className="text-[10px] font-extrabold uppercase tracking-tighter text-muted-foreground">
-                        {teacher.presenceLastType === 'IN' ? 'On Site' : 'Away'}
-                    </span>
-                </div>
-                <Button variant="ghost" size="sm" className="h-9 w-9 p-0 rounded-xl bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 hover:bg-violet-600 hover:text-white transition-all shadow-sm">
-                    <Eye className="size-5" />
-                </Button>
-            </div>
-        </motion.div>
-    )
-}
 
 // ─────────────────────────────────────────── Modals
 
@@ -484,250 +420,198 @@ export default function TeachersPage() {
     ]
 
     return (
-        <motion.main
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex-1 space-y-6 sm:space-y-10 p-4 sm:p-6 lg:p-10 bg-gray-50/50 dark:bg-gray-940"
-        >
-            {/* ── Page Header */}
-            <motion.div variants={fadeInUp} initial="hidden" animate="visible" className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-2">
-                <div className="space-y-2">
-                    <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-2xl bg-violet-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
-                            <Users className="h-5 w-5 text-white" />
-                        </div>
-                        <h1 className="text-3xl font-bold text-primary tracking-tight sm:text-4xl">
-                            Staff Management
-                        </h1>
-                    </div>
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] pl-[52px]">
-                        Personnel Repository · <span className="text-violet-600 font-extrabold">{total} Members</span>
-                    </p>
-                </div>
-                <div className="flex flex-wrap items-center gap-3">
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      onClick={() => window.location.assign("/dashboard/students")}
-                      className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-gray-200 dark:border-gray-700 rounded-2xl h-14 px-6 font-extrabold uppercase tracking-widest text-[11px] shadow-sm hover:bg-violet-50 hover:text-violet-600 transition-all active:scale-95"
-                    >
-                      <Users2 className="size-5 mr-3 text-violet-500" />
-                      Switch to Students
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      onClick={() => { setShowBulk(true); setImportResult(null); setUploadProgress(0) }}
-                      className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-gray-200 dark:border-gray-700 rounded-2xl h-14 px-6 font-extrabold uppercase tracking-widest text-[11px] shadow-sm hover:shadow-md transition-all active:scale-95"
-                    >
-                      <Upload className="size-5 mr-3 text-gray-500" />
-                      Bulk Import
-                    </Button>
-                    <Button
-                      size="lg"
-                      onClick={() => router.push("/dashboard/teachers/new")}
-                      className="bg-primary text-white rounded-2xl h-14 px-8 font-extrabold uppercase tracking-widest text-[11px] shadow-2xl shadow-violet-500/30 transition-all active:scale-95 border-0"
-                    >
-                      <Plus className="size-5 mr-3" />
-                      Enroll Teacher
-                    </Button>
-                </div>
-            </motion.div>
+        <main className="page-shell space-y-5">
+            {/* ── Page header */}
+            <PageHeader
+                icon={Users}
+                title="Staff"
+                subtitle={`${total.toLocaleString()} ${total === 1 ? "member" : "members"} on the register`}
+                actions={
+                    <>
+                        <Button variant="outline" onClick={() => { setShowBulk(true); setImportResult(null); setUploadProgress(0) }}>
+                            <Upload className="size-4" />
+                            Bulk import
+                        </Button>
+                        <Button onClick={() => router.push("/dashboard/teachers/new")}>
+                            <Plus className="size-4" />
+                            Enroll teacher
+                        </Button>
+                    </>
+                }
+            />
 
-            {/* ── Stats Highlights */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {[
-                    { label: "Faculty Roster", value: presenceOv?.total_teachers ?? total, sub: "Registered Staff", icon: Users, gradient: "from-violet-500 to-indigo-600" },
-                    { label: "Active Today", value: presenceOv?.teachers_on_premises ?? "—", sub: "Currently On Site", icon: UserCheck, gradient: "from-emerald-500 to-emerald-600" },
-                    { label: "Attendance Yield", value: `${todayStats.presentRate}%`, sub: "Daily Capacity", icon: TrendingUp, gradient: "from-blue-500 to-blue-600" },
-                    { label: "Away / Off Site", value: presenceOv?.teachers_off_premises ?? "—", sub: "Not Checked In", icon: AlertCircle, gradient: "from-amber-500 to-orange-600" },
-                ].map(({ label, value, sub, icon: Icon, gradient }, i) => (
-                    <motion.div key={label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
-                        className="group relative overflow-hidden rounded-3xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/50 dark:border-gray-700/50 shadow-2xl p-6"
-                    >
-                        <div className={`absolute top-0 right-0 w-32 h-32  bg-primary opacity-[0.03] -mr-12 -mt-12 rounded-full blur-3xl`} />
-                        <div className="flex items-start justify-between">
-                            <div>
-                                <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-muted-foreground/60 mb-2">{label}</p>
-                                <h3 className="text-3xl font-extrabold text-gray-900 dark:text-white tabular-nums tracking-tight">
-                                    {statsLoading && value === 0 ? <Loader2 className="h-8 w-8 animate-spin text-gray-200" /> : value}
-                                </h3>
-                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-2 flex items-center gap-2">
-                                    <div className={`h-1.5 w-1.5 rounded-full  bg-primary`} />
-                                    {sub}
-                                </p>
-                            </div>
-                            <div className={`h-12 w-12 rounded-2xl  bg-primary flex items-center justify-center shadow-lg transform group-hover:scale-110 group-hover:rotate-6 transition-transform shadow-${gradient.split('-')[1]}-500/20`}>
-                                <Icon className="h-6 w-6 text-white" />
-                            </div>
-                        </div>
-                    </motion.div>
-                ))}
+            {/* ── KPI cards */}
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+                <KpiCard label="Faculty roster" value={presenceOv?.total_teachers ?? total} icon={Users} tone="primary" hint="Registered staff" />
+                <KpiCard label="On site today" value={presenceOv?.teachers_on_premises ?? "—"} icon={UserCheck} tone="success" hint="Last tap today is IN" />
+                <KpiCard
+                    label="Attendance yield"
+                    value={statsLoading ? "…" : `${todayStats.presentRate}%`}
+                    icon={TrendingUp}
+                    tone="info"
+                    bar={{ value: todayStats.presentRate, label: "Daily capacity" }}
+                />
+                <KpiCard label="Away / off site" value={presenceOv?.teachers_off_premises ?? "—"} icon={AlertCircle} tone="warning" hint="Not checked in" />
             </div>
 
-            {/* ── Workspace Area */}
-            <div className="space-y-6">
-                <div className="flex flex-col lg:flex-row gap-6 items-end">
-                    <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-md rounded-2xl p-1.5 border border-white/50 dark:border-gray-700/50 flex flex-wrap shadow-xl">
-                        {tabs.map((t) => (
-                            <button key={t.id} type="button" onClick={() => setTab(t.id)}
-                                className={`px-6 py-2.5 text-[10px] font-extrabold uppercase tracking-[0.1em] rounded-xl transition-all ${tab === t.id ? "bg-violet-600 text-white shadow-xl shadow-violet-500/20" : "text-muted-foreground hover:bg-white/50 dark:hover:bg-gray-700/50"}`}>
-                                {t.label}
-                            </button>
-                        ))}
-                    </div>
-                    
-                    <div className="relative flex-1 group">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground group-focus-within:text-violet-500 transition-colors" />
-                        <input value={searchInput} onChange={(e) => setSearchInput(e.target.value)}
-                            placeholder="Enter Name, Department, or Employee ID to search..."
-                            className="w-full pl-12 pr-12 h-14 bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/50 dark:border-gray-700/50 rounded-2xl font-bold text-sm text-gray-900 dark:text-gray-100 placeholder:text-muted-foreground/60 focus:outline-none focus:ring-4 focus:ring-violet-500/10 shadow-2xl transition-all" />
-                        {searchInput && (
-                            <button onClick={() => setSearchInput("")} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-gray-900 dark:hover:text-white">
-                                <X className="size-5" />
-                            </button>
-                        )}
-                    </div>
-                </div>
+            {/* ── Staff register */}
+            <DataCard>
+                <DataToolbar
+                    search={searchInput}
+                    onSearch={setSearchInput}
+                    placeholder="Search by name, department or employee ID…"
+                    filters={
+                        <div className="flex rounded-xl border border-slate-200 bg-slate-100/80 p-0.5">
+                            {tabs.map((t) => (
+                                <button
+                                    key={t.id}
+                                    type="button"
+                                    title={t.hint}
+                                    onClick={() => setTab(t.id)}
+                                    className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+                                        tab === t.id ? "bg-white text-primary shadow-[var(--shadow-key-2)]" : "text-slate-500 hover:text-slate-800"
+                                    }`}
+                                >
+                                    {t.label}
+                                </button>
+                            ))}
+                        </div>
+                    }
+                    right={<span className="tabular-nums">{total.toLocaleString()} records</span>}
+                />
 
                 {isLoading ? (
-                    <div className="flex flex-col items-center justify-center py-40 bg-white/40 dark:bg-gray-800/40 backdrop-blur-xl rounded-3xl border border-white/50 dark:border-gray-700/50">
-                        <Loader2 className="h-14 w-14 animate-spin text-violet-600 mb-6" />
-                        <p className="text-sm font-extrabold text-violet-600 animate-pulse uppercase tracking-[0.3em]">Synchronizing Records...</p>
+                    <div className="space-y-3 p-4">
+                        {Array.from({ length: 6 }).map((_, i) => (
+                            <div key={i} className="flex items-center gap-3">
+                                <Skeleton className="h-8 w-8 rounded-full" />
+                                <Skeleton className="h-4 flex-1 rounded" />
+                                <Skeleton className="hidden h-4 w-40 rounded sm:block" />
+                            </div>
+                        ))}
                     </div>
                 ) : listError ? (
-                    <div className="flex flex-col items-center justify-center py-20 bg-rose-50/50 dark:bg-rose-950/10 rounded-3xl border border-rose-100 dark:border-rose-900/20">
-                        <AlertCircle className="h-14 w-14 text-rose-500 mb-4" />
-                        <h2 className="text-xl font-extrabold text-rose-900 dark:text-rose-100">Synchronization Fault</h2>
-                        <p className="text-sm text-rose-600 dark:text-rose-400 mt-2 max-w-md text-center font-medium">{listError}</p>
-                        <Button onClick={() => fetchTeachers(1, searchQuery, tab)} className="mt-6 bg-rose-600 hover:bg-rose-700 text-white rounded-xl h-11 px-8 font-extrabold uppercase tracking-widest text-[10px]">
-                            Re-initialize Fetch
-                        </Button>
-                    </div>
+                    <PanelEmpty
+                        icon={AlertCircle}
+                        title="Could not load staff"
+                        hint={listError}
+                        action={<Button variant="outline" onClick={() => fetchTeachers(1, searchQuery, tab)}>Try again</Button>}
+                    />
                 ) : teachers.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-32 bg-white/40 dark:bg-gray-800/40 backdrop-blur-xl rounded-3xl border border-white/50 dark:border-gray-700/50 shadow-2xl">
-                        <div className="h-24 w-24 rounded-full bg-gray-100 dark:bg-gray-900 flex items-center justify-center mb-6">
-                            <GraduationCap className="h-12 w-12 text-gray-300 dark:text-gray-700" />
-                        </div>
-                        <h2 className="text-2xl font-extrabold text-gray-400 dark:text-gray-600">No Personnel Found</h2>
-                        <p className="text-sm text-muted-foreground mt-2 font-bold uppercase tracking-widest">
-                            {searchInput ? "0 Matches for Current Query" : "Repository currently empty"}
-                        </p>
-                    </div>
+                    <PanelEmpty
+                        icon={GraduationCap}
+                        title="No staff found"
+                        hint={searchInput ? "Nothing matches that search." : "Enroll your first teacher to get started."}
+                    />
                 ) : (
                     <>
-                        {/* Desktop: Table layout */}
-                        <div className="hidden lg:block bg-white/40 dark:bg-gray-800/40 backdrop-blur-xl rounded-3xl border border-white/50 dark:border-gray-700/50 shadow-2xl overflow-hidden">
-                            <div className="overflow-x-auto">
-                                <Table className="w-full">
+                        {/* Desktop table */}
+                        <div className="hidden lg:block">
+                            <DataScroll>
+                                <Table>
                                     <TableHeader>
-                                        <TableRow className="border-0 hover:bg-transparent bg-violet-50/80 dark:bg-violet-900/30">
-                                            <TableHead className="px-8 h-16 text-[10px] font-bold uppercase tracking-widest text-violet-600 dark:text-violet-300">Staff ID</TableHead>
-                                            <TableHead className="h-16 text-[10px] font-bold uppercase tracking-widest text-violet-600 dark:text-violet-300">Faculty Name</TableHead>
-                                            <TableHead className="h-16 text-[10px] font-bold uppercase tracking-widest text-violet-600 dark:text-violet-300">Subject / Dept</TableHead>
-                                            <TableHead className="h-16 text-[10px] font-bold uppercase tracking-widest text-violet-600 dark:text-violet-300">Contact Info</TableHead>
-                                            <TableHead className="h-16 text-[10px] font-bold uppercase tracking-widest text-violet-600 dark:text-violet-300">Status</TableHead>
-                                            <TableHead className="px-8 h-16 text-[10px] font-bold uppercase tracking-widest text-violet-600 dark:text-violet-300 text-right">Action</TableHead>
+                                        <TableRow>
+                                            <TableHead>Staff</TableHead>
+                                            <TableHead>Employee ID</TableHead>
+                                            <TableHead>Subject / dept</TableHead>
+                                            <TableHead>Contact</TableHead>
+                                            <TableHead>Last tap</TableHead>
+                                            <TableHead className="text-right">Actions</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {teachers.map((t, i) => (
-                                            <motion.tr
-                                                key={t.id}
-                                                initial={{ opacity: 0, x: -10 }}
-                                                animate={{ opacity: 1, x: 0 }}
-                                                transition={{ delay: i * 0.03 }}
-                                                className="group border-gray-100 dark:border-gray-800 hover:bg-violet-50/40 dark:hover:bg-violet-900/10 transition-all cursor-pointer"
-                                                onClick={() => router.push(`/dashboard/teachers/${t.id}`)}
-                                            >
-                                                <TableCell className="px-8 py-5">
-                                                    <Badge variant="outline" className="font-mono text-[11px] bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 font-bold px-3 py-1 rounded-lg">
-                                                        {t.employee_id || "OFFBOARD"}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="flex items-center gap-3">
-                                                        <div className={`h-10 w-10 rounded-2xl bg-primary ${AVATAR_GRADIENTS[t.id % AVATAR_GRADIENTS.length]} flex items-center justify-center text-white text-xs font-extrabold shadow-lg transform group-hover:scale-110 group-hover:rotate-3 transition-all`}>
-                                                            {t.first_name[0]}{t.last_name[0]}
-                                                        </div>
-                                                        <div>
-                                                            <p className="font-extrabold text-gray-900 dark:text-gray-100 text-sm tracking-tight leading-none mb-1">
-                                                                {t.first_name} {t.last_name}
-                                                            </p>
-                                                            {!t.is_active && <span className="text-[9px] font-extrabold bg-amber-100 text-amber-700 dark:bg-amber-950/30 px-1.5 py-0.5 rounded uppercase">Restricted</span>}
-                                                        </div>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="h-1.5 w-1.5 rounded-full bg-violet-600" />
-                                                        <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
-                                                            {[t.subject, t.department].filter(Boolean).join(" · ") || "General Faculty"}
-                                                        </span>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="space-y-0.5">
-                                                        <p className="text-xs font-bold text-gray-600 dark:text-gray-400 tabular-nums">{t.phone}</p>
-                                                        <p className="text-[10px] font-medium text-muted-foreground truncate max-w-[150px]">{t.email || "No Email Provided"}</p>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell>
-                                                     {t.presenceLastType ? (
-                                                        <div className="flex flex-col">
-                                                            <div className="flex items-center gap-2">
-                                                                <div className={`h-1.5 w-1.5 rounded-full ${t.presenceLastType === "IN" ? "bg-emerald-500 shadow-sm shadow-emerald-500/50" : "bg-amber-500"}`} />
-                                                                <span className={`text-[10px] font-extrabold tracking-widest ${t.presenceLastType === "IN" ? "text-emerald-600" : "text-amber-600"}`}>
-                                                                    {t.presenceLastType}
-                                                                </span>
+                                        {teachers.map((t) => {
+                                            const name = `${t.first_name} ${t.last_name}`
+                                            return (
+                                                <TableRow key={t.id} className="cursor-pointer" onClick={() => router.push(`/dashboard/teachers/${t.id}`)}>
+                                                    <TableCell>
+                                                        <div className="flex items-center gap-3">
+                                                            <InitialsAvatar name={name} />
+                                                            <div>
+                                                                <span className="cell-strong">{name}</span>
+                                                                {!t.is_active && <StatusPill tone="warning" className="ml-2">Restricted</StatusPill>}
                                                             </div>
-                                                            <span className="text-[9px] font-bold text-muted-foreground/60 mt-1 uppercase tracking-tighter">
-                                                                {t.presenceLastAt?.slice(11, 16)} · {t.presenceDevice}
-                                                            </span>
                                                         </div>
-                                                     ) : (
-                                                        <Badge variant="secondary" className="bg-gray-100 dark:bg-gray-800 text-gray-400 font-extrabold text-[9px] uppercase tracking-tighter px-2">No Tap Detected</Badge>
-                                                     )}
-                                                </TableCell>
-                                                <TableCell className="px-8 py-5 text-right">
-                                                    <Button variant="ghost" className="h-10 w-10 p-0 rounded-xl bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 hover:bg-violet-600 hover:text-white transition-all group/btn shadow-sm border border-violet-100/50 dark:border-violet-800/50">
-                                                        <Eye className="size-5 group-hover/btn:scale-110 transition-transform" />
-                                                    </Button>
-                                                </TableCell>
-                                            </motion.tr>
-                                        ))}
+                                                    </TableCell>
+                                                    <TableCell className="font-mono text-[13px] text-slate-700">{t.employee_id || "—"}</TableCell>
+                                                    <TableCell>{[t.subject, t.department].filter(Boolean).join(" · ") || "General faculty"}</TableCell>
+                                                    <TableCell>
+                                                        <span className="tabular-nums">{t.phone}</span>
+                                                        <span className="cell-sub max-w-[180px] truncate">{t.email || "No email"}</span>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        {t.presenceLastType ? (
+                                                            <>
+                                                                <StatusPill tone={t.presenceLastType === "IN" ? "success" : "warning"}>
+                                                                    {t.presenceLastType === "IN" ? "In" : "Out"}
+                                                                </StatusPill>
+                                                                <span className="cell-sub">{t.presenceLastAt?.slice(11, 16)} · {t.presenceDevice}</span>
+                                                            </>
+                                                        ) : (
+                                                            <StatusPill tone="neutral">No tap today</StatusPill>
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        <Button
+                                                            variant="outline"
+                                                            size="icon-sm"
+                                                            aria-label={`View ${name}`}
+                                                            onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/teachers/${t.id}`) }}
+                                                        >
+                                                            <Eye className="size-4" />
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            )
+                                        })}
                                     </TableBody>
                                 </Table>
-                            </div>
+                            </DataScroll>
                         </div>
 
-                        {/* Mobile: Card layout */}
-                        <motion.div
-                            variants={staggerContainer}
-                            initial="hidden"
-                            animate="visible"
-                            className="grid grid-cols-1 sm:grid-cols-2 lg:hidden gap-6"
-                        >
-                            {teachers.map((t) => (
-                                <TeacherCard key={t.id} teacher={t} />
-                            ))}
-                        </motion.div>
+                        {/* Phones and tablets: one tappable row per teacher */}
+                        <ul className="divide-y divide-slate-100 lg:hidden">
+                            {teachers.map((t) => {
+                                const name = `${t.first_name} ${t.last_name}`
+                                return (
+                                    <li key={t.id}>
+                                        <button
+                                            type="button"
+                                            onClick={() => router.push(`/dashboard/teachers/${t.id}`)}
+                                            className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-primary/5 active:bg-primary/10"
+                                        >
+                                            <InitialsAvatar name={name} className="h-9 w-9" />
+                                            <span className="min-w-0 flex-1">
+                                                <span className="block truncate text-sm font-semibold text-slate-900">{name}</span>
+                                                <span className="block truncate text-xs text-slate-500">
+                                                    {[t.subject, t.department].filter(Boolean).join(" · ") || "General faculty"} · {t.phone}
+                                                </span>
+                                            </span>
+                                            {t.presenceLastType ? (
+                                                <StatusPill tone={t.presenceLastType === "IN" ? "success" : "warning"}>{t.presenceLastType === "IN" ? "In" : "Out"}</StatusPill>
+                                            ) : null}
+                                            <ChevronRight className="size-4 shrink-0 text-slate-300" />
+                                        </button>
+                                    </li>
+                                )
+                            })}
+                        </ul>
                     </>
                 )}
 
-                {/* ── Pagination — show whenever there are records */}
-                {total > 0 && totalPages >= 1 && (
+                {total > 0 && (
                     <PremiumPagination
                         page={page}
                         totalPages={Math.max(1, totalPages)}
                         total={total}
                         onPageChange={(p) => { setPage(p); fetchTeachers(p, searchQuery, tab) }}
-                        label="Teachers"
+                        label="staff"
+                        pageSize={24}
                     />
                 )}
-            </div>
+            </DataCard>
 
-            {/* ── Modals Area */}
+            {/* ── Modals */}
             <BulkUploadModal
                 open={showBulk}
                 onClose={() => { setShowBulk(false); setImportResult(null); setUploadProgress(0) }}
@@ -736,6 +620,6 @@ export default function TeachersPage() {
                 importResult={importResult}
                 uploadProgress={uploadProgress}
             />
-        </motion.main>
+        </main>
     )
 }

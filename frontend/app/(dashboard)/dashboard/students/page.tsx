@@ -11,6 +11,8 @@ import {
   LogIn, UserX, Loader2, Cpu, ExternalLink, ChevronLeft, ChevronRight,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { PageHeader } from "@/components/shared/PageHeader"
+import { KpiCard, type Tone } from "@/components/shared/KpiCard"
 import { StudentList } from "@/components/features/students/StudentList"
 import { useAuthStore } from "@/lib/store/authStore"
 import {
@@ -134,76 +136,47 @@ function SyncLedgerPagination({
 
 // ─────────────────────────────────────────── Stat Card Component
 
+const STAT_TONES: Record<string, Tone> = {
+  "Total Students": "primary",
+  "Biometric Enrolled": "success",
+  "In school now": "info",
+  "Absent (no check-in)": "danger",
+  "Active Classes": "neutral",
+}
+
 function StatCard({
   label,
   value,
-  icon: Icon,
-  gradient,
+  icon,
   sub,
-  delay = 0,
   onClick,
   hint,
 }: {
   label: string
   value: number | string
   icon: typeof Users
-  gradient: string
+  gradient?: string
   sub?: string
   delay?: number
   onClick?: () => void
   hint?: string
 }) {
-  const className =
-    "relative overflow-hidden rounded-2xl bg-white dark:bg-gray-800 border border-gray-200/70 dark:border-gray-700/70 shadow-sm p-4 w-full text-left transition-all" +
-    (onClick
-      ? " cursor-pointer hover:border-blue-300 dark:hover:border-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-      : "")
-
-  const inner = (
-    <>
-      <div className={`absolute top-0 left-0 right-0 h-1  bg-primary`} />
-      <div className="flex items-center gap-3">
-        <div className={`flex h-9 w-9 items-center justify-center rounded-xl  bg-primary shadow-sm`}>
-          <Icon className="h-4.5 w-4.5 text-white" />
-        </div>
-        <div>
-          <p className="text-lg font-bold text-gray-900 dark:text-white tabular-nums">
-            {typeof value === "number" ? value.toLocaleString() : value}
-          </p>
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{label}</p>
-        </div>
-      </div>
-      {sub && <p className="mt-2 text-[9px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold font-mono">{sub}</p>}
-      {hint && onClick && (
-        <p className="mt-1 text-[9px] text-blue-600 dark:text-blue-400 font-semibold uppercase tracking-wide">{hint}</p>
-      )}
-    </>
+  const card = (
+    <KpiCard
+      label={label}
+      value={typeof value === "number" ? value.toLocaleString() : value}
+      icon={icon}
+      tone={STAT_TONES[label] ?? "primary"}
+      hint={hint && onClick ? hint : sub}
+      className={onClick ? "card-portal-hover h-full cursor-pointer text-left" : "h-full"}
+    />
   )
-
-  if (onClick) {
-    return (
-      <motion.button
-        type="button"
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay, duration: 0.4, ease: "easeOut" }}
-        className={className}
-        onClick={onClick}
-      >
-        {inner}
-      </motion.button>
-    )
-  }
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.4, ease: "easeOut" }}
-      className={className}
-    >
-      {inner}
-    </motion.div>
+  return onClick ? (
+    <button type="button" onClick={onClick} className="block h-full w-full rounded-2xl text-left focus-visible:outline-2 focus-visible:outline-offset-2">
+      {card}
+    </button>
+  ) : (
+    card
   )
 }
 
@@ -706,134 +679,57 @@ export default function StudentsPage() {
   }
 
   return (
-    <motion.main
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: "easeOut" }}
-      className="flex-1 space-y-6 p-4 sm:p-6 lg:p-8"
-    >
+    <main className="page-shell space-y-5">
       {/* ── Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight text-primary sm:text-4xl uppercase">
-            Student Management
-          </h1>
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mt-1">
-            Institutional Roster & Enrollment Analytics
-          </p>
-        </div>
-      </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            onClick={() => window.location.assign("/dashboard/teachers")}
-            className="flex items-center gap-2 px-3 py-2 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200/70 dark:border-indigo-800/40 text-[10px] font-bold uppercase rounded-lg shadow-sm hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors"
-          >
-            <UserCheck className="size-3.5 text-indigo-600 dark:text-indigo-300" />
-            Teachers
-          </button>
-          <button
-            onClick={() => setShowBulkModal(true)}
-            className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-[10px] font-bold uppercase rounded-lg shadow-sm hover:bg-gray-50 transition-all"
-          >
-            <Upload className="size-3.5 text-blue-600" />
-            Import
-          </button>
-          <button
-            onClick={handleAddStudent}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold uppercase rounded-lg shadow-md transition-all scale-100 hover:scale-[1.02] active:scale-[0.98]"
-          >
-            <Plus className="size-3.5" />
-            Register
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        icon={Users}
+        title="Students"
+        subtitle={`${total.toLocaleString()} ${total === 1 ? "student" : "students"} enrolled`}
+        actions={
+          <>
+            <Button variant="outline" onClick={() => setSyncModalOpen(true)}>
+              <Cpu className="h-4 w-4" />
+              Device sync
+            </Button>
+            <Button variant="outline" onClick={() => setShowBulkModal(true)}>
+              <Upload className="h-4 w-4" />
+              Import
+            </Button>
+            <Button onClick={handleAddStudent}>
+              <Plus className="h-4 w-4" />
+              Register student
+            </Button>
+          </>
+        }
+      />
 
-      {/* ── Stats Hero */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-        <StatCard
-          label="Total Students"
-          value={total}
-          icon={Users}
-          gradient="from-blue-500 to-blue-600"
-          sub="Registered"
-          delay={0}
-        />
+      {/* ── KPI cards */}
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
+        <StatCard label="Total Students" value={total} icon={Users} sub="Registered learners" />
         <StatCard
           label="Biometric Enrolled"
           value={enrollmentCount}
           icon={CheckCircle2}
-          gradient="from-green-500 to-green-600"
-          sub={`${total ? Math.round((enrollmentCount / total) * 100) : 0}% Coverage`}
-          delay={0.05}
+          sub={`${total ? Math.round((enrollmentCount / total) * 100) : 0}% coverage`}
         />
         <StatCard
           label="In school now"
           value={rosterSummary?.currently_in_school ?? "—"}
           icon={LogIn}
-          gradient="from-indigo-500 to-indigo-600"
           sub="Last tap today is IN"
-          delay={0.1}
           onClick={() => goRosterSession("on-site")}
-          hint="Open full session view"
+          hint="Open the full session view"
         />
         <StatCard
           label="Absent (no check-in)"
           value={rosterSummary?.absent_no_check_in ?? "—"}
           icon={UserX}
-          gradient="from-red-500 to-red-600"
           sub="No IN event today"
-          delay={0.12}
           onClick={() => goRosterSession("absent")}
-          hint="Open full session view"
+          hint="Open the full session view"
         />
-        <StatCard
-          label="Active Classes"
-          value={classes.length}
-          icon={GraduationCap}
-          gradient="from-purple-500 to-purple-600"
-          sub="Academic Units"
-          delay={0.15}
-        />
+        <StatCard label="Active Classes" value={classes.length} icon={GraduationCap} sub="Academic units" />
       </div>
-
-      {/* ── Quick links + device sync (opens in modal) */}
-      <motion.section
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl border border-gray-200/50 dark:border-gray-700/50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg shadow-indigo-500/5 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
-      >
-        <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="border-blue-600 text-blue-600"
-            onClick={() => goRosterSession("on-site")}
-          >
-            <ExternalLink className="h-4 w-4 mr-2" />
-            On-site session
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="border-amber-600 text-amber-700 dark:text-amber-400"
-            onClick={() => goRosterSession("absent")}
-          >
-            <ExternalLink className="h-4 w-4 mr-2" />
-            Absent session
-          </Button>
-        </div>
-        <Button
-          type="button"
-          className="bg-primary text-white shadow-lg shadow-blue-500/20"
-          onClick={() => setSyncModalOpen(true)}
-        >
-          <Cpu className="h-4 w-4 mr-2" />
-          Open device sync workspace
-        </Button>
-      </motion.section>
 
       <Dialog open={syncModalOpen} onOpenChange={setSyncModalOpen}>
         <DialogContent className="flex h-[min(92dvh,920px)] max-h-[92dvh] w-full max-w-none flex-col gap-0 overflow-hidden rounded-none border-gray-200/50 bg-white/98 p-0 shadow-[0_0_50px_-12px_rgba(0,0,0,0.25)] backdrop-blur-2xl dark:border-gray-800/50 dark:bg-gray-950/98 sm:h-[min(92dvh,920px)] sm:max-h-[92dvh] sm:w-[min(96vw,1680px)] sm:max-w-[min(96vw,1680px)] sm:rounded-2xl max-sm:h-[100dvh] max-sm:max-h-[100dvh]">
@@ -1149,7 +1045,7 @@ export default function StudentsPage() {
       </Dialog>
 
       {/* ── Main List Component */}
-      <div className="mt-8">
+      <div>
         <StudentList
           students={students}
           isLoading={isLoading}
@@ -1176,6 +1072,6 @@ export default function StudentsPage() {
         onClose={() => setShowBulkModal(false)}
         onRefresh={fetchStudents}
       />
-    </motion.main>
+    </main>
   )
 }

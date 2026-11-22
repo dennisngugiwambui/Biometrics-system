@@ -2,8 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { motion } from "framer-motion"
-import { fadeInUp } from "@/lib/animations/framer-motion"
 import { DeviceList } from "@/components/features/devices/DeviceList"
 import { useAuthStore } from "@/lib/store/authStore"
 import {
@@ -107,47 +105,28 @@ export default function DevicesPage() {
   }
 
   return (
-    <div className="flex-1 ">
-      {/* Animated background shapes */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-400/20 rounded-full blur-3xl animate-pulse delay-1000" />
-      </div>
-
-      {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 py-8">
-        
-
-        <motion.main
-          initial="hidden"
-          animate="visible"
-          variants={fadeInUp}
-          transition={{ delay: 0.2 }}
-        >
-          <DeviceList
-            devices={devices}
-            isLoading={isLoading}
-            error={error}
-            search={search}
-            onSearchChange={setSearch}
-            statusFilter={statusFilter}
-            onStatusFilterChange={setStatusFilter}
-            deviceGroupFilter={deviceGroupFilter}
-            onDeviceGroupFilterChange={setDeviceGroupFilter}
-            page={page}
-            totalPages={totalPages}
-            total={total}
-            onPageChange={setPage}
-            onAddDevice={() => router.push("/dashboard/devices/new")}
-            onManageGroups={() => router.push("/dashboard/device-groups")}
-            onDeviceClick={(id) => router.push(`/dashboard/devices/${id}`)}
-            onTestConnection={handleTestConnection}
-            isTestingConnection={isTestingConnection}
-            deviceGroups={deviceGroups}
-          />
-        </motion.main>
-      </div>
+    <div className="page-shell">
+      <DeviceList
+        devices={devices}
+        isLoading={isLoading}
+        error={error}
+        search={search}
+        onSearchChange={setSearch}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+        deviceGroupFilter={deviceGroupFilter}
+        onDeviceGroupFilterChange={setDeviceGroupFilter}
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        onPageChange={setPage}
+        onAddDevice={() => router.push("/dashboard/devices/new")}
+        onManageGroups={() => router.push("/dashboard/device-groups")}
+        onDeviceClick={(id) => router.push(`/dashboard/devices/${id}`)}
+        onTestConnection={handleTestConnection}
+        isTestingConnection={isTestingConnection}
+        deviceGroups={deviceGroups}
+      />
     </div>
   )
 }
-
