@@ -197,8 +197,14 @@ axios.interceptors.response.use(
             originalConfig.headers = originalConfig.headers || {};
             originalConfig.headers.Authorization = `Bearer ${newToken}`;
             return axios.request(originalConfig);
-          } catch {
-            // If refresh fails, fall back to logout rules below
+          } catch (refreshError) {
+            // The server refusing the refresh token means the session was ended (signed out on
+            // another device, or expired): leave now, active or not.
+            if (axios.isAxiosError(refreshError) && refreshError.response?.status === 401) {
+              handleSessionExpiration('You were signed out because this account signed out on another device, or the session ended. Please sign in again.');
+              return Promise.reject(error);
+            }
+            // Anything else (network): fall back to logout rules below
           }
         }
 

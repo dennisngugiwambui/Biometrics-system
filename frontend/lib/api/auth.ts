@@ -465,3 +465,14 @@ function mapBackendFieldToFrontend(backendField: string): string {
 
 
 
+
+
+/** Signs this account out on every device. Best effort: the caller clears local state either way. */
+export async function endAllSessions(): Promise<void> {
+  await axios.post(`${API_BASE_URL}/api/v1/auth/logout`, undefined, { timeout: 8000 });
+}
+
+/** A cheap authenticated call; a 401 here means this session was ended (e.g. signed out on another device). */
+export async function pingSession(): Promise<void> {
+  await axios.get(`${API_BASE_URL}/api/v1/auth/session`);
+}

@@ -11,7 +11,7 @@ from api_gateway.core.config import settings
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 
-def get_current_user(token: str = Depends(oauth2_scheme)) -> UserResponse:
+async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)) -> UserResponse:
     """
     Dependency to get current authenticated user from JWT token.
 
@@ -36,6 +36,10 @@ def get_current_user(token: str = Depends(oauth2_scheme)) -> UserResponse:
 
         user_id = payload.get("sub")
         if user_id is None:
+            raise credentials_exception
+
+        from shared.session_revocation import is_revoked
+        if await is_revoked(db, payload):
             raise credentials_exception
 
         from datetime import datetime

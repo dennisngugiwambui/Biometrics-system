@@ -17,6 +17,7 @@ from school_service.core.security import (
 )
 from school_service.services.user_service import UserService
 from school_service.services import portal_link
+from shared.session_revocation import is_revoked, revoke_all_sessions
 from shared.schemas.user import UserLogin, Token, UserResponse, UserCreate
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
@@ -218,6 +219,12 @@ async def refresh_token(
             detail="Invalid refresh token",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    if await is_revoked(db, payload):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="This session was ended. Please sign in again.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
     user_service = UserService(db)
     user = await user_service.get_user_by_id(int(user_id))
@@ -306,6 +313,29 @@ async def get_current_user(
         )
     
     return UserResponse.model_validate(user)
+
+
+@router.post(
+    "/logout",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Sign out everywhere",
+    description="Ends every session of this account, on every device: tokens issued so far stop working.",
+)
+async def logout(
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    await revoke_all_sessions(db, current_user.id)
+
+
+@router.get(
+    "/session",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Is this session still valid?",
+    description="204 while the session is live; 401 once it was ended (for example signed out on another device).",
+)
+async def session_alive(current_user: UserResponse = Depends(get_current_user)):
+    return None
 
 
 @router.get(

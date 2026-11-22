@@ -14,6 +14,8 @@ import { isTokenExpired } from "@/lib/utils/jwt"
 import { useSchoolBrandingStore } from "@/lib/store/schoolBrandingStore"
 import { getMySchool } from "@/lib/api/schools"
 import { getUnreadCount } from "@/lib/api/notifications"
+import { endAllSessions, pingSession } from "@/lib/api/auth"
+import { FullPageLoader, PageLoader } from "@/components/shared/OrbitLoader"
 import Loading from "./dashboard/loading"
 import { NavigationProgress } from "@/components/shared/NavigationProgress"
 
@@ -126,32 +128,32 @@ export default function DashboardLayout({
     showWarning: true,
   })
 
-  const handleLogout = () => {
+  const [signingOut, setSigningOut] = useState(false)
+  const handleLogout = async () => {
+    setSigningOut(true)
+    // Ends the session on every device, not just this one.
+    try { await endAllSessions() } catch { /* offline: still sign out here */ }
     logout()
     router.push("/login")
   }
+
+  // Another device signed this account out: the next call comes back 401, the refresh is refused,
+  // and the interceptor takes this browser to the sign-in page.
+  useEffect(() => {
+    if (!token) return
+    const ping = () => { pingSession().catch(() => {}) }
+    const id = setInterval(ping, 30_000)
+    const onVisible = () => { if (document.visibilityState === "visible") ping() }
+    document.addEventListener("visibilitychange", onVisible)
+    return () => { clearInterval(id); document.removeEventListener("visibilitychange", onVisible) }
+  }, [token])
 
   const handleSettings = () => {
     router.push("/dashboard/settings")
   }
 
   if (!hasHydrated) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-gray-900">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="flex flex-col items-center gap-3"
-        >
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 0.9, repeat: Infinity, ease: "linear" }}
-            className="h-7 w-7 rounded-full border-[3px] border-primary/20 border-t-primary"
-          />
-          <p className="text-xs font-medium text-gray-400 tracking-wide">Loading</p>
-        </motion.div>
-      </div>
-    )
+    return <FullPageLoader label="Loading…" />
   }
 
   if (!token || !user) {
@@ -162,6 +164,7 @@ export default function DashboardLayout({
 
   return (
     <TooltipProvider>
+      {signingOut && <FullPageLoader label="Signing out…" />}
       <SidebarProvider defaultOpen={sidebarDefaultOpen}>
         <SidebarCloser />
         <div className="flex min-h-screen w-full bg-background">
@@ -191,14 +194,7 @@ export default function DashboardLayout({
               <Suspense fallback={null}>
                 <NavigationProgress />
               </Suspense>
-              <Suspense fallback={
-                <div className="flex min-h-96 w-full items-center justify-center">
-                  <div className="flex flex-col items-center gap-4">
-                    <div className="h-10 w-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.08em] animate-pulse">Loading</p>
-                  </div>
-                </div>
-              }>
+              <Suspense fallback={<PageLoader label="Loading…" className="min-h-96" />}>
                 <motion.div
                   key={pathname}
                   initial={{ opacity: 0, scale: 0.995, y: 4 }}

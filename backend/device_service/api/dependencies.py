@@ -10,6 +10,7 @@ from device_service.core.database import get_db
 from device_service.core.config import settings
 from shared.schemas.user import UserResponse
 from school_service.core.security import decode_access_token
+from shared.session_revocation import is_revoked
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +49,8 @@ async def get_current_user(
     # Get user ID from token
     user_id: str | None = payload.get("sub")
     if user_id is None:
+        raise credentials_exception
+    if await is_revoked(db, payload):
         raise credentials_exception
     
     # Get user from database
@@ -94,6 +97,8 @@ async def get_current_user_ws(token: str) -> Optional[UserResponse]:
             # Get user ID from token
             user_id: str | None = payload.get("sub")
             if user_id is None:
+                return None
+            if await is_revoked(db, payload):
                 return None
             
             # Get user from database

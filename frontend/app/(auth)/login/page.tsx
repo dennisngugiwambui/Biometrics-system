@@ -12,6 +12,7 @@ import { useAuthStore } from "@/lib/store/authStore"
 import { useSchoolBrandingStore } from "@/lib/store/schoolBrandingStore"
 import { decodeJwtPayload } from "@/lib/utils/jwt"
 import { toast } from "sonner"
+import { FullPageLoader } from "@/components/shared/OrbitLoader"
 import AuthLayout from "@/components/auth/AuthLayout"
 import { authInputCls, authLabelCls } from "@/components/auth/formStyles"
 
@@ -48,9 +49,9 @@ export default function LoginPage() {
     setError("")
     setIsServiceError(false)
     const email = rawEmail.trim().toLowerCase()
-    if (!email || !password) { setError("Please fill in all fields"); return }
+    if (!email || !password) { setError("Please fill in all fields"); toast.error("Please fill in all fields"); return }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError("Please enter a valid email address"); return
+      setError("Please enter a valid email address"); toast.error("Please enter a valid email address"); return
     }
     setIsLoading(true)
     try {
@@ -84,14 +85,20 @@ export default function LoginPage() {
           msg.toLowerCase().includes("network error") ||
           msg.toLowerCase().includes("econnrefused")
         setIsServiceError(isConnErr)
-        setError(isConnErr ? "Cannot reach the backend. Please ensure the server is running." : msg)
+        const shown = isConnErr ? "Cannot reach the backend. Please ensure the server is running." : msg
+        setError(shown)
+        toast.error(shown, { duration: 6000 })
       } else {
-        setError(err instanceof Error ? err.message : "An unexpected error occurred.")
+        const shown = err instanceof Error ? err.message : "An unexpected error occurred."
+        setError(shown)
+        toast.error(shown, { duration: 6000 })
       }
     }
   }
 
   return (
+    <>
+    {isLoading && <FullPageLoader label="Signing in…" />}
     <AuthLayout
       brandName={displayName}
       logoUrl={logoDataUrl}
@@ -218,5 +225,6 @@ export default function LoginPage() {
         </Link>
       </p>
     </AuthLayout>
+    </>
   )
 }
