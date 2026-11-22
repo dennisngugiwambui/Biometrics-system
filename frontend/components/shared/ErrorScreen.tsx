@@ -4,9 +4,9 @@ import Link from "next/link"
 import { ArrowLeft, Home, RotateCw } from "lucide-react"
 
 /**
- * The one error screen every failure uses (404, a page that crashed, the whole
- * app crashing), in the Shulepoa sign-in style: a big muted code, a plain
- * sentence of what happened, and the ways forward.
+ * The one error screen every failure uses (404, a page that crashed, the whole app crashing),
+ * laid out like the portal's: the illustration, a big green code, a plain sentence of what
+ * happened, and the ways forward.
  */
 export function ErrorScreen({
   code,
@@ -31,37 +31,31 @@ export function ErrorScreen({
 }) {
   return (
     <main
-      className={inline
-        ? "flex min-h-[70vh] items-center justify-center px-4 py-10"
-        : "flex min-h-screen min-h-[100dvh] items-center justify-center px-4 py-10"}
-      style={inline ? undefined : { background: "#eef2f6" }}
+      className={
+        inline
+          ? "flex min-h-[70vh] items-center justify-center px-4 py-10"
+          : "flex min-h-screen min-h-[100dvh] items-center justify-center bg-gradient-to-b from-green-50/70 via-white to-white px-4 py-12"
+      }
     >
-      <div
-        className="w-full max-w-[520px] rounded-2xl bg-white px-6 py-10 text-center sm:px-12"
-        style={{ boxShadow: "0 0 0 1px rgb(15 23 42 / 0.05), 0 30px 70px -24px rgb(15 23 42 / 0.22), 0 6px 16px -6px rgb(15 23 42 / 0.08)" }}
-      >
-        {!inline && (
-          <div className="mb-8 flex items-center justify-center gap-2.5">
-            <span
-              className="flex h-9 w-9 items-center justify-center rounded-xl text-lg font-bold text-white shadow-sm"
-              style={{ background: "#15803d" }}
-            >
-              S
-            </span>
-            <span className="text-[19px] font-bold tracking-tight text-slate-900">Shulepoa</span>
-          </div>
-        )}
-        <p className="text-primary bg-clip-text text-7xl font-bold tracking-tight text-transparent sm:text-8xl">
+      <div className="w-full max-w-lg text-center">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/img/error-boy.png"
+          alt=""
+          className={inline ? "mx-auto mb-1 w-40 select-none drop-shadow-sm" : "mx-auto mb-2 w-56 select-none drop-shadow-sm sm:w-64"}
+          draggable={false}
+        />
+        <p className="mb-2 text-6xl font-bold tabular-nums tracking-tighter text-green-600 sm:text-7xl" aria-hidden="true">
           {code}
         </p>
-        <h1 className="mt-4 text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">{title}</h1>
-        <p className="mx-auto mt-2 max-w-[380px] text-sm leading-relaxed text-slate-500">{message}</p>
+        <h1 className="mb-2 text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">{title}</h1>
+        <p className="mx-auto mb-8 max-w-sm leading-relaxed text-slate-500">{message}</p>
 
-        <div className="mt-8 flex flex-col-reverse items-stretch justify-center gap-2.5 sm:flex-row sm:items-center">
+        <div className="flex flex-col-reverse items-stretch justify-center gap-2.5 sm:flex-row sm:items-center">
           <button
             type="button"
             onClick={() => (window.history.length > 1 ? window.history.back() : (window.location.href = homeHref))}
-            className="inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+            className="inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-700 shadow-[var(--shadow-key-2)] transition-colors hover:bg-slate-50"
           >
             <ArrowLeft className="h-4 w-4" /> Go back
           </button>
@@ -76,7 +70,7 @@ export function ErrorScreen({
           )}
           <Link
             href={homeHref}
-            className="inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-green-600 px-5 text-sm font-semibold text-white shadow-sm transition-[filter] hover:brightness-95"
+            className="inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-primary px-5 text-sm font-semibold text-white shadow-[var(--shadow-key)] transition-[filter] hover:brightness-95"
           >
             <Home className="h-4 w-4" /> {homeLabel}
           </Link>
@@ -84,7 +78,7 @@ export function ErrorScreen({
 
         {detail && <p className="mt-6 text-[11px] text-slate-400">Reference: {detail}</p>}
         {!inline && (
-          <p className="mt-8 border-t border-slate-100 pt-5 text-xs text-slate-400">
+          <p className="mt-8 text-xs text-slate-400">
             Still stuck? <Link href="/support" className="font-semibold text-slate-500 hover:underline">Contact support</Link>
           </p>
         )}
