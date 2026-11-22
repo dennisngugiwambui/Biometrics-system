@@ -2,8 +2,10 @@
 
 import asyncio
 import logging
+import os
 import smtplib
 import ssl
+import subprocess
 from email.message import EmailMessage
 from typing import Optional
 
@@ -12,11 +14,22 @@ from school_service.core.config import settings
 logger = logging.getLogger(__name__)
 
 
+# How mail leaves: the SMTP server in .env when there is one, otherwise the host's own mail program
+# (every cPanel server has /usr/sbin/sendmail; it sends as any address on the account's domain,
+# which is how the portal sends too). Only the From address has to be set.
+SENDMAIL = next((p for p in ("/usr/sbin/sendmail", "/usr/lib/sendmail", "/usr/bin/sendmail") if os.path.exists(p)), None)
+
+
 def mail_configured() -> bool:
-    return bool(settings.SMTP_HOST and settings.SMTP_FROM_EMAIL)
+    return bool(settings.SMTP_FROM_EMAIL and (settings.SMTP_HOST or SENDMAIL))
 
 
 def _send(msg: EmailMessage) -> None:
+    if not settings.SMTP_HOST:
+        if not SENDMAIL:
+            raise RuntimeError("No SMTP server and no local mail program")
+        subprocess.run([SENDMAIL, "-t", "-i"], input=msg.as_bytes(), check=True, timeout=30)
+        return
     if settings.SMTP_PORT == 465:
         server = smtplib.SMTP_SSL(settings.SMTP_HOST, 465, timeout=30, context=ssl.create_default_context())
     else:
@@ -40,7 +53,7 @@ async def send_credentials_email(
 ) -> Optional[str]:
     """Send the school admin their sign-in details. Returns None when sent, else why not."""
     if not mail_configured():
-        return "Email is not set up on the server (SMTP settings in .env)."
+        return "Email is not set up on the server (set SMTP_FROM_EMAIL in .env; SMTP_HOST is optional)."
     login_url = f"{settings.APP_BASE_URL.rstrip('/')}/login"
     msg = EmailMessage()
     msg["Subject"] = f"Your Shulepoa Attendance account — {school_name}"

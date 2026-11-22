@@ -103,7 +103,8 @@ async def _get_ticket_by_token(
 
 
 def _smtp_enabled() -> bool:
-    return bool(settings.SMTP_HOST and settings.SMTP_FROM_EMAIL)
+    from school_service.services.platform_mail import mail_configured
+    return mail_configured()
 
 
 def _send_email(*, to_email: str, subject: str, body_text: str) -> None:
@@ -117,14 +118,8 @@ def _send_email(*, to_email: str, subject: str, body_text: str) -> None:
     msg["To"] = to_email
     msg.set_content(body_text)
 
-    context = ssl.create_default_context()
-
-    with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=30) as server:
-        if settings.SMTP_USE_TLS:
-            server.starttls(context=context)
-        if settings.SMTP_USERNAME:
-            server.login(settings.SMTP_USERNAME, settings.SMTP_PASSWORD)
-        server.send_message(msg)
+    from school_service.services.platform_mail import _send
+    _send(msg)
 
 
 def _send_ticket_created_emails(
